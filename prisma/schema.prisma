@@ -1,0 +1,1141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ─── Auth & Identity ──────────────────────────────────────────────────────────
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  FINANCE_OFFICER
+  PROJECT_MANAGER
+  KYC_OFFICER
+  FIELD_OFFICER
+  SUPPORT
+  INVESTOR
+  FARMER
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum VerificationTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+  OTP
+}
+
+// ─── KYC ─────────────────────────────────────────────────────────────────────
+
+enum KycStatus {
+  NOT_STARTED
+  SUBMITTED
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  RESUBMISSION_REQUIRED
+}
+
+enum KycDocumentType {
+  NATIONAL_ID
+  PASSPORT
+  DRIVING_LICENSE
+  UTILITY_BILL
+  BANK_STATEMENT
+  TAX_CERTIFICATE
+  LAND_DEED
+}
+
+// ─── Farm & Agriculture ───────────────────────────────────────────────────────
+
+enum FarmStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum FieldStatus {
+  AVAILABLE
+  IN_USE
+  FALLOW
+  MAINTENANCE
+}
+
+enum CropCategory {
+  GRAIN
+  VEGETABLE
+  FRUIT
+  LEGUME
+  OILSEED
+  FIBER
+  SPICE
+  OTHER
+}
+
+enum CropCycleStatus {
+  PLANNED
+  PLANTED
+  GROWING
+  HARVESTING
+  COMPLETED
+  FAILED
+}
+
+// ─── Project ──────────────────────────────────────────────────────────────────
+
+enum ProjectStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  FUNDRAISING
+  FUNDED
+  ACTIVE
+  HARVESTING
+  SOLD
+  PROFIT_CALCULATION
+  DISTRIBUTION
+  COMPLETED
+  CANCELLED
+}
+
+enum ProjectCategory {
+  CROP_FARMING
+  LIVESTOCK
+  AQUACULTURE
+  POULTRY
+  DAIRY
+  HORTICULTURE
+  AGRO_PROCESSING
+  OTHER
+}
+
+enum ProjectUpdateType {
+  GENERAL
+  MILESTONE
+  ISSUE
+  HARVEST_REPORT
+  FINANCIAL_REPORT
+  FIELD_VISIT_REPORT
+}
+
+// ─── Investment ───────────────────────────────────────────────────────────────
+
+enum InvestmentStatus {
+  PENDING
+  PAYMENT_PENDING
+  ACTIVE
+  MATURED
+  CANCELLED
+  REFUNDED
+  COMPLETED
+}
+
+enum ReturnType {
+  FIXED_RETURN
+  PROFIT_SHARE
+  HYBRID
+}
+
+enum ContractStatus {
+  DRAFT
+  SENT
+  SIGNED
+  EXPIRED
+  VOIDED
+}
+
+// ─── Financial ────────────────────────────────────────────────────────────────
+
+enum WalletType {
+  INVESTOR
+  FARMER
+  PLATFORM_REVENUE
+  PLATFORM_ESCROW
+}
+
+enum LedgerEntryType {
+  DEBIT
+  CREDIT
+}
+
+enum LedgerTransactionType {
+  INVESTMENT_FUNDING
+  INVESTMENT_RETURN
+  PROFIT_DISTRIBUTION
+  PLATFORM_FEE
+  WITHDRAWAL
+  DEPOSIT
+  REFUND
+  PENALTY
+  ADJUSTMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  CANCELLED
+}
+
+enum GatewayPaymentStatus {
+  INITIATED
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  EXPIRED
+  REFUNDED
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  MOBILE_BANKING
+  CARD
+  WALLET
+}
+
+enum PaymentDirection {
+  INBOUND
+  OUTBOUND
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  PROCESSING
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+// ─── Operations ───────────────────────────────────────────────────────────────
+
+enum ExpenseCategory {
+  SEEDS
+  FERTILIZER
+  PESTICIDE
+  LABOR
+  EQUIPMENT
+  IRRIGATION
+  TRANSPORT
+  STORAGE
+  INSURANCE
+  LAND_LEASE
+  OTHER
+}
+
+enum FieldVisitStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ─── Documents & Notifications ────────────────────────────────────────────────
+
+enum DocumentEntityType {
+  USER
+  KYC
+  PROJECT
+  FARM
+  INVESTMENT
+  CONTRACT
+  HARVEST
+  EXPENSE
+  FIELD_VISIT
+}
+
+enum NotificationType {
+  INVESTMENT_CONFIRMED
+  INVESTMENT_MATURED
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+  PROJECT_APPROVED
+  PROJECT_FUNDED
+  PROJECT_UPDATE
+  KYC_APPROVED
+  KYC_REJECTED
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_COMPLETED
+  SYSTEM
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  APPROVE
+  REJECT
+  SUSPEND
+  ACTIVATE
+  LOGIN
+  LOGOUT
+  EXPORT
+}
+
+// ─── Auth & Identity Models ───────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  phone        String?    @unique
+  role         UserRole   @default(INVESTOR)
+  status       UserStatus @default(ACTIVE)
+  avatarUrl    String?
+  emailVerified Boolean   @default(false)
+  phoneVerified Boolean   @default(false)
+  deletedAt    DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  sessions           Session[]
+  verificationTokens VerificationToken[]
+  kyc                Kyc?
+  investorProfile    InvestorProfile?
+  farmerProfile      FarmerProfile?
+  fieldOfficerProfile FieldOfficerProfile?
+  wallet             Wallet?
+  notifications      Notification[]
+  auditLogs          AuditLog[]           @relation("AuditActor")
+  documents          Document[]
+  managedProjects    Project[]            @relation("ProjectManager")
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id        String                @id @default(uuid())
+  userId    String
+  token     String                @unique
+  type      VerificationTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime              @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId, type])
+  @@map("verification_tokens")
+}
+
+// ─── Role-Based Access Control ────────────────────────────────────────────────
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  description String
+  createdAt   DateTime @default(now())
+
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String   @id @default(uuid())
+  role         UserRole
+  permissionId String
+  createdAt    DateTime @default(now())
+
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([role])
+  @@map("role_permissions")
+}
+
+// ─── KYC ─────────────────────────────────────────────────────────────────────
+
+model Kyc {
+  id              String    @id @default(uuid())
+  userId          String    @unique
+  status          KycStatus @default(NOT_STARTED)
+
+  // Personal information
+  fullName        String?
+  dateOfBirth     DateTime?
+  nationality     String?   @default("BD")
+
+  // Address
+  addressLine     String?
+  city            String?
+  district        String?
+  division        String?
+  postalCode      String?
+
+  // Identity document
+  documentType    KycDocumentType?
+  documentNumber  String?
+
+  // Bank / MFS information
+  bankName        String?
+  bankAccountNumber String?
+  mobileProvider  String?   // bKash, Nagad, Rocket, etc.
+  mobileNumber    String?
+
+  // Review metadata
+  submittedAt     DateTime?
+  reviewedAt      DateTime?
+  reviewedBy      String?
+  reviewNote      String?   // reason for rejection or resubmission request
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents KycDocument[]
+
+  @@index([status])
+  @@index([reviewedBy])
+  @@map("kyc")
+}
+
+model KycDocument {
+  id           String          @id @default(uuid())
+  kycId        String
+  documentType KycDocumentType
+  storageKey   String          // private S3/storage key — never expose directly
+  mimeType     String
+  sizeBytes    Int
+  verifiedAt   DateTime?
+  createdAt    DateTime        @default(now())
+
+  kyc Kyc @relation(fields: [kycId], references: [id], onDelete: Cascade)
+
+  @@index([kycId])
+  @@map("kyc_documents")
+}
+
+// ─── User Profiles ────────────────────────────────────────────────────────────
+
+model InvestorProfile {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  nationalId          String?  @unique
+  dateOfBirth         DateTime?
+  address             String?
+  city                String?
+  country             String   @default("BD")
+  occupation          String?
+  annualIncomeRange   String?
+  investmentExperience String?
+  riskTolerance       String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  investments Investment[]
+
+  @@map("investor_profiles")
+}
+
+model FarmerProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  nationalId       String?  @unique
+  dateOfBirth      DateTime?
+  address          String?
+  city             String?
+  country          String   @default("BD")
+  yearsExperience  Int?
+  specializations  String[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farms Farm[]
+
+  @@map("farmer_profiles")
+}
+
+model FieldOfficerProfile {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  employeeId   String   @unique
+  region       String?
+  assignedArea String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fieldVisits FieldVisit[]
+
+  @@map("field_officer_profiles")
+}
+
+// ─── Farm & Agriculture ───────────────────────────────────────────────────────
+
+model Farm {
+  id              String     @id @default(uuid())
+  farmerProfileId String
+  name            String
+  description     String?
+  status          FarmStatus @default(ACTIVE)
+  totalAreaAcres  Decimal    @db.Decimal(10, 4)
+  address         String
+  district        String
+  division        String
+  country         String     @default("BD")
+  latitude        Decimal?   @db.Decimal(10, 8)
+  longitude       Decimal?   @db.Decimal(11, 8)
+  deletedAt       DateTime?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  farmerProfile FarmerProfile @relation(fields: [farmerProfileId], references: [id])
+  fields        Field[]
+  projects      Project[]
+
+  @@index([farmerProfileId])
+  @@index([status])
+  @@index([district])
+  @@index([deletedAt])
+  @@map("farms")
+}
+
+model Field {
+  id            String      @id @default(uuid())
+  farmId        String
+  name          String
+  areaAcres     Decimal     @db.Decimal(10, 4)
+  status        FieldStatus @default(AVAILABLE)
+  soilType      String?
+  irrigationType String?
+  latitude      Decimal?    @db.Decimal(10, 8)
+  longitude     Decimal?    @db.Decimal(11, 8)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  farm       Farm        @relation(fields: [farmId], references: [id])
+  cropCycles CropCycle[]
+
+  @@index([farmId])
+  @@index([status])
+  @@map("fields")
+}
+
+model Crop {
+  id           String       @id @default(uuid())
+  name         String       @unique
+  localName    String?
+  category     CropCategory
+  growthDays   Int?
+  description  String?
+  createdAt    DateTime     @default(now())
+
+  cropCycles CropCycle[]
+
+  @@index([category])
+  @@map("crops")
+}
+
+model CropCycle {
+  id              String          @id @default(uuid())
+  fieldId         String
+  cropId          String
+  projectId       String?
+  status          CropCycleStatus @default(PLANNED)
+  plantedAt       DateTime?
+  expectedHarvestAt DateTime?
+  actualHarvestAt DateTime?
+  areaAcres       Decimal         @db.Decimal(10, 4)
+  expectedYieldKg Decimal?        @db.Decimal(12, 4)
+  actualYieldKg   Decimal?        @db.Decimal(12, 4)
+  notes           String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  field    Field    @relation(fields: [fieldId], references: [id])
+  crop     Crop     @relation(fields: [cropId], references: [id])
+  project  Project? @relation(fields: [projectId], references: [id])
+  harvests Harvest[]
+  expenses Expense[]
+
+  @@index([fieldId])
+  @@index([cropId])
+  @@index([projectId])
+  @@index([status])
+  @@map("crop_cycles")
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+model Project {
+  id                  String          @id @default(uuid())
+  farmId              String
+  managerId           String?
+  title               String
+  slug                String          @unique
+  description         String
+  category            ProjectCategory
+  status              ProjectStatus   @default(DRAFT)
+  riskInfo            String?
+  location            String?
+  fundingGoalBdt      Decimal         @db.Decimal(14, 2)
+  fundingMinBdt       Decimal         @db.Decimal(14, 2)
+  fundedAmountBdt     Decimal         @db.Decimal(14, 2) @default(0)
+  minInvestmentBdt    Decimal         @db.Decimal(14, 2)
+  maxInvestmentBdt    Decimal?        @db.Decimal(14, 2)
+  returnType          ReturnType
+  expectedReturnPct   Decimal         @db.Decimal(6, 4)
+  durationDays        Int
+  fundingDeadline     DateTime
+  startDate           DateTime?
+  endDate             DateTime?
+  coverImageUrl       String?
+  imageUrls           String[]
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  approvedAt          DateTime?
+  publishedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?
+  rejectionReason     String?
+  deletedAt           DateTime?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+
+  farm        Farm          @relation(fields: [farmId], references: [id])
+  manager     User?         @relation("ProjectManager", fields: [managerId], references: [id])
+  cropCycles  CropCycle[]
+  investments Investment[]
+  updates     ProjectUpdate[]
+  fieldVisits FieldVisit[]
+  expenses    Expense[]
+  harvests    Harvest[]
+  sales       Sale[]
+  distributions ProfitDistribution[]
+  documents   Document[]
+
+  @@index([farmId])
+  @@index([managerId])
+  @@index([status])
+  @@index([category])
+  @@index([slug])
+  @@index([fundingDeadline])
+  @@index([deletedAt])
+  @@map("projects")
+}
+
+model ProjectUpdate {
+  id          String            @id @default(uuid())
+  projectId   String
+  authorId    String
+  type        ProjectUpdateType @default(GENERAL)
+  title       String
+  content     String
+  isPublished Boolean           @default(true)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  project   Project    @relation(fields: [projectId], references: [id])
+  documents Document[]
+
+  @@index([projectId])
+  @@index([type])
+  @@map("project_updates")
+}
+
+// ─── Investments ──────────────────────────────────────────────────────────────
+
+model Investment {
+  id                  String           @id @default(uuid())
+  investorProfileId   String
+  projectId           String
+  status              InvestmentStatus @default(PENDING)
+  amountBdt           Decimal          @db.Decimal(14, 2)
+  expectedReturnBdt   Decimal          @db.Decimal(14, 2)
+  actualReturnBdt     Decimal?         @db.Decimal(14, 2)
+  returnType          ReturnType
+  idempotencyKey      String?          @unique
+  paymentPendingAt    DateTime?
+  confirmedAt         DateTime?
+  activatedAt         DateTime?
+  maturedAt           DateTime?
+  cancelledAt         DateTime?
+  refundedAt          DateTime?
+  completedAt         DateTime?
+  cancellationReason  String?
+  receiptNumber       String?          @unique
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  investorProfile    InvestorProfile     @relation(fields: [investorProfileId], references: [id])
+  project            Project             @relation(fields: [projectId], references: [id])
+  contract           InvestmentContract?
+  distributions      ProfitDistribution[]
+  ledgerTransactions LedgerTransaction[]
+  gatewayPayments    GatewayPayment[]
+
+  @@index([investorProfileId])
+  @@index([projectId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@map("investments")
+}
+
+model InvestmentContract {
+  id           String         @id @default(uuid())
+  investmentId String         @unique
+  status       ContractStatus @default(DRAFT)
+  contractUrl  String?
+  templateVersion String
+  terms        Json
+  sentAt       DateTime?
+  signedAt     DateTime?
+  signedByIp   String?
+  expiresAt    DateTime?
+  voidedAt     DateTime?
+  voidReason   String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("investment_contracts")
+}
+
+model ProfitDistribution {
+  id              String   @id @default(uuid())
+  projectId       String
+  investmentId    String
+  amountBdt       Decimal  @db.Decimal(14, 2)
+  platformFeeBdt  Decimal  @db.Decimal(14, 2)
+  netAmountBdt    Decimal  @db.Decimal(14, 2)
+  distributedAt   DateTime
+  notes           String?
+  createdAt       DateTime @default(now())
+
+  project    Project    @relation(fields: [projectId], references: [id])
+  investment Investment @relation(fields: [investmentId], references: [id])
+
+  @@index([projectId])
+  @@index([investmentId])
+  @@index([distributedAt])
+  @@map("profit_distributions")
+}
+
+// ─── Wallets & Ledger ─────────────────────────────────────────────────────────
+
+model Wallet {
+  id             String     @id @default(uuid())
+  userId         String     @unique
+  type           WalletType
+  // cachedBalance is a read-optimised snapshot — the ledger is the source of truth.
+  // Never read this for financial decisions; always derive from ledger entries.
+  cachedBalance  Decimal    @db.Decimal(14, 2) @default(0)
+  currency       String     @default("BDT")
+  isActive       Boolean    @default(true)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ledgerEntries  LedgerEntry[]
+  payments       Payment[]
+  withdrawals    Withdrawal[]
+  snapshots      WalletSnapshot[]
+
+  @@index([type])
+  @@map("wallets")
+}
+
+// Periodic reconciliation snapshots.
+// Allows fast balance verification without scanning all ledger entries.
+model WalletSnapshot {
+  id              String   @id @default(uuid())
+  walletId        String
+  balanceBdt      Decimal  @db.Decimal(14, 2)
+  ledgerEntryId   String   // last LedgerEntry included in this snapshot
+  createdAt       DateTime @default(now())
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@map("wallet_snapshots")
+}
+
+// One LedgerTransaction groups two LedgerEntry rows (debit + credit).
+// Every money movement creates exactly one transaction with exactly two entries.
+// Balance for a wallet = SUM(CREDIT entries) - SUM(DEBIT entries).
+model LedgerTransaction {
+  id              String                @id @default(uuid())
+  type            LedgerTransactionType
+  status          LedgerTxStatus        @default(POSTED)
+  investmentId    String?
+  referenceId     String?
+  referenceType   String?
+  idempotencyKey  String?               @unique
+  description     String
+  amountBdt       Decimal               @db.Decimal(14, 2)
+  currency        String                @default("BDT")
+  metadata        Json?
+  postedAt        DateTime              @default(now())
+  voidedAt        DateTime?
+  voidReason      String?
+  createdAt       DateTime              @default(now())
+
+  investment Investment?   @relation(fields: [investmentId], references: [id])
+  entries    LedgerEntry[]
+
+  @@index([type])
+  @@index([status])
+  @@index([investmentId])
+  @@index([referenceId, referenceType])
+  @@index([idempotencyKey])
+  @@index([postedAt])
+  @@map("ledger_transactions")
+}
+
+enum LedgerTxStatus {
+  POSTED
+  VOIDED
+}
+
+model LedgerEntry {
+  id                  String          @id @default(uuid())
+  ledgerTransactionId String
+  walletId            String
+  entryType           LedgerEntryType
+  amountBdt           Decimal         @db.Decimal(14, 2)
+  balanceAfterBdt     Decimal         @db.Decimal(14, 2)
+  createdAt           DateTime        @default(now())
+
+  ledgerTransaction LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id])
+  wallet            Wallet            @relation(fields: [walletId], references: [id])
+
+  @@index([ledgerTransactionId])
+  @@index([walletId, createdAt])
+  @@index([entryType])
+  @@map("ledger_entries")
+}
+
+// ─── Payments & Withdrawals ───────────────────────────────────────────────────
+
+// --- Gateway Payments ---
+
+// Provider-agnostic record of every payment attempt through an external gateway.
+// One Investment can have multiple GatewayPayments (retries after failure/expiry).
+// Only a SUCCESS + server-verified GatewayPayment may activate an investment.
+model GatewayPayment {
+  id                String               @id @default(uuid())
+  investmentId      String
+  walletId          String?
+  provider          String
+  status            GatewayPaymentStatus @default(INITIATED)
+  amountBdt         Decimal              @db.Decimal(14, 2)
+  currency          String               @default("BDT")
+  idempotencyKey    String               @unique
+  providerPaymentId String?
+  providerOrderId   String?
+  checkoutUrl       String?
+  verifiedAt        DateTime?
+  verifiedBy        String?
+  expiresAt         DateTime?
+  failureReason     String?
+  providerMetadata  Json?
+  callbackPayload   Json?
+  refundedAt        DateTime?
+  refundReference   String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  investment Investment @relation(fields: [investmentId], references: [id])
+
+  @@index([investmentId])
+  @@index([provider])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([providerPaymentId])
+  @@index([createdAt])
+  @@map("gateway_payments")
+}
+
+// Deduplication log for incoming webhooks.
+// Before processing any webhook, insert here first (unique constraint).
+// If insert fails with unique violation -> already processed -> return 200.
+model WebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String
+  eventId     String
+  eventType   String
+  processedAt DateTime @default(now())
+  payload     Json
+
+  @@unique([provider, eventId])
+  @@index([provider, eventId])
+  @@index([processedAt])
+  @@map("webhook_events")
+}
+
+model Payment {
+  id                String          @id @default(uuid())
+  walletId          String
+  direction         PaymentDirection
+  method            PaymentMethod
+  status            PaymentStatus   @default(PENDING)
+  amountBdt         Decimal         @db.Decimal(14, 2)
+  feeBdt            Decimal         @db.Decimal(14, 2) @default(0)
+  netAmountBdt      Decimal         @db.Decimal(14, 2)
+  currency          String          @default("BDT")
+  idempotencyKey    String?         @unique
+  externalReference String?
+  gatewayResponse   Json?
+  description       String?
+  processedAt       DateTime?
+  failedAt          DateTime?
+  failureReason     String?
+  refundedAt        DateTime?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([status])
+  @@index([direction])
+  @@index([idempotencyKey])
+  @@index([externalReference])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model Withdrawal {
+  id                  String           @id @default(uuid())
+  walletId            String
+  status              WithdrawalStatus @default(PENDING)
+  amountBdt           Decimal          @db.Decimal(14, 2)
+  feeBdt              Decimal          @db.Decimal(14, 2) @default(0)
+  netAmountBdt        Decimal          @db.Decimal(14, 2)
+  bankName            String?
+  accountNumber       String?
+  accountName         String?
+  mobileNumber        String?
+  method              PaymentMethod
+  idempotencyKey      String?          @unique
+  ledgerTransactionId String?
+  requestedAt         DateTime         @default(now())
+  approvedAt          DateTime?
+  approvedBy          String?
+  processedAt         DateTime?
+  completedAt         DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@map("withdrawals")
+}
+
+// ─── Operations ───────────────────────────────────────────────────────────────
+
+model Harvest {
+  id              String   @id @default(uuid())
+  projectId       String
+  cropCycleId     String
+  harvestedAt     DateTime
+  yieldKg         Decimal  @db.Decimal(12, 4)
+  qualityGrade    String?
+  storageLocation String?
+  notes           String?
+  recordedBy      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project   Project   @relation(fields: [projectId], references: [id])
+  cropCycle CropCycle @relation(fields: [cropCycleId], references: [id])
+  sales     Sale[]
+
+  @@index([projectId])
+  @@index([cropCycleId])
+  @@index([harvestedAt])
+  @@map("harvests")
+}
+
+model Sale {
+  id            String   @id @default(uuid())
+  projectId     String
+  harvestId     String
+  buyerName     String?
+  quantityKg    Decimal  @db.Decimal(12, 4)
+  pricePerKgBdt Decimal  @db.Decimal(10, 4)
+  totalAmountBdt Decimal @db.Decimal(14, 2)
+  soldAt        DateTime
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+  harvest Harvest @relation(fields: [harvestId], references: [id])
+
+  @@index([projectId])
+  @@index([harvestId])
+  @@index([soldAt])
+  @@map("sales")
+}
+
+model Expense {
+  id           String          @id @default(uuid())
+  projectId    String
+  cropCycleId  String?
+  category     ExpenseCategory
+  description  String
+  amountBdt    Decimal         @db.Decimal(14, 2)
+  incurredAt   DateTime
+  receiptUrl   String?
+  recordedBy   String
+  approvedBy   String?
+  approvedAt   DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  project   Project    @relation(fields: [projectId], references: [id])
+  cropCycle CropCycle? @relation(fields: [cropCycleId], references: [id])
+
+  @@index([projectId])
+  @@index([cropCycleId])
+  @@index([category])
+  @@index([incurredAt])
+  @@map("expenses")
+}
+
+model FieldVisit {
+  id                  String           @id @default(uuid())
+  projectId           String
+  fieldOfficerProfileId String
+  status              FieldVisitStatus @default(SCHEDULED)
+  scheduledAt         DateTime
+  startedAt           DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?
+  summary             String?
+  findings            String?
+  recommendations     String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+
+  project             Project             @relation(fields: [projectId], references: [id])
+  fieldOfficerProfile FieldOfficerProfile @relation(fields: [fieldOfficerProfileId], references: [id])
+  documents           Document[]
+
+  @@index([projectId])
+  @@index([fieldOfficerProfileId])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("field_visits")
+}
+
+// ─── Documents ────────────────────────────────────────────────────────────────
+
+// Polymorphic document store — one table for all entity attachments.
+// entityType + entityId identify the owning record without nullable FK sprawl.
+model Document {
+  id           String             @id @default(uuid())
+  uploadedBy   String
+  entityType   DocumentEntityType
+  entityId     String
+  name         String
+  fileUrl      String
+  mimeType     String
+  sizeBytes    Int
+  isPublic     Boolean            @default(false)
+  createdAt    DateTime           @default(now())
+
+  uploader      User           @relation(fields: [uploadedBy], references: [id])
+  project       Project?       @relation(fields: [entityId], references: [id], map: "document_project_fk")
+  projectUpdate ProjectUpdate? @relation(fields: [entityId], references: [id], map: "document_project_update_fk")
+  fieldVisit    FieldVisit?    @relation(fields: [entityId], references: [id], map: "document_field_visit_fk")
+
+  @@index([entityType, entityId])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+model Notification {
+  id         String           @id @default(uuid())
+  userId     String
+  type       NotificationType
+  title      String
+  body       String
+  data       Json?
+  isRead     Boolean          @default(false)
+  readAt     DateTime?
+  createdAt  DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// ─── Audit Log ────────────────────────────────────────────────────────────────
+
+// Append-only. No updatedAt. Never deleted.
+model AuditLog {
+  id         String      @id @default(uuid())
+  actorId    String?
+  action     AuditAction
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

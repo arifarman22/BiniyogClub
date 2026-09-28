@@ -1,0 +1,625 @@
+/**
+ * ledger.service.ts
+ *
+ * Double-entry bookkeeping engine.
+ *
+ * Rules enforced here:
+ *  - Every transaction has exactly one DEBIT entry and one CREDIT entry.
+ *  - DEBIT and CREDIT amounts must be equal (balanced books).
+ *  - No transaction may produce a negative balance on any wallet.
+ *  - Idempotency: duplicate keys return the existing transaction.
+ *  - All writes run inside serializable transactions with row locks.
+ *  - Voiding creates a reversal pair — records are never deleted.
+ *
+ * Wallet types and their roles:
+ *  INVESTOR        — investor's personal wallet (source of investment funds)
+ *  FARMER          — farmer's wallet (receives project disbursements)
+ *  PLATFORM_ESCROW — holds investor funds during active projects
+ *  PLATFORM_REVENUE— receives platform fees
+ */
+
+import { db } from "@/lib/db/prisma";
+import { ledgerRepository } from "@/db/repositories/ledger.repository";
+import { walletRepository } from "@/db/repositories/wallet.repository";
+import { addBdt, subtractBdt, assertPositiveBdt } from "@/lib/financial/money";
+import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
+import type { LedgerTransactionType, Prisma } from "@/types/prisma";
+
+// ─── Internal helpers ─────────────────────────────────────────────────────────
+
+/** Resolve or create the platform escrow wallet inside a transaction. */
+async function getOrCreateEscrowWallet(tx: Prisma.TransactionClient) {
+  const existing = await tx.wallet.findFirst({
+    where: { type: "PLATFORM_ESCROW" },
+    select: { id: true, cachedBalance: true, isActive: true },
+  });
+  if (existing) return existing;
+
+  const admin = await tx.user.findFirst({
+    where: { role: "SUPER_ADMIN" },
+    select: { id: true },
+  });
+  if (!admin) throw new NotFoundError("Platform SUPER_ADMIN user");
+
+  return tx.wallet.create({
+    data: { userId: admin.id, type: "PLATFORM_ESCROW", cachedBalance: 0, currency: "BDT" },
+    select: { id: true, cachedBalance: true, isActive: true },
+  });
+}
+
+/** Resolve or create the platform revenue wallet inside a transaction. */
+async function getOrCreateRevenueWallet(tx: Prisma.TransactionClient) {
+  const existing = await tx.wallet.findFirst({
+    where: { type: "PLATFORM_REVENUE" },
+    select: { id: true, cachedBalance: true, isActive: true },
+  });
+  if (existing) return existing;
+
+  const admin = await tx.user.findFirst({
+    where: { role: "SUPER_ADMIN" },
+    select: { id: true },
+  });
+  if (!admin) throw new NotFoundError("Platform SUPER_ADMIN user");
+
+  return tx.wallet.create({
+    data: { userId: admin.id, type: "PLATFORM_REVENUE", cachedBalance: 0, currency: "BDT" },
+    select: { id: true, cachedBalance: true, isActive: true },
+  });
+}
+
+/**
+ * Core double-entry write.
+ * Acquires row locks on both wallets, validates balances, writes entries,
+ * and updates cached balances — all inside the caller's transaction.
+ *
+ * @param tx          - Active Prisma transaction client
+ * @param type        - Ledger transaction type
+ * @param description - Human-readable description
+ * @param amountBdt   - Amount to move
+ * @param debitWalletId  - Wallet to debit (balance decreases)
+ * @param creditWalletId - Wallet to credit (balance increases)
+ * @param opts        - Optional metadata, reference, idempotency key
+ */
+async function writeDoubleEntry(
+  tx: Prisma.TransactionClient,
+  type: LedgerTransactionType,
+  description: string,
+  amountBdt: number,
+  debitWalletId: string,
+  creditWalletId: string,
+  opts: {
+    investmentId?: string;
+    referenceId?: string;
+    referenceType?: string;
+    idempotencyKey?: string;
+    metadata?: Record<string, unknown>;
+  } = {},
+) {
+  assertPositiveBdt(amountBdt, "Ledger amount");
+
+  // Lock both wallets in a consistent order (by ID) to prevent deadlocks
+  const [firstId, secondId] = [debitWalletId, creditWalletId].sort();
+  const [first, second] = await Promise.all([
+    walletRepository.lockForUpdate(tx, firstId),
+    walletRepository.lockForUpdate(tx, secondId),
+  ]);
+
+  const debitWallet  = first.id  === debitWalletId  ? first  : second;
+  const creditWallet = first.id  === creditWalletId ? first  : second;
+
+  if (!debitWallet.isActive || !creditWallet.isActive) {
+    throw new ValidationError("Cannot post to an inactive wallet");
+  }
+
+  const debitBalance  = Number(debitWallet.cachedBalance);
+  const creditBalance = Number(creditWallet.cachedBalance);
+
+  // Negative balance prevention
+  const newDebitBalance = subtractBdt(debitBalance, amountBdt);
+  if (newDebitBalance < 0) {
+    throw new ValidationError(
+      `Insufficient balance. Available: ৳${debitBalance.toFixed(2)}, Required: ৳${amountBdt.toFixed(2)}`,
+    );
+  }
+
+  const newCreditBalance = addBdt(creditBalance, amountBdt);
+
+  // Write the ledger transaction + two entries atomically
+  const ledgerTx = await ledgerRepository.createTransaction(tx, {
+    type,
+    description,
+    amountBdt,
+    currency: "BDT",
+    investmentId: opts.investmentId,
+    referenceId: opts.referenceId,
+    referenceType: opts.referenceType,
+    idempotencyKey: opts.idempotencyKey,
+    metadata: opts.metadata,
+    entries: [
+      { walletId: debitWalletId,  entryType: "DEBIT",  amountBdt, balanceAfterBdt: newDebitBalance },
+      { walletId: creditWalletId, entryType: "CREDIT", amountBdt, balanceAfterBdt: newCreditBalance },
+    ],
+  });
+
+  // Update cached balances
+  await Promise.all([
+    walletRepository.updateCachedBalance(tx, debitWalletId,  newDebitBalance),
+    walletRepository.updateCachedBalance(tx, creditWalletId, newCreditBalance),
+  ]);
+
+  return { ledgerTx, newDebitBalance, newCreditBalance };
+}
+
+// ─── Public ledger service ────────────────────────────────────────────────────
+
+export const ledgerService = {
+  /**
+   * DEPOSIT: External money enters the platform.
+   * Debit: INVESTOR wallet (investor's balance increases — they are owed this money)
+   *
+   * Wait — for a deposit, the investor's wallet CREDIT increases.
+   * Accounting convention used here:
+   *   Investor wallet is a LIABILITY from the platform's perspective.
+   *   CREDIT on investor wallet = investor balance goes up.
+   *   DEBIT on investor wallet  = investor balance goes down.
+   *
+   * For simplicity and user-facing clarity, we model it as:
+   *   DEPOSIT  → CREDIT investor wallet, DEBIT a virtual "external" entry
+   *
+   * Since we don't model an external bank account, we use PLATFORM_ESCROW
+   * as the contra account for deposits (money flows: external → escrow → investor).
+   * The actual deposit flow is:
+   *   1. Payment gateway confirms receipt → CREDIT investor wallet
+   *   2. Contra: DEBIT platform escrow (escrow holds the real funds)
+   */
+  async recordDeposit(
+    userId: string,
+    amountBdt: number,
+    opts: {
+      idempotencyKey: string;
+      referenceId?: string;
+      description?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Deposit amount");
+
+    // Idempotency check before entering transaction
+    if (opts.idempotencyKey) {
+      const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+      if (existing) return { ledgerTx: existing, idempotent: true };
+    }
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, userId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        // For a deposit: escrow is debited (funds leave escrow), investor is credited
+        // But on initial deposit, funds come FROM outside — escrow acts as the source
+        // We credit investor, debit escrow to represent the platform receiving the funds
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "DEPOSIT",
+          opts.description ?? "Wallet deposit",
+          amountBdt,
+          escrowWallet.id,   // debit escrow (escrow balance decreases — funds disbursed to investor)
+          investorWallet.id, // credit investor (investor balance increases)
+          {
+            referenceId: opts.referenceId,
+            referenceType: "Payment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * INVESTMENT_FUNDING: Investor commits funds to a project.
+   * Debit: investor wallet (balance decreases)
+   * Credit: platform escrow (escrow holds the funds)
+   */
+  async recordInvestmentFunding(
+    investorUserId: string,
+    amountBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      projectTitle: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Investment amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "INVESTMENT_FUNDING",
+          `Investment funding: ${opts.projectTitle}`,
+          amountBdt,
+          investorWallet.id, // debit investor
+          escrowWallet.id,   // credit escrow
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * PROFIT_DISTRIBUTION: Distribute returns to an investor after project completion.
+   * Debit: platform escrow (funds leave escrow)
+   * Credit: investor wallet (investor receives principal + return)
+   *
+   * Platform fee is taken separately via recordPlatformFee().
+   */
+  async recordDistribution(
+    investorUserId: string,
+    netAmountBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      projectTitle: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(netAmountBdt, "Distribution amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "PROFIT_DISTRIBUTION",
+          `Profit distribution: ${opts.projectTitle}`,
+          netAmountBdt,
+          escrowWallet.id,   // debit escrow
+          investorWallet.id, // credit investor
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * PLATFORM_FEE: Collect platform fee from escrow into revenue wallet.
+   * Debit: platform escrow
+   * Credit: platform revenue
+   */
+  async recordPlatformFee(
+    feeBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      description?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(feeBdt, "Fee amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const escrowWallet  = await getOrCreateEscrowWallet(tx);
+        const revenueWallet = await getOrCreateRevenueWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "PLATFORM_FEE",
+          opts.description ?? "Platform fee",
+          feeBdt,
+          escrowWallet.id,   // debit escrow
+          revenueWallet.id,  // credit revenue
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * WITHDRAWAL: Investor withdraws funds from their wallet.
+   * Debit: investor wallet (balance decreases)
+   * Credit: platform escrow (funds held pending bank transfer)
+   *
+   * The actual bank transfer is handled externally. When completed,
+   * call recordWithdrawalCompletion() to debit escrow.
+   */
+  async recordWithdrawalRequest(
+    investorUserId: string,
+    amountBdt: number,
+    opts: {
+      withdrawalId: string;
+      idempotencyKey: string;
+      description?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Withdrawal amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "WITHDRAWAL",
+          opts.description ?? "Withdrawal request",
+          amountBdt,
+          investorWallet.id, // debit investor (funds reserved)
+          escrowWallet.id,   // credit escrow (funds held)
+          {
+            referenceId: opts.withdrawalId,
+            referenceType: "Withdrawal",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * REFUND: Return funds to investor (e.g. cancelled investment).
+   * Debit: platform escrow
+   * Credit: investor wallet
+   */
+  async recordRefund(
+    investorUserId: string,
+    amountBdt: number,
+    opts: {
+      investmentId?: string;
+      referenceId: string;
+      referenceType: string;
+      idempotencyKey: string;
+      description?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Refund amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "REFUND",
+          opts.description ?? "Refund",
+          amountBdt,
+          escrowWallet.id,   // debit escrow
+          investorWallet.id, // credit investor
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.referenceId,
+            referenceType: opts.referenceType,
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * ADJUSTMENT: Manual balance correction by finance staff.
+   * Direction is determined by the sign of amountBdt:
+   *   positive → credit target wallet (balance increases)
+   *   negative → debit target wallet (balance decreases)
+   *
+   * Adjustments always use PLATFORM_REVENUE as the contra account.
+   */
+  async recordAdjustment(
+    targetUserId: string,
+    amountBdt: number,
+    opts: {
+      idempotencyKey: string;
+      description: string;
+      authorizedBy: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    if (amountBdt === 0) throw new ValidationError("Adjustment amount cannot be zero");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    const absAmount = Math.abs(amountBdt);
+    assertPositiveBdt(absAmount, "Adjustment amount");
+
+    return db.$transaction(
+      async (tx) => {
+        const targetWallet  = await walletRepository.getOrCreate(tx, targetUserId, "INVESTOR");
+        const revenueWallet = await getOrCreateRevenueWallet(tx);
+
+        const [debitId, creditId] = amountBdt > 0
+          ? [revenueWallet.id, targetWallet.id]  // positive: revenue → target
+          : [targetWallet.id, revenueWallet.id]; // negative: target → revenue
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "ADJUSTMENT",
+          opts.description,
+          absAmount,
+          debitId,
+          creditId,
+          {
+            idempotencyKey: opts.idempotencyKey,
+            metadata: { ...opts.metadata, authorizedBy: opts.authorizedBy },
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * Void a posted ledger transaction and create a reversal.
+   * The original transaction is marked VOIDED; a new reversal transaction is posted.
+   * This preserves the full audit trail.
+   */
+  async voidAndReverse(
+    ledgerTxId: string,
+    reason: string,
+    idempotencyKey: string,
+  ) {
+    const existing = await ledgerRepository.findByIdempotencyKey(idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    const original = await db.ledgerTransaction.findUnique({
+      where: { id: ledgerTxId },
+      select: {
+        id: true,
+        type: true,
+        status: true,
+        amountBdt: true,
+        description: true,
+        investmentId: true,
+        referenceId: true,
+        referenceType: true,
+        entries: {
+          select: { walletId: true, entryType: true, amountBdt: true },
+        },
+      },
+    });
+
+    if (!original) throw new NotFoundError("Ledger transaction");
+    if (original.status === "VOIDED") {
+      throw new ConflictError("Transaction is already voided");
+    }
+    if (original.entries.length !== 2) {
+      throw new ValidationError("Cannot void a transaction with unexpected entry count");
+    }
+
+    return db.$transaction(
+      async (tx) => {
+        // Mark original as voided
+        await ledgerRepository.voidTransaction(tx, ledgerTxId, reason);
+
+        // Find debit and credit entries
+        const debitEntry  = original.entries.find((e) => e.entryType === "DEBIT")!;
+        const creditEntry = original.entries.find((e) => e.entryType === "CREDIT")!;
+        const amount = Number(original.amountBdt);
+
+        // Reversal: swap debit/credit
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          original.type,
+          `REVERSAL: ${original.description}`,
+          amount,
+          creditEntry.walletId, // original credit becomes debit
+          debitEntry.walletId,  // original debit becomes credit
+          {
+            investmentId: original.investmentId ?? undefined,
+            referenceId: original.referenceId ?? undefined,
+            referenceType: original.referenceType ?? undefined,
+            idempotencyKey,
+            metadata: { reversalOf: ledgerTxId, reason },
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * Reconcile a wallet: derive true balance from ledger and compare to cached.
+   * Returns the discrepancy (0 = balanced).
+   * If fix=true, updates the cached balance to match the ledger.
+   */
+  async reconcileWallet(walletId: string, fix = false) {
+    const trueBalance = await ledgerRepository.deriveBalance(walletId);
+    const wallet = await walletRepository.findById(walletId);
+    if (!wallet) throw new NotFoundError("Wallet");
+
+    const cachedBalance = Number(wallet.cachedBalance);
+    const discrepancy = Math.round((trueBalance - cachedBalance) * 100) / 100;
+
+    if (fix && discrepancy !== 0) {
+      await db.wallet.update({
+        where: { id: walletId },
+        data: { cachedBalance: trueBalance },
+      });
+    }
+
+    return {
+      walletId,
+      trueBalance,
+      cachedBalance,
+      discrepancy,
+      isBalanced: discrepancy === 0,
+    };
+  },
+
+  /** Get the true (ledger-derived) balance for a wallet. */
+  async getTrueBalance(walletId: string): Promise<number> {
+    return ledgerRepository.deriveBalance(walletId);
+  },
+
+  /** Get paginated ledger history for a wallet. */
+  async getHistory(walletId: string, page = 1, limit = 50) {
+    return ledgerRepository.getWalletHistory(walletId, page, limit);
+  },
+};
