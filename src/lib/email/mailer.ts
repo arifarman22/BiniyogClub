@@ -3,12 +3,14 @@ import { env } from "@/config/env";
 
 // ─── Transport ────────────────────────────────────────────────────────────────
 
-const transporter = nodemailer.createTransport({
-  host: env.SMTP_HOST,
-  port: env.SMTP_PORT,
-  secure: env.SMTP_PORT === 465,
-  auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-});
+function getTransporter() {
+  return nodemailer.createTransport({
+    host: env.SMTP_HOST,
+    port: env.SMTP_PORT,
+    secure: env.SMTP_PORT === 465,
+    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+  });
+}
 
 interface SendEmailOptions {
   to: string;
@@ -17,7 +19,7 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<void> {
-  await transporter.sendMail({ from: env.SMTP_FROM, to, subject, html });
+  await getTransporter().sendMail({ from: env.SMTP_FROM, to, subject, html });
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
