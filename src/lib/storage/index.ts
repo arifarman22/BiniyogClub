@@ -6,12 +6,14 @@
 
 import { v2 as cloudinary } from "cloudinary";
 
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key:    process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure:     true,
-});
+function configureCloudinary() {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key:    process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure:     true,
+  });
+}
 
 export interface UploadResult {
   key: string; // Cloudinary public_id
@@ -25,6 +27,7 @@ export interface StorageProvider {
 
 class CloudinaryProvider implements StorageProvider {
   async upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult> {
+    configureCloudinary();
     const resourceType = mimeType === "application/pdf" ? "raw" : "image";
 
     return new Promise((resolve, reject) => {
@@ -48,6 +51,7 @@ class CloudinaryProvider implements StorageProvider {
   }
 
   async delete(key: string): Promise<void> {
+    configureCloudinary();
     await cloudinary.uploader.destroy(key, {
       type:          "authenticated",
       resource_type: "image",
@@ -56,6 +60,7 @@ class CloudinaryProvider implements StorageProvider {
   }
 
   async getSignedUrl(key: string, expiresInSeconds = 300): Promise<string> {
+    configureCloudinary();
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
     return cloudinary.url(key, {
       type:          "authenticated",
