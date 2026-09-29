@@ -74,7 +74,7 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
     if (result.success && result.data) {
       setGroupInvestmentId(result.data.groupInvestmentId);
       setStep("payment");
-    } else {
+    } else if (!result.success) {
       setError(result.error ?? "Failed to submit application");
     }
   }

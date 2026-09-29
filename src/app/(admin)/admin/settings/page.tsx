@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { requirePermission } from "@/lib/authz";
@@ -9,19 +10,16 @@ export const metadata: Metadata = { title: "Settings — Admin" };
 
 const ROLES = [
   "SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER",
-  "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT", "INVESTOR", "FARMER",
+  "KYC_OFFICER", "SUPPORT", "INVESTOR",
 ] as const;
 
 const PERMISSION_GROUPS = [
   { label: "Users", keys: ["USER_VIEW", "USER_CREATE", "USER_UPDATE", "USER_DELETE", "USER_SUSPEND", "USER_CHANGE_ROLE"] },
-  { label: "Projects", keys: ["PROJECT_VIEW", "PROJECT_CREATE", "PROJECT_UPDATE", "PROJECT_DELETE", "PROJECT_SUBMIT", "PROJECT_APPROVE", "PROJECT_PUBLISH", "PROJECT_ARCHIVE"] },
+  { label: "Projects", keys: ["PROJECT_VIEW", "PROJECT_CREATE", "PROJECT_UPDATE", "PROJECT_DELETE", "PROJECT_APPROVE", "PROJECT_PUBLISH", "PROJECT_ARCHIVE"] },
   { label: "Investments", keys: ["INVESTMENT_VIEW", "INVESTMENT_CREATE", "INVESTMENT_APPROVE", "INVESTMENT_CANCEL"] },
   { label: "Payments", keys: ["PAYMENT_VIEW", "PAYMENT_VERIFY"] },
   { label: "Withdrawals", keys: ["WITHDRAWAL_VIEW", "WITHDRAWAL_REQUEST", "WITHDRAWAL_APPROVE"] },
   { label: "KYC", keys: ["KYC_VIEW", "KYC_SUBMIT", "KYC_REVIEW", "KYC_APPROVE"] },
-  { label: "Farms", keys: ["FARM_VIEW", "FARM_CREATE", "FARM_UPDATE"] },
-  { label: "Farmers", keys: ["FARMER_VIEW", "FARMER_CREATE", "FARMER_UPDATE"] },
-  { label: "Field Visits", keys: ["FIELD_VISIT_VIEW", "FIELD_VISIT_SCHEDULE", "FIELD_VISIT_CONDUCT"] },
   { label: "System", keys: ["REPORT_VIEW", "AUDIT_VIEW"] },
 ] as const;
 

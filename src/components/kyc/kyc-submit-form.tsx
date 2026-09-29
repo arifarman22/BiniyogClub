@@ -113,7 +113,12 @@ export function KycSubmitForm({ existing }: Props) {
   const [documents, setDocuments] = useState<KycDocumentRecord[]>(existing?.documents ?? []);
   const [saved, setSaved] = useState(false);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<{
+    fullName: string; dateOfBirth: string; nationality: string;
+    addressLine: string; city: string; district: string; division: string;
+    postalCode: string; documentType: string; documentNumber: string;
+    bankName: string; bankAccountNumber: string; mobileProvider: string; mobileNumber: string;
+  }>({
     fullName: existing?.fullName ?? "",
     dateOfBirth: existing?.dateOfBirth
       ? new Date(existing.dateOfBirth).toISOString().split("T")[0]
@@ -124,7 +129,7 @@ export function KycSubmitForm({ existing }: Props) {
     district: existing?.district ?? "",
     division: existing?.division ?? "",
     postalCode: existing?.postalCode ?? "",
-    documentType: existing?.documentType ?? "",
+    documentType: (existing?.documentType ?? "") as string,
     documentNumber: existing?.documentNumber ?? "",
     bankName: existing?.bankName ?? "",
     bankAccountNumber: existing?.bankAccountNumber ?? "",
@@ -168,13 +173,13 @@ export function KycSubmitForm({ existing }: Props) {
         return;
       }
       resolvedKycId = draft.data.kycId;
-      setKycId(resolvedKycId);
+      setKycId(resolvedKycId ?? null);
     }
 
     const fd = new FormData();
-    fd.append("kycId", resolvedKycId);
-    fd.append("documentType", form.documentType);
-    fd.append("side", side);
+    fd.append("kycId", resolvedKycId ?? "");
+    fd.append("documentType", form.documentType ?? "");
+    fd.append("side", side ?? "");
     fd.append("file", file);
 
     const result = await uploadDocumentAction(fd);
@@ -304,7 +309,7 @@ export function KycSubmitForm({ existing }: Props) {
                 <Input id="district" value={form.district} onChange={(e) => set("district", e.target.value)} />
               </FormField>
               <FormField label="Division" htmlFor="division" required error={fieldErrors.division}>
-                <Select value={form.division} onValueChange={(v) => set("division", v)}>
+                <Select value={form.division || ""} onValueChange={(v) => set("division", v ?? "")}>
                   <SelectTrigger id="division"><SelectValue placeholder="Select division" /></SelectTrigger>
                   <SelectContent>
                     {BD_DIVISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
@@ -332,7 +337,7 @@ export function KycSubmitForm({ existing }: Props) {
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="Document type" htmlFor="documentType" required error={fieldErrors.documentType}>
-                <Select value={form.documentType} onValueChange={(v) => set("documentType", v)}>
+                <Select value={form.documentType || ""} onValueChange={(v) => set("documentType", v ?? "")}>
                   <SelectTrigger id="documentType"><SelectValue placeholder="Select type" /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(DOC_LABELS).map(([v, l]) => (
@@ -380,7 +385,7 @@ export function KycSubmitForm({ existing }: Props) {
                 />
               </FormField>
               <FormField label="Mobile banking provider" htmlFor="mobileProvider" error={fieldErrors.mobileProvider}>
-                <Select value={form.mobileProvider} onValueChange={(v) => set("mobileProvider", v)}>
+                <Select value={form.mobileProvider || ""} onValueChange={(v) => set("mobileProvider", v ?? "")}>
                   <SelectTrigger id="mobileProvider"><SelectValue placeholder="Select provider" /></SelectTrigger>
                   <SelectContent>
                     {MOBILE_PROVIDERS.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}

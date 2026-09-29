@@ -14,18 +14,14 @@ import type { ProjectStatus } from "@/types/prisma";
 // Maps current status → allowed next statuses
 
 const TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
-  DRAFT:              ["PENDING_APPROVAL", "CANCELLED"],
-  PENDING_APPROVAL:   ["APPROVED", "DRAFT", "CANCELLED"],
-  APPROVED:           ["FUNDRAISING", "CANCELLED"],
-  FUNDRAISING:        ["FUNDED", "CANCELLED"],
-  FUNDED:             ["ACTIVE", "CANCELLED"],
-  ACTIVE:             ["HARVESTING", "CANCELLED"],
-  HARVESTING:         ["SOLD"],
-  SOLD:               ["PROFIT_CALCULATION"],
-  PROFIT_CALCULATION: ["DISTRIBUTION"],
-  DISTRIBUTION:       ["COMPLETED"],
-  COMPLETED:          [],
-  CANCELLED:          [],
+  DRAFT:            ["PENDING_APPROVAL", "CANCELLED"],
+  PENDING_APPROVAL: ["APPROVED", "DRAFT", "CANCELLED"],
+  APPROVED:         ["FUNDRAISING", "CANCELLED"],
+  FUNDRAISING:      ["FUNDED", "CANCELLED"],
+  FUNDED:           ["ACTIVE", "CANCELLED"],
+  ACTIVE:           ["COMPLETED", "CANCELLED"],
+  COMPLETED:        [],
+  CANCELLED:        [],
 };
 
 // ─── Who can trigger each transition ─────────────────────────────────────────
@@ -36,16 +32,12 @@ type TransitionPermission = {
 };
 
 const TRANSITION_PERMISSIONS: Partial<Record<`${ProjectStatus}->${ProjectStatus}`, TransitionPermission>> = {
-  "DRAFT->PENDING_APPROVAL":        { permission: PERMISSIONS.PROJECT_SUBMIT, ownerAllowed: true },
-  "PENDING_APPROVAL->APPROVED":     { permission: PERMISSIONS.PROJECT_APPROVE },
-  "PENDING_APPROVAL->DRAFT":        { permission: PERMISSIONS.PROJECT_APPROVE },
-  "APPROVED->FUNDRAISING":          { permission: PERMISSIONS.PROJECT_PUBLISH },
-  "FUNDED->ACTIVE":                 { permission: PERMISSIONS.PROJECT_UPDATE },
-  "ACTIVE->HARVESTING":             { permission: PERMISSIONS.PROJECT_UPDATE },
-  "HARVESTING->SOLD":               { permission: PERMISSIONS.PROJECT_UPDATE },
-  "SOLD->PROFIT_CALCULATION":       { permission: PERMISSIONS.PROJECT_UPDATE },
-  "PROFIT_CALCULATION->DISTRIBUTION":{ permission: PERMISSIONS.PROJECT_UPDATE },
-  "DISTRIBUTION->COMPLETED":        { permission: PERMISSIONS.PROJECT_ARCHIVE },
+  "DRAFT->PENDING_APPROVAL":    { permission: PERMISSIONS.PROJECT_CREATE, ownerAllowed: true },
+  "PENDING_APPROVAL->APPROVED": { permission: PERMISSIONS.PROJECT_APPROVE },
+  "PENDING_APPROVAL->DRAFT":    { permission: PERMISSIONS.PROJECT_APPROVE },
+  "APPROVED->FUNDRAISING":      { permission: PERMISSIONS.PROJECT_PUBLISH },
+  "FUNDED->ACTIVE":             { permission: PERMISSIONS.PROJECT_UPDATE },
+  "ACTIVE->COMPLETED":          { permission: PERMISSIONS.PROJECT_ARCHIVE },
 };
 
 // ─── Slug generation ──────────────────────────────────────────────────────────
@@ -112,9 +104,6 @@ export const projectService = {
     // Only allow edits on DRAFT or PENDING_APPROVAL
     if (!["DRAFT", "PENDING_APPROVAL"].includes(project.status)) {
       // Staff with PROJECT_UPDATE can edit at any stage
-      if (session.role === "FARMER") {
-        throw new ValidationError("Projects can only be edited in DRAFT or PENDING_APPROVAL status");
-      }
     }
 
     const slug = input.title && input.title !== project.title

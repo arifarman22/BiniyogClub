@@ -3,9 +3,9 @@ import { z } from "zod";
 const PaymentMethodEnum = z.enum(["BANK_TRANSFER", "MOBILE_BANKING", "CARD", "WALLET"]);
 
 const bdtPositive = z.coerce
-  .number({ error: "Must be a number" })
+  .number()
   .positive("Must be greater than 0")
-  .multipleOf(0.01, "Must have at most 2 decimal places");
+  .refine((v) => Math.round(v * 100) === v * 100, { message: "Must have at most 2 decimal places" });
 
 // ─── Deposit ──────────────────────────────────────────────────────────────────
 
@@ -13,7 +13,7 @@ export const depositSchema = z.object({
   amountBdt: bdtPositive,
   paymentMethod: PaymentMethodEnum,
   externalReference: z.string().min(1).max(255),
-  gatewayResponse: z.record(z.unknown()).optional(),
+  gatewayResponse: z.record(z.string(), z.unknown()).optional(),
   description: z.string().max(500).optional(),
 });
 
@@ -22,7 +22,7 @@ export const depositSchema = z.object({
 export const withdrawalRequestSchema = z
   .object({
     amountBdt: bdtPositive,
-    feeBdt: z.coerce.number().min(0).multipleOf(0.01).optional().default(0),
+    feeBdt: z.coerce.number().min(0).refine((v) => Math.round(v * 100) === v * 100, { message: "Must have at most 2 decimal places" }).optional().default(0),
     method: PaymentMethodEnum,
     bankName: z.string().max(200).optional(),
     accountNumber: z.string().max(50).optional(),
@@ -49,9 +49,9 @@ export const approveWithdrawalSchema = z.object({
 export const adjustmentSchema = z.object({
   userId: z.string().uuid("Invalid user ID"),
   amountBdt: z.coerce
-    .number({ error: "Must be a number" })
-    .refine((v) => v !== 0, "Amount cannot be zero")
-    .refine((v) => Math.round(Math.abs(v) * 100) === Math.abs(v) * 100, "Must have at most 2 decimal places"),
+    .number()
+    .refine((v) => v !== 0, { message: "Amount cannot be zero" })
+    .refine((v) => Math.round(Math.abs(v) * 100) === Math.abs(v) * 100, { message: "Must have at most 2 decimal places" }),
   description: z.string().min(10, "Description must be at least 10 characters").max(500),
 });
 

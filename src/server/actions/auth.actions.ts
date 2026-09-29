@@ -63,7 +63,7 @@ export async function registerAction(formData: unknown): Promise<ActionResult> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { confirmPassword: _confirm, ...input } = parsed.data;
-    await authService.register({ ...input, role: input.role as "INVESTOR" | "FARMER" });
+    await authService.register({ ...input, role: input.role as "INVESTOR" });
     return { success: true, data: undefined };
   } catch (error) {
     return serviceError(error);
@@ -72,14 +72,14 @@ export async function registerAction(formData: unknown): Promise<ActionResult> {
 
 export async function loginAction(formData: unknown): Promise<ActionResult<{ role: string }>> {
   const parsed = loginSchema.safeParse(formData);
-  if (!parsed.success) return validationError(parsed.error.issues);
+  if (!parsed.success) return validationError(parsed.error.issues) as ActionResult<{ role: string }>;
 
   try {
     const meta = await getRequestMeta();
     const user = await authService.login(parsed.data, meta);
     return { success: true, data: { role: user.role } };
   } catch (error) {
-    return serviceError(error);
+    return serviceError(error) as ActionResult<{ role: string }>;
   }
 }
 

@@ -124,22 +124,23 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
             className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
           />
         </form>
-        <select
-          defaultValue={sort}
-          onChange={(e) => {
-            const url = new URL(window.location.href);
-            url.searchParams.set("sort", e.target.value);
-            window.location.href = url.toString();
-          }}
-          className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
-        >
+        <form method="get">
+          <input type="hidden" name="status" value={status ?? ""} />
+          <input type="hidden" name="search" value={search ?? ""} />
+          <select
+            name="sort"
+            defaultValue={sort}
+            className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+          >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
           <option value="deadline">Deadline soon</option>
           <option value="funded_pct">Most funded</option>
           <option value="goal_desc">Largest goal</option>
           <option value="goal_asc">Smallest goal</option>
-        </select>
+          </select>
+          <button type="submit" className="rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted/40">Sort</button>
+        </form>
       </div>
 
       {/* Table */}
@@ -163,7 +164,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
                   <tr key={p.id} className="hover:bg-muted/20 transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium line-clamp-1">{p.title}</p>
-                      <p className="text-xs text-muted-foreground">{p.farm.name} · {p.farm.district}</p>
+                      <p className="text-xs text-muted-foreground">{p.location ?? p.category}</p>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[p.category] ?? p.category}</span>

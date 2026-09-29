@@ -2,6 +2,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { LoginForm } from "@/components/auth/login-form";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { Suspense } from "react";
 
 export const metadata: Metadata = { title: "Sign In" };
 
@@ -19,7 +20,9 @@ export default function LoginPage() {
         </>
       }
     >
-      <LoginForm />
+      <Suspense>
+        <LoginForm />
+      </Suspense>
     </AuthCard>
   );
 }

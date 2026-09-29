@@ -90,7 +90,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
               <span className="flex items-center gap-1">
                 <MapPin className="h-3.5 w-3.5" />
-                {project.location ?? `${project.farm.district}, ${project.farm.division}`}
+                {project.location ?? "—"}
               </span>
               <span className="flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
@@ -124,15 +124,13 @@ export default async function AdminProjectDetailPage({ params }: Props) {
             </div>
           )}
 
-          {/* Farm details */}
+          {/* Project details */}
           <div className="rounded-xl border border-border bg-card p-6">
-            <h2 className="mb-4 font-semibold">Farm Details</h2>
+            <h2 className="mb-4 font-semibold">Project Details</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
-                { label: "Farm", value: project.farm.name },
-                { label: "District", value: project.farm.district },
-                { label: "Division", value: project.farm.division },
-                { label: "Farmer", value: project.farm.farmerProfile?.user.name ?? "—" },
+                { label: "Location", value: project.location ?? "—" },
+                { label: "Category", value: project.category },
               ].map(({ label, value }) => (
                 <div key={label} className="rounded-lg bg-muted/40 p-3">
                   <p className="text-xs text-muted-foreground">{label}</p>

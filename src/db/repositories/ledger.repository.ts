@@ -74,7 +74,7 @@ export const ledgerRepository = {
         referenceId: input.referenceId ?? null,
         referenceType: input.referenceType ?? null,
         investmentId: input.investmentId ?? null,
-        metadata: input.metadata ?? null,
+        metadata: input.metadata ? JSON.parse(JSON.stringify(input.metadata)) : undefined,
         entries: {
           create: input.entries.map((e) => ({
             walletId: e.walletId,

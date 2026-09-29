@@ -291,7 +291,7 @@ export const investmentService = {
           amountBdt,
           feeBdt: 0,
           netAmountBdt: amountBdt,
-          description: `Investment in ${inv.project.title}`,
+          description: `Investment payment`,
         },
         select: { id: true, status: true },
       });
@@ -394,7 +394,7 @@ export const investmentService = {
           data: {
             status: "COMPLETED",
             externalReference: input.externalReference,
-            gatewayResponse: input.gatewayResponse ?? null,
+            gatewayResponse: input.gatewayResponse ? JSON.parse(JSON.stringify(input.gatewayResponse)) : undefined,
             processedAt: now,
           },
         });

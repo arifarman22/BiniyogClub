@@ -81,7 +81,3 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 }
 
-// Disable Next.js body parsing — we need the raw buffer for HMAC verification
-export const config = {
-  api: { bodyParser: false },
-};

@@ -162,7 +162,7 @@ export const kycRepository = {
     limit?: number;
   }) {
     const { status, page = 1, limit = 20 } = opts;
-    const where: Prisma.KycWhereInput = status?.length ? { status: { in: status as Parameters<typeof db.kyc.findMany>[0]["where"]["status"]["in"] } } : {};
+    const where: Prisma.KycWhereInput = status?.length ? { status: { in: status as never[] } } : {};
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([

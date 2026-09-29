@@ -9,6 +9,7 @@ import { fmtDateTime } from "@/lib/admin/utils";
 import { cn } from "@/lib/utils";
 import type { AsyncComponentProps } from "@/types";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Audit Logs — Admin" };
 
 const ACTION_OPTIONS = [

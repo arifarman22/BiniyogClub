@@ -32,9 +32,9 @@ export function SubmitPaymentProofDialog({ investmentId, amountBdt, bankAccounts
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!file) { toast.create({ title: "Please attach your payment proof", type: "error" }); return; }
-    if (!selectedBank) { toast.create({ title: "Please select a bank account", type: "error" }); return; }
-    if (!transactionRef.trim()) { toast.create({ title: "Transaction reference is required", type: "error" }); return; }
+    if (!file) { toast.add({ title: "Please attach your payment proof", type: "error" }); return; }
+    if (!selectedBank) { toast.add({ title: "Please select a bank account", type: "error" }); return; }
+    if (!transactionRef.trim()) { toast.add({ title: "Transaction reference is required", type: "error" }); return; }
 
     setLoading(true);
     try {
@@ -57,14 +57,14 @@ export function SubmitPaymentProofDialog({ investmentId, amountBdt, bankAccounts
       });
 
       if (result.success) {
-        toast.create({ title: "Proof submitted!", description: "Finance team will review within 1–2 business days.", type: "success" });
+        toast.add({ title: "Proof submitted!", description: "Finance team will review within 1–2 business days.", type: "success" });
         setOpen(false);
         setTransactionRef("");
         setNotes("");
         setFile(null);
         onSuccess?.();
       } else {
-        toast.create({ title: "Submission failed", description: result.error, type: "error" });
+        toast.add({ title: "Submission failed", description: result.error, type: "error" });
       }
     } finally {
       setLoading(false);

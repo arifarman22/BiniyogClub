@@ -42,7 +42,6 @@ export const projectDetailSelect = {
   cancelledAt: true,
   cancellationReason: true,
   rejectionReason: true,
-  farmId: true,
   updates: {
     where: { isPublished: true },
     select: { id: true, title: true, content: true, type: true, publishedAt: true },
@@ -134,7 +133,6 @@ function buildWhere(f: ProjectFilters): Prisma.ProjectWhereInput {
     where.status = Array.isArray(f.status) ? { in: f.status } : f.status;
   }
   if (f.category) where.category = f.category;
-  if (f.farmId) where.farmId = f.farmId;
   if (f.managerId) where.managerId = f.managerId;
 
   if (f.search) {

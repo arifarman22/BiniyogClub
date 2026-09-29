@@ -48,7 +48,7 @@ export async function createInvestmentAction(
     const { investment, idempotent } = await investmentService.create(session, parsed.data);
 
     revalidatePath("/dashboard/investments");
-    revalidatePath(`/projects/${investment.project.slug}`);
+    revalidatePath(`/projects/${parsed.data.projectId}`);
 
     return { success: true, data: { investmentId: investment.id, idempotent } };
   } catch (error) {

@@ -25,7 +25,7 @@ export function PaymentVerifier() {
 
     verifyPaymentByProviderIdAction(providerPaymentId).then((result) => {
       if (result.success && result.data?.investmentActivated) {
-        toast.create({
+        toast.add({
           title: "Payment confirmed!",
           description: result.data.receiptNumber
             ? `Receipt: ${result.data.receiptNumber}`
@@ -33,15 +33,15 @@ export function PaymentVerifier() {
           type: "success",
         });
       } else if (result.success && !result.data?.investmentActivated) {
-        toast.create({
+        toast.add({
           title: "Payment pending",
           description: "Your payment is being processed. We'll notify you once confirmed.",
           type: "info",
         });
       } else {
-        toast.create({
+        toast.add({
           title: "Payment verification failed",
-          description: result.error ?? "Please contact support if the issue persists.",
+          description: (result as { success: false; error: string }).error ?? "Please contact support if the issue persists.",
           type: "error",
         });
       }

@@ -11,18 +11,14 @@ type Props = {
 };
 
 const TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
-  DRAFT:              ["PENDING_APPROVAL", "CANCELLED"],
-  PENDING_APPROVAL:   ["APPROVED", "DRAFT", "CANCELLED"],
-  APPROVED:           ["FUNDRAISING", "CANCELLED"],
-  FUNDRAISING:        ["FUNDED", "CANCELLED"],
-  FUNDED:             ["ACTIVE", "CANCELLED"],
-  ACTIVE:             ["HARVESTING", "CANCELLED"],
-  HARVESTING:         ["SOLD"],
-  SOLD:               ["PROFIT_CALCULATION"],
-  PROFIT_CALCULATION: ["DISTRIBUTION"],
-  DISTRIBUTION:       ["COMPLETED"],
-  COMPLETED:          [],
-  CANCELLED:          [],
+  DRAFT:            ["PENDING_APPROVAL", "CANCELLED"],
+  PENDING_APPROVAL: ["APPROVED", "DRAFT", "CANCELLED"],
+  APPROVED:         ["FUNDRAISING", "CANCELLED"],
+  FUNDRAISING:      ["FUNDED", "CANCELLED"],
+  FUNDED:           ["ACTIVE", "CANCELLED"],
+  ACTIVE:           ["COMPLETED", "CANCELLED"],
+  COMPLETED:        [],
+  CANCELLED:        [],
 };
 
 const STATUS_LABELS: Record<ProjectStatus, string> = {
@@ -32,10 +28,6 @@ const STATUS_LABELS: Record<ProjectStatus, string> = {
   FUNDRAISING: "Open Fundraising",
   FUNDED: "Mark as Funded",
   ACTIVE: "Activate",
-  HARVESTING: "Start Harvesting",
-  SOLD: "Mark as Sold",
-  PROFIT_CALCULATION: "Calculate Profits",
-  DISTRIBUTION: "Start Distribution",
   COMPLETED: "Complete",
   CANCELLED: "Cancel",
 };

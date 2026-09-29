@@ -118,7 +118,6 @@ const STAFF_ROLES: UserRole[] = [
   "FINANCE_OFFICER",
   "PROJECT_MANAGER",
   "KYC_OFFICER",
-  "FIELD_OFFICER",
   "SUPPORT",
 ];
 

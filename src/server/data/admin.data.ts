@@ -174,22 +174,19 @@ export async function getAdminInvestors(
 // ─── Projects ─────────────────────────────────────────────────────────────────
 
 export async function getAdminProjects(
-  session: SessionUser,
   filters: ProjectFilters = {},
   sort: ProjectSort = "newest",
   page = 1,
+  limit = PAGE_SIZE,
 ) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-  return projectRepository.findMany({ ...filters, includeDeleted: false }, sort, page, PAGE_SIZE);
+  return projectRepository.findMany({ ...filters, includeDeleted: false }, sort, page, limit);
 }
 
-export async function getAdminProjectById(session: SessionUser, id: string) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
+export async function getAdminProjectById(id: string) {
   return projectRepository.findById(id);
 }
 
-export async function getProjectStatusCounts(session: SessionUser) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
+export async function getProjectStatusCounts() {
   return projectRepository.countByStatus();
 }
 

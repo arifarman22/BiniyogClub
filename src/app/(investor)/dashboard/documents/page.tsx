@@ -4,6 +4,7 @@ import { getInvestorDocuments } from "@/server/data/investor.data";
 import { FileText, ShieldCheck, Download } from "lucide-react";
 import { cn } from "cn";
 
+export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Documents — Dashboard" };
 
 const CONTRACT_STATUS_COLORS: Record<string, string> = {
@@ -125,7 +126,7 @@ export default async function DocumentsPage() {
                       </p>
                     </div>
                     <a
-                      href={doc.documentUrl}
+                      href={doc.storageKey}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-1 rounded-md border border-border px-2.5 py-1.5 text-xs hover:border-primary/50 hover:text-primary"

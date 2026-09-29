@@ -116,7 +116,7 @@ export const walletService = {
             currency: "BDT",
             idempotencyKey,
             externalReference: input.externalReference,
-            gatewayResponse: input.gatewayResponse ?? null,
+            gatewayResponse: input.gatewayResponse ? JSON.parse(JSON.stringify(input.gatewayResponse)) : undefined,
             description: input.description ?? "Wallet deposit",
             processedAt: new Date(),
           },
@@ -128,7 +128,7 @@ export const walletService = {
           idempotencyKey,
           referenceId: payment.id,
           description: input.description ?? "Wallet deposit",
-          metadata: { paymentId: payment.id, externalReference: input.externalReference },
+          metadata: { paymentId: payment.id, externalReference: input.externalReference } as Record<string, string>,
         });
 
         // Notify

@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
@@ -161,7 +162,7 @@ export default async function InvestmentsPage() {
                       <p className="font-medium line-clamp-1">{inv.project.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {CATEGORY_LABELS[inv.project.category] ?? inv.project.category}
-                        {" · "}{inv.project.farm.district}
+                        {" · "}{inv.project.location ?? ""}
                         {" · "}{fmtDate(inv.createdAt)}
                       </p>
                     </Link>

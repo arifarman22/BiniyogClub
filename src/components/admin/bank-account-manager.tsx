@@ -66,20 +66,20 @@ export function BankAccountManager({ accounts: initial }: Props) {
       const result = await updateBankAccountAction(editing.id, data);
       if (result.success) {
         setAccounts((prev) => prev.map((a) => a.id === editing.id ? { ...a, ...data, routingNumber: data.routingNumber ?? null, branchName: data.branchName ?? null, instructions: data.instructions ?? null } : a));
-        toast.create({ title: "Bank account updated", type: "success" });
+        toast.add({ title: "Bank account updated", type: "success" });
         setFormOpen(false);
       } else {
-        toast.create({ title: "Failed", description: result.error, type: "error" });
+        toast.add({ title: "Failed", description: result.error, type: "error" });
       }
     } else {
       const result = await createBankAccountAction(data);
       if (result.success) {
-        toast.create({ title: "Bank account added", type: "success" });
+        toast.add({ title: "Bank account added", type: "success" });
         setFormOpen(false);
         // Reload to get the new record with id/createdAt
         window.location.reload();
       } else {
-        toast.create({ title: "Failed", description: result.error, type: "error" });
+        toast.add({ title: "Failed", description: result.error, type: "error" });
       }
     }
     setLoading(false);
@@ -89,9 +89,9 @@ export function BankAccountManager({ accounts: initial }: Props) {
     const result = await deleteBankAccountAction(id);
     if (result.success) {
       setAccounts((prev) => prev.map((a) => a.id === id ? { ...a, isActive: false } : a));
-      toast.create({ title: "Bank account deactivated", type: "info" });
+      toast.add({ title: "Bank account deactivated", type: "info" });
     } else {
-      toast.create({ title: "Failed", description: result.error, type: "error" });
+      toast.add({ title: "Failed", description: result.error, type: "error" });
     }
   }
 
@@ -99,9 +99,9 @@ export function BankAccountManager({ accounts: initial }: Props) {
     const result = await updateBankAccountAction(id, { isActive: true });
     if (result.success) {
       setAccounts((prev) => prev.map((a) => a.id === id ? { ...a, isActive: true } : a));
-      toast.create({ title: "Bank account reactivated", type: "success" });
+      toast.add({ title: "Bank account reactivated", type: "success" });
     } else {
-      toast.create({ title: "Failed", description: result.error, type: "error" });
+      toast.add({ title: "Failed", description: result.error, type: "error" });
     }
   }
 

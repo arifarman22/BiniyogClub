@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { getAdminDocuments } from "@/server/data/admin.data";

@@ -63,7 +63,7 @@ export const gatewayPaymentRepository = {
         providerOrderId: data.providerOrderId,
         checkoutUrl: data.checkoutUrl,
         expiresAt: data.expiresAt,
-        providerMetadata: data.providerMetadata ?? {},
+        providerMetadata: data.providerMetadata ? JSON.parse(JSON.stringify(data.providerMetadata)) : {},
       },
       select: gatewayPaymentSelect,
     });
@@ -111,7 +111,7 @@ export const gatewayPaymentRepository = {
   ): Promise<GatewayPaymentRecord> {
     return db.gatewayPayment.update({
       where: { id },
-      data: { status, ...extra },
+      data: { status, ...extra ? { ...extra, callbackPayload: extra.callbackPayload ? JSON.parse(JSON.stringify(extra.callbackPayload)) : undefined } : {} },
       select: gatewayPaymentSelect,
     });
   },
@@ -129,7 +129,7 @@ export const gatewayPaymentRepository = {
           provider: data.provider,
           eventId: data.eventId,
           eventType: data.eventType,
-          payload: data.payload,
+          payload: JSON.parse(JSON.stringify(data.payload)),
         },
       });
       return true; // new event

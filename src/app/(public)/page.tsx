@@ -255,11 +255,11 @@ export default async function HomePage() {
                         <div className="mb-5 grid grid-cols-3 gap-2">
                           <div className="rounded-xl bg-muted/60 px-3 py-2.5 text-center">
                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-0.5">Min. Entry</p>
-                            <p className="text-sm font-bold text-foreground">{minEntry ? fmtBdt(minEntry.minAmountBdt) : "—"}</p>
+                            <p className="text-sm font-bold text-foreground">{minEntry ? fmtBdt(Number(minEntry.minAmountBdt)) : "—"}</p>
                           </div>
                           <div className="rounded-xl bg-muted/60 px-3 py-2.5 text-center">
                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-0.5">Max Return</p>
-                            <p className="text-sm font-bold text-primary">{maxReturn?.expectedReturnPct ? `${maxReturn.expectedReturnPct}%` : "—"}</p>
+                            <p className="text-sm font-bold text-primary">{maxReturn?.expectedReturnPct ? `${Number(maxReturn.expectedReturnPct)}%` : "—"}</p>
                           </div>
                           <div className="rounded-xl bg-muted/60 px-3 py-2.5 text-center">
                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wide mb-0.5">Tiers</p>
