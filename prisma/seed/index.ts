@@ -6,15 +6,16 @@ import { seedUsers } from "./users";
 import { seedCrops } from "./crops";
 import { seedPermissions } from "./permissions";
 import { seedProjects } from "./projects";
+import { seedBusinessGroups } from "./business-groups.seed";
 
 async function main() {
   console.log("🌱 Starting database seed...\n");
 
-  // Order matters: users → crops → permissions → projects
   const { farmer } = await seedUsers(db);
   await seedCrops(db);
   await seedPermissions(db);
   await seedProjects(db, farmer);
+  await seedBusinessGroups();
 
   console.log("\n✅ Seed completed successfully.");
 }

@@ -1,4 +1,4 @@
-import { Sprout } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -14,10 +14,14 @@ export function AuthCard({ title, description, children, footer }: AuthCardProps
     <div className="w-full space-y-6">
       <div className="text-center">
         <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-foreground">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Sprout className="size-4" />
-          </span>
-          Biniyog Club
+          <Image
+            src="/Biniyog Club Logo Icon PNG.png"
+            alt="Biniyog Club"
+            width={32}
+            height={32}
+            className="h-8 w-8 rounded-lg object-contain"
+          />
+          Biniyog<span className="text-primary ml-1">Club</span>
         </Link>
         <h1 className="mt-4 text-2xl font-bold tracking-tight text-foreground">{title}</h1>
         <p className="mt-1 text-sm text-muted-foreground">{description}</p>

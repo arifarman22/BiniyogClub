@@ -18,14 +18,16 @@ export const metadata: Metadata = {
 };
 
 const PUBLIC_STATUSES: ProjectStatus[] = [
-  "FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING",
-  "SOLD", "PROFIT_CALCULATION", "DISTRIBUTION", "COMPLETED",
+  "FUNDRAISING", "FUNDED", "ACTIVE", "COMPLETED",
 ];
 
 const CATEGORY_LABELS: Record<string, string> = {
-  CROP_FARMING: "Crop Farming", LIVESTOCK: "Livestock", AQUACULTURE: "Aquaculture",
-  POULTRY: "Poultry", DAIRY: "Dairy", HORTICULTURE: "Horticulture",
-  AGRO_PROCESSING: "Agro Processing", OTHER: "Other",
+  REAL_ESTATE: "Real Estate",
+  TRADE_FINANCE: "Trade Finance",
+  SME: "SME",
+  TECHNOLOGY: "Technology",
+  INFRASTRUCTURE: "Infrastructure",
+  OTHER: "Other",
 };
 
 const SORT_LABELS: Record<string, string> = {
@@ -189,7 +191,6 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                     durationDays={p.durationDays}
                     fundingDeadline={p.fundingDeadline}
                     coverImageUrl={p.coverImageUrl}
-                    farm={p.farm}
                   />
                 ))}
               </div>

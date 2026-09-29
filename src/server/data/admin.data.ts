@@ -14,14 +14,13 @@ export async function getAdminDashboardKpis(session: SessionUser) {
   await requirePermission(session, PERMISSIONS.USER_VIEW);
 
   const [
-    totalUsers, totalInvestors, totalFarmers,
+    totalUsers, totalInvestors,
     activeProjects, pendingKyc, pendingWithdrawals,
     activeInvestments, investmentSum, nearMaturity,
   ] = await Promise.all([
     db.user.count({ where: { deletedAt: null } }),
     db.investorProfile.count(),
-    db.farmerProfile.count(),
-    db.project.count({ where: { status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING"] }, deletedAt: null } }),
+    db.project.count({ where: { status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] }, deletedAt: null } }),
     db.kyc.count({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } } }),
     db.withdrawal.count({ where: { status: { in: ["PENDING", "APPROVED"] } } }),
     db.investment.count({ where: { status: "ACTIVE" } }),
@@ -36,7 +35,7 @@ export async function getAdminDashboardKpis(session: SessionUser) {
   ]);
 
   return {
-    totalUsers, totalInvestors, totalFarmers,
+    totalUsers, totalInvestors,
     activeProjects, pendingKyc, pendingWithdrawals,
     activeInvestments,
     totalInvestmentBdt: Number(investmentSum._sum.amountBdt ?? 0),
@@ -129,7 +128,6 @@ export async function getAdminUserById(session: SessionUser, id: string) {
       avatarUrl: true, createdAt: true, updatedAt: true, deletedAt: true,
       kyc: { select: { id: true, status: true, submittedAt: true, reviewedAt: true } },
       investorProfile: { select: { id: true, occupation: true, country: true } },
-      farmerProfile: { select: { id: true, yearsExperience: true, specializations: true } },
       _count: { select: { sessions: true, auditLogs: true } },
     },
   });
@@ -168,44 +166,6 @@ export async function getAdminInvestors(
       take: PAGE_SIZE,
     }),
     db.investorProfile.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
-
-// ─── Farmers ─────────────────────────────────────────────────────────────────
-
-export async function getAdminFarmers(
-  session: SessionUser,
-  opts: { search?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.FARMER_VIEW);
-  const { search, page = 1 } = opts;
-
-  const where = {
-    ...(search && {
-      user: {
-        OR: [
-          { name: { contains: search, mode: "insensitive" as const } },
-          { email: { contains: search, mode: "insensitive" as const } },
-        ],
-      },
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.farmerProfile.findMany({
-      where,
-      select: {
-        id: true, yearsExperience: true, specializations: true, createdAt: true,
-        user: { select: { id: true, name: true, email: true, phone: true, status: true } },
-        _count: { select: { farms: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.farmerProfile.count({ where }),
   ]);
 
   return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
@@ -355,197 +315,6 @@ export async function getAdminWithdrawals(
   return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
 }
 
-// ─── Farms ────────────────────────────────────────────────────────────────────
-
-export async function getAdminFarms(
-  session: SessionUser,
-  opts: { search?: string; status?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.FARM_VIEW);
-  const { search, status, page = 1 } = opts;
-
-  const where = {
-    deletedAt: null,
-    ...(status && { status: status as never }),
-    ...(search && {
-      OR: [
-        { name: { contains: search, mode: "insensitive" as const } },
-        { district: { contains: search, mode: "insensitive" as const } },
-        { division: { contains: search, mode: "insensitive" as const } },
-      ],
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.farm.findMany({
-      where,
-      select: {
-        id: true, name: true, status: true, totalAreaAcres: true,
-        district: true, division: true, createdAt: true,
-        farmerProfile: { select: { user: { select: { id: true, name: true, email: true } } } },
-        _count: { select: { fields: true, projects: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.farm.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
-
-// ─── Field Visits ─────────────────────────────────────────────────────────────
-
-export async function getAdminFieldVisits(
-  session: SessionUser,
-  opts: { search?: string; status?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.FIELD_VISIT_VIEW);
-  const { search, status, page = 1 } = opts;
-
-  const where = {
-    ...(status && { status: status as never }),
-    ...(search && {
-      project: { title: { contains: search, mode: "insensitive" as const } },
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.fieldVisit.findMany({
-      where,
-      select: {
-        id: true, status: true, scheduledAt: true, startedAt: true,
-        completedAt: true, cancelledAt: true, summary: true,
-        project: { select: { id: true, title: true } },
-        fieldOfficerProfile: { select: { user: { select: { name: true } } } },
-      },
-      orderBy: { scheduledAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.fieldVisit.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
-
-// ─── Expenses ─────────────────────────────────────────────────────────────────
-
-export async function getAdminExpenses(
-  session: SessionUser,
-  opts: { search?: string; category?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-  const { search, category, page = 1 } = opts;
-
-  const where = {
-    ...(category && { category: category as never }),
-    ...(search && {
-      OR: [
-        { description: { contains: search, mode: "insensitive" as const } },
-        { project: { title: { contains: search, mode: "insensitive" as const } } },
-      ],
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.expense.findMany({
-      where,
-      select: {
-        id: true, category: true, description: true, amountBdt: true,
-        incurredAt: true, approvedAt: true, approvedBy: true, createdAt: true,
-        project: { select: { id: true, title: true } },
-        cropCycle: { select: { crop: { select: { name: true } } } },
-      },
-      orderBy: { incurredAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.expense.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
-
-// ─── Harvests ─────────────────────────────────────────────────────────────────
-
-export async function getAdminHarvests(
-  session: SessionUser,
-  opts: { search?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-  const { search, page = 1 } = opts;
-
-  const where = {
-    ...(search && {
-      OR: [
-        { project: { title: { contains: search, mode: "insensitive" as const } } },
-        { cropCycle: { crop: { name: { contains: search, mode: "insensitive" as const } } } },
-      ],
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.harvest.findMany({
-      where,
-      select: {
-        id: true, harvestedAt: true, yieldKg: true, qualityGrade: true,
-        storageLocation: true, createdAt: true,
-        project: { select: { id: true, title: true } },
-        cropCycle: {
-          select: {
-            crop: { select: { name: true } },
-            field: { select: { name: true, farm: { select: { name: true } } } },
-          },
-        },
-      },
-      orderBy: { harvestedAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.harvest.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
-
-// ─── Sales ────────────────────────────────────────────────────────────────────
-
-export async function getAdminSales(
-  session: SessionUser,
-  opts: { search?: string; page?: number },
-) {
-  await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-  const { search, page = 1 } = opts;
-
-  const where = {
-    ...(search && {
-      OR: [
-        { project: { title: { contains: search, mode: "insensitive" as const } } },
-        { buyerName: { contains: search, mode: "insensitive" as const } },
-      ],
-    }),
-  };
-
-  const [items, total] = await Promise.all([
-    db.sale.findMany({
-      where,
-      select: {
-        id: true, buyerName: true, quantityKg: true, pricePerKgBdt: true,
-        totalAmountBdt: true, soldAt: true, createdAt: true,
-        project: { select: { id: true, title: true } },
-        harvest: { select: { cropCycle: { select: { crop: { select: { name: true } } } } } },
-      },
-      orderBy: { soldAt: "desc" },
-      skip: skip(page),
-      take: PAGE_SIZE,
-    }),
-    db.sale.count({ where }),
-  ]);
-
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
-}
 
 // ─── Distributions ────────────────────────────────────────────────────────────
 
@@ -737,17 +506,6 @@ export async function getAdminReports(session: SessionUser) {
 }
 
 // ─── Select helpers ───────────────────────────────────────────────────────────
-
-export async function getFarmsForSelect() {
-  return db.farm.findMany({
-    where: { deletedAt: null, status: "ACTIVE" },
-    select: {
-      id: true, name: true, district: true, division: true,
-      farmerProfile: { select: { user: { select: { name: true } } } },
-    },
-    orderBy: { name: "asc" },
-  });
-}
 
 export async function getManagersForSelect() {
   return db.user.findMany({

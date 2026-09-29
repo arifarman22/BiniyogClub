@@ -7,8 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { AdminActionButton } from "@/components/admin/admin-action-button";
-import { suspendUserAction, activateUserAction } from "@/server/actions/admin.actions";
+import { SuspendUserButton, ActivateUserButton } from "@/components/admin/user-action-buttons";
 import { fmtDate } from "@/lib/admin/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
 import type { AsyncComponentProps } from "@/types";
@@ -21,10 +20,8 @@ const ROLE_OPTIONS = [
   { value: "KYC_OFFICER", label: "KYC Officer" },
   { value: "FINANCE_OFFICER", label: "Finance Officer" },
   { value: "PROJECT_MANAGER", label: "Project Manager" },
-  { value: "FIELD_OFFICER", label: "Field Officer" },
   { value: "SUPPORT", label: "Support" },
   { value: "INVESTOR", label: "Investor" },
-  { value: "FARMER", label: "Farmer" },
 ];
 
 const STATUS_OPTIONS = [
@@ -112,20 +109,9 @@ export default async function AdminUsersPage({ searchParams }: AsyncComponentPro
                       <div className="flex items-center justify-end gap-1.5">
                         <Link href={`/admin/users/${u.id}`} className="text-xs text-primary hover:underline">View</Link>
                         {u.status === "ACTIVE" ? (
-                          <AdminActionButton
-                            label="Suspend"
-                            confirmTitle="Suspend User"
-                            confirmDescription={`Suspend ${u.name}? They will not be able to log in.`}
-                            onConfirm={() => suspendUserAction(u.id)}
-                            variant="destructive"
-                          />
+                          <SuspendUserButton userId={u.id} userName={u.name} />
                         ) : u.status === "SUSPENDED" ? (
-                          <AdminActionButton
-                            label="Activate"
-                            confirmTitle="Activate User"
-                            confirmDescription={`Reactivate ${u.name}'s account?`}
-                            onConfirm={() => activateUserAction(u.id)}
-                          />
+                          <ActivateUserButton userId={u.id} userName={u.name} />
                         ) : null}
                       </div>
                     </td>

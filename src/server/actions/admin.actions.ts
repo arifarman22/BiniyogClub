@@ -290,20 +290,3 @@ export async function sendNotificationAction(data: {
   } catch (e) { return svcErr(e); }
 }
 
-// ─── Expense approval ─────────────────────────────────────────────────────────
-
-export async function approveExpenseAction(expenseId: string): Promise<ActionResult<void>> {
-  try {
-    const session = await requireSession();
-    await requirePermission(session, PERMISSIONS.PROJECT_UPDATE);
-
-    await db.expense.update({
-      where: { id: expenseId },
-      data: { approvedBy: session.id, approvedAt: new Date() },
-    });
-    await auditLog(session.id, "APPROVE", "Expense", expenseId);
-
-    revalidatePath("/admin/expenses");
-    return { success: true, data: undefined };
-  } catch (e) { return svcErr(e); }
-}

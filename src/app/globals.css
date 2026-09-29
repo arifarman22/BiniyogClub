@@ -91,9 +91,9 @@
   --color-sidebar-ring:               var(--sidebar-ring);
 
   /* ── Typography ── */
-  --font-sans:    var(--font-geist-sans);
-  --font-mono:    var(--font-geist-mono);
-  --font-heading: var(--font-geist-sans);
+  --font-sans:    var(--font-nunito-sans);
+  --font-mono:    var(--font-nunito-sans);
+  --font-heading: var(--font-nunito-sans);
 
   /* ── Radius scale ── */
   --radius-xs:  calc(var(--radius) * 0.4);
@@ -353,5 +353,39 @@
   @keyframes slideInUp {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-bounce-slow {
+    animation: bounceSlow 3s ease-in-out infinite;
+  }
+  @keyframes bounceSlow {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-4px); }
+  }
+
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes spin-border {
+    to { --angle: 360deg; }
+  }
+
+  /* Spinning border arc on buttons */
+  .btn-arc::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: 9999px;
+    background: conic-gradient(from var(--angle, 0deg), transparent 60%, oklch(0.78 0.11 177 / 0.8) 80%, transparent 100%);
+    animation: spin-border 2s linear infinite;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .btn-arc:hover::before {
+    opacity: 1;
   }
 }

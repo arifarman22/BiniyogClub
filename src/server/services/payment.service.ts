@@ -505,4 +505,8 @@ export const paymentService = {
     if (!gp) throw new NotFoundError("GatewayPayment");
     return gp;
   },
+
+  async getByProviderPaymentId(providerPaymentId: string) {
+    return gatewayPaymentRepository.findByProviderPaymentId(providerPaymentId);
+  },
 };

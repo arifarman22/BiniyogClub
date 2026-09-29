@@ -94,7 +94,7 @@ export const investmentService = {
       where: { userId: session.id },
       select: { status: true },
     });
-    if (!kyc || kyc.status !== "APPROVED") {
+    if (!kyc || kyc.status !== "VERIFIED") {
       throw new ForbiddenError(
         "KYC verification required. Please complete and get your KYC approved before investing.",
       );

@@ -30,7 +30,7 @@ export async function upsertUser(
     email: string;
     password: string;
     name: string;
-    role: "INVESTOR" | "FARMER" | "FIELD_OFFICER" | "ADMIN" | "SUPER_ADMIN" | "FINANCE_OFFICER" | "PROJECT_MANAGER" | "KYC_OFFICER" | "SUPPORT";
+    role: "INVESTOR" | "ADMIN" | "SUPER_ADMIN" | "FINANCE_OFFICER" | "PROJECT_MANAGER" | "KYC_OFFICER" | "SUPPORT";
   },
 ) {
   const passwordHash = await hashPassword(data.password);

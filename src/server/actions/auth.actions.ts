@@ -85,7 +85,7 @@ export async function loginAction(formData: unknown): Promise<ActionResult<{ rol
 
 export async function logoutAction(): Promise<void> {
   await authService.logout();
-  redirect("/");
+  redirect("/auth/login");
 }
 
 export async function logoutAllAction(): Promise<ActionResult> {

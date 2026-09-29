@@ -1,38 +1,73 @@
 /**
- * Storage abstraction layer.
- * KYC documents are private — never expose storageKey or generate public URLs.
- * Use getSignedUrl() to generate short-lived access URLs server-side only.
+ * Storage abstraction — Cloudinary provider.
+ * KYC documents are uploaded to a private folder and accessed via signed URLs.
+ * Never expose storageKey (public_id) directly to the client.
  */
 
+import { v2 as cloudinary } from "cloudinary";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure:     true,
+});
+
 export interface UploadResult {
-  key: string;
+  key: string; // Cloudinary public_id
 }
 
 export interface StorageProvider {
   upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult>;
   delete(key: string): Promise<void>;
-  /** Returns a short-lived signed URL. expiresInSeconds defaults to 300 (5 min). */
   getSignedUrl(key: string, expiresInSeconds?: number): Promise<string>;
 }
 
-// Local/stub provider for development — replace with S3Provider in production
-class LocalStorageProvider implements StorageProvider {
-  async upload(_file: Buffer, key: string, _mime: string): Promise<UploadResult> {
-    // TODO: write to local filesystem under /tmp/uploads/ for dev
-    return { key };
+class CloudinaryProvider implements StorageProvider {
+  async upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult> {
+    const resourceType = mimeType === "application/pdf" ? "raw" : "image";
+
+    return new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          public_id:     key,
+          resource_type: resourceType,
+          // Private delivery type — not publicly accessible
+          type:          "authenticated",
+          overwrite:     true,
+          // Never apply transformations to identity documents
+          invalidate:    true,
+        },
+        (error, result) => {
+          if (error || !result) return reject(error ?? new Error("Cloudinary upload failed"));
+          resolve({ key: result.public_id });
+        },
+      );
+      stream.end(file);
+    });
   }
 
-  async delete(_key: string): Promise<void> {
-    // TODO: delete from local filesystem
+  async delete(key: string): Promise<void> {
+    await cloudinary.uploader.destroy(key, {
+      type:          "authenticated",
+      resource_type: "image",
+      invalidate:    true,
+    });
   }
 
-  async getSignedUrl(key: string, _expiresInSeconds = 300): Promise<string> {
-    // In dev, route through the private API endpoint
-    return `/api/kyc/documents/${encodeURIComponent(key)}`;
+  async getSignedUrl(key: string, expiresInSeconds = 300): Promise<string> {
+    const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
+    return cloudinary.url(key, {
+      type:          "authenticated",
+      resource_type: "image",
+      sign_url:      true,
+      expires_at:    expiresAt,
+      secure:        true,
+    });
   }
 }
 
-export const storage: StorageProvider = new LocalStorageProvider();
+export const storage: StorageProvider = new CloudinaryProvider();
 
 // ─── Allowed KYC document MIME types ─────────────────────────────────────────
 

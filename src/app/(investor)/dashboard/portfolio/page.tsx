@@ -36,7 +36,38 @@ function formatBdt(n: number) {
 
 export default async function PortfolioPage() {
   const session = await requireSession();
-  const { investments, categoryMap, statusMap, monthlyHistory } = await getInvestorPortfolio(session);
+
+  let investments: Awaited<ReturnType<typeof getInvestorPortfolio>>["investments"];
+  let categoryMap: Record<string, number>;
+  let statusMap: Record<string, number>;
+  let monthlyHistory: Awaited<ReturnType<typeof getInvestorPortfolio>>["monthlyHistory"];
+
+  try {
+    const data = await getInvestorPortfolio(session);
+    investments = data.investments;
+    categoryMap = data.categoryMap;
+    statusMap = data.statusMap;
+    monthlyHistory = data.monthlyHistory;
+  } catch {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-bold">Portfolio</h1>
+          <p className="text-sm text-muted-foreground">Your investment portfolio</p>
+        </div>
+        <div className="rounded-xl border border-dashed border-border py-20 text-center">
+          <p className="text-2xl mb-2">📈</p>
+          <p className="font-medium">Profile setup required</p>
+          <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
+            Complete your investor profile to view your portfolio.
+          </p>
+          <a href="/dashboard/profile" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+            Complete Profile
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
   const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { getAdminPayments } from "@/server/data/admin.data";
+import { getPendingManualPaymentCount } from "@/server/data/manual-payment.data";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { AdminSearchBar } from "@/components/admin/admin-search-bar";
@@ -39,11 +41,41 @@ export default async function AdminPaymentsPage({ searchParams }: AsyncComponent
   const direction = typeof sp.direction === "string" ? sp.direction : "";
   const page = Math.max(1, parseInt(typeof sp.page === "string" ? sp.page : "1", 10));
 
-  const { items, total, totalPages } = await getAdminPayments(session, { search, status, direction, page });
+  const [{ items, total, totalPages }, pendingManual] = await Promise.all([
+    getAdminPayments(session, { search, status, direction, page }),
+    getPendingManualPaymentCount(session),
+  ]);
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Payments" description={`${total} total payments`} />
+      <PageHeader title="Payments" description={`${total} gateway payments`} />
+
+      {/* Sub-navigation */}
+      <div className="flex gap-2 border-b border-border pb-0">
+        <Link
+          href="/admin/payments"
+          className="border-b-2 border-primary px-4 py-2 text-sm font-medium text-primary"
+        >
+          Gateway Payments
+        </Link>
+        <Link
+          href="/admin/payments/manual"
+          className="relative flex items-center gap-1.5 border-b-2 border-transparent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Manual Review
+          {pendingManual > 0 && (
+            <span className="rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold text-destructive-foreground">
+              {pendingManual}
+            </span>
+          )}
+        </Link>
+        <Link
+          href="/admin/payments/bank-accounts"
+          className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Bank Accounts
+        </Link>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <AdminSearchBar placeholder="Search user, reference..." className="w-64" />

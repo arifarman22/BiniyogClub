@@ -9,12 +9,6 @@ import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { createProjectAction, updateProjectAction } from "@/server/actions/project.actions";
 
-type Farm = {
-  id: string;
-  name: string;
-  district: string;
-  farmerProfile?: { user: { name: string } } | null;
-};
 type Manager = { id: string; name: string; role: string };
 
 type DefaultValues = Partial<{
@@ -22,7 +16,6 @@ type DefaultValues = Partial<{
   category: string;
   description: string;
   location: string;
-  farmId: string;
   managerId: string | null;
   fundingGoalBdt: number | string;
   fundingMinBdt: number | string;
@@ -41,26 +34,23 @@ type DefaultValues = Partial<{
 type Props = {
   mode: "create" | "edit";
   projectId?: string;
-  farms: Farm[];
   managers: Manager[];
   defaultValues?: DefaultValues;
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  CROP_FARMING: "Crop Farming",
-  LIVESTOCK: "Livestock",
-  AQUACULTURE: "Aquaculture",
-  POULTRY: "Poultry",
-  DAIRY: "Dairy",
-  HORTICULTURE: "Horticulture",
-  AGRO_PROCESSING: "Agro Processing",
-  OTHER: "Other",
+  REAL_ESTATE:    "Real Estate",
+  TRADE_FINANCE:  "Trade Finance",
+  SME:            "SME",
+  TECHNOLOGY:     "Technology",
+  INFRASTRUCTURE: "Infrastructure",
+  OTHER:          "Other",
 };
 
 const RETURN_LABELS: Record<string, string> = {
   FIXED_RETURN: "Fixed Return",
   PROFIT_SHARE: "Profit Share",
-  HYBRID: "Hybrid",
+  HYBRID:       "Hybrid",
 };
 
 function FieldError({ msg }: { msg?: string }) {
@@ -77,7 +67,7 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
-export function ProjectForm({ mode, projectId, farms, managers, defaultValues = {} }: Props) {
+export function ProjectForm({ mode, projectId, managers, defaultValues = {} }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -96,7 +86,6 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
       category: raw.category as string,
       description: raw.description as string,
       location: raw.location as string,
-      farmId: raw.farmId as string,
       managerId: (raw.managerId as string) || null,
       fundingGoalBdt: Number(raw.fundingGoalBdt),
       fundingMinBdt: Number(raw.fundingMinBdt),
@@ -129,127 +118,64 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
     });
   }
 
-  const nativeSelect =
-    "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const sel = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <Alert variant="destructive" className="text-sm">
-          {error}
-        </Alert>
-      )}
+      {error && <Alert variant="destructive" className="text-sm">{error}</Alert>}
 
-      {/* Basic Info */}
       <SectionCard title="Basic Information">
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Label htmlFor="title">Project Title *</Label>
-            <Input
-              id="title"
-              name="title"
-              defaultValue={defaultValues.title}
-              placeholder="e.g. Boro Rice Season 2025 — Rajshahi"
-              className="mt-1.5"
-            />
+            <Input id="title" name="title" defaultValue={defaultValues.title} placeholder="e.g. Dhaka Commercial Tower Phase 1" className="mt-1.5" />
             <FieldError msg={fieldErrors.title} />
           </div>
-
           <div>
             <Label htmlFor="category">Category *</Label>
-            <select name="category" id="category" defaultValue={defaultValues.category} className={`mt-1.5 ${nativeSelect}`}>
+            <select name="category" id="category" defaultValue={defaultValues.category} className={`mt-1.5 ${sel}`}>
               <option value="">Select category</option>
-              {Object.entries(CATEGORY_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
+              {Object.entries(CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
             <FieldError msg={fieldErrors.category} />
           </div>
-
           <div>
             <Label htmlFor="location">Location *</Label>
-            <Input
-              id="location"
-              name="location"
-              defaultValue={defaultValues.location ?? ""}
-              placeholder="e.g. Rajshahi, Rajshahi Division"
-              className="mt-1.5"
-            />
+            <Input id="location" name="location" defaultValue={defaultValues.location ?? ""} placeholder="e.g. Dhaka, Bangladesh" className="mt-1.5" />
             <FieldError msg={fieldErrors.location} />
           </div>
-
           <div className="sm:col-span-2">
-            <Label htmlFor="description">
-              Description *{" "}
-              <span className="font-normal text-muted-foreground">(min 50 chars)</span>
-            </Label>
-            <Textarea
-              id="description"
-              name="description"
-              defaultValue={defaultValues.description}
-              rows={6}
-              placeholder="Describe the project, farming method, expected outcomes..."
-              className="mt-1.5 resize-none"
-            />
+            <Label htmlFor="description">Description * <span className="font-normal text-muted-foreground">(min 50 chars)</span></Label>
+            <Textarea id="description" name="description" defaultValue={defaultValues.description} rows={6} placeholder="Describe the project, investment structure, expected outcomes..." className="mt-1.5 resize-none" />
             <FieldError msg={fieldErrors.description} />
           </div>
-
           <div className="sm:col-span-2">
             <Label htmlFor="riskInfo">Risk Information</Label>
-            <Textarea
-              id="riskInfo"
-              name="riskInfo"
-              defaultValue={defaultValues.riskInfo ?? ""}
-              rows={3}
-              placeholder="Describe key risks: weather, pests, market price fluctuations..."
-              className="mt-1.5 resize-none"
-            />
-            <FieldError msg={fieldErrors.riskInfo} />
+            <Textarea id="riskInfo" name="riskInfo" defaultValue={defaultValues.riskInfo ?? ""} rows={3} placeholder="Describe key risks..." className="mt-1.5 resize-none" />
           </div>
         </div>
       </SectionCard>
 
-      {/* Farm & Manager */}
-      <SectionCard title="Farm & Management">
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div>
-            <Label htmlFor="farmId">Farm *</Label>
-            <select name="farmId" id="farmId" defaultValue={defaultValues.farmId} className={`mt-1.5 ${nativeSelect}`}>
-              <option value="">Select farm</option>
-              {farms.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name} — {f.district} ({f.farmerProfile?.user.name ?? "No farmer"})
-                </option>
-              ))}
-            </select>
-            <FieldError msg={fieldErrors.farmId} />
-          </div>
-
-          <div>
-            <Label htmlFor="managerId">Project Manager</Label>
-            <select name="managerId" id="managerId" defaultValue={defaultValues.managerId ?? ""} className={`mt-1.5 ${nativeSelect}`}>
-              <option value="">Unassigned</option>
-              {managers.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name} ({m.role.replace(/_/g, " ")})
-                </option>
-              ))}
-            </select>
-          </div>
+      <SectionCard title="Management">
+        <div>
+          <Label htmlFor="managerId">Project Manager</Label>
+          <select name="managerId" id="managerId" defaultValue={defaultValues.managerId ?? ""} className={`mt-1.5 ${sel}`}>
+            <option value="">Unassigned</option>
+            {managers.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.role.replace(/_/g, " ")})</option>)}
+          </select>
         </div>
       </SectionCard>
 
-      {/* Financials */}
       <SectionCard title="Financial Terms">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           <div>
             <Label htmlFor="fundingGoalBdt">Funding Goal (BDT) *</Label>
-            <Input id="fundingGoalBdt" name="fundingGoalBdt" type="number" min="1" step="1" defaultValue={String(defaultValues.fundingGoalBdt ?? "")} placeholder="500000" className="mt-1.5" />
+            <Input id="fundingGoalBdt" name="fundingGoalBdt" type="number" min="1" step="1" defaultValue={String(defaultValues.fundingGoalBdt ?? "")} placeholder="5000000" className="mt-1.5" />
             <FieldError msg={fieldErrors.fundingGoalBdt} />
           </div>
           <div>
             <Label htmlFor="fundingMinBdt">Minimum Funding (BDT) *</Label>
-            <Input id="fundingMinBdt" name="fundingMinBdt" type="number" min="1" step="1" defaultValue={String(defaultValues.fundingMinBdt ?? "")} placeholder="300000" className="mt-1.5" />
+            <Input id="fundingMinBdt" name="fundingMinBdt" type="number" min="1" step="1" defaultValue={String(defaultValues.fundingMinBdt ?? "")} placeholder="3000000" className="mt-1.5" />
             <FieldError msg={fieldErrors.fundingMinBdt} />
           </div>
           <div>
@@ -260,15 +186,12 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
           <div>
             <Label htmlFor="maxInvestmentBdt">Max Investment (BDT)</Label>
             <Input id="maxInvestmentBdt" name="maxInvestmentBdt" type="number" min="1" step="1" defaultValue={String(defaultValues.maxInvestmentBdt ?? "")} placeholder="Optional" className="mt-1.5" />
-            <FieldError msg={fieldErrors.maxInvestmentBdt} />
           </div>
           <div>
             <Label htmlFor="returnType">Return Type *</Label>
-            <select name="returnType" id="returnType" defaultValue={defaultValues.returnType} className={`mt-1.5 ${nativeSelect}`}>
+            <select name="returnType" id="returnType" defaultValue={defaultValues.returnType} className={`mt-1.5 ${sel}`}>
               <option value="">Select type</option>
-              {Object.entries(RETURN_LABELS).map(([v, l]) => (
-                <option key={v} value={v}>{l}</option>
-              ))}
+              {Object.entries(RETURN_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
             <FieldError msg={fieldErrors.returnType} />
           </div>
@@ -280,12 +203,11 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
         </div>
       </SectionCard>
 
-      {/* Timeline */}
       <SectionCard title="Timeline">
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <Label htmlFor="durationDays">Duration (days) *</Label>
-            <Input id="durationDays" name="durationDays" type="number" min="1" max="3650" defaultValue={String(defaultValues.durationDays ?? "")} placeholder="120" className="mt-1.5" />
+            <Input id="durationDays" name="durationDays" type="number" min="1" max="3650" defaultValue={String(defaultValues.durationDays ?? "")} placeholder="365" className="mt-1.5" />
             <FieldError msg={fieldErrors.durationDays} />
           </div>
           <div>
@@ -304,7 +226,6 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
         </div>
       </SectionCard>
 
-      {/* Media */}
       <SectionCard title="Media">
         <div>
           <Label htmlFor="coverImageUrl">Cover Image URL</Label>
@@ -313,11 +234,8 @@ export function ProjectForm({ mode, projectId, farms, managers, defaultValues = 
         </div>
       </SectionCard>
 
-      {/* Actions */}
       <div className="flex items-center justify-end gap-3 pt-2">
-        <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>
-          Cancel
-        </Button>
+        <Button type="button" variant="outline" onClick={() => router.back()} disabled={isPending}>Cancel</Button>
         <Button type="submit" disabled={isPending}>
           {isPending ? "Saving…" : mode === "create" ? "Create Project" : "Save Changes"}
         </Button>

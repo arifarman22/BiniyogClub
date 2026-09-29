@@ -4,7 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { kycRepository } from "@/db/repositories/kyc.repository";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   ShieldCheck, ShieldX, Clock, CheckCircle2, AlertCircle,
   FileText, ArrowRight, RefreshCw,
@@ -110,12 +110,10 @@ export default async function KycPage() {
         description="Identity verification is required to invest on Biniyog Club"
         action={
           canSubmit ? (
-            <Button asChild size="sm">
-              <Link href="/dashboard/kyc/submit">
-                {status === "RESUBMISSION_REQUIRED" ? "Resubmit" : "Start Verification"}
-                <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link href="/dashboard/kyc/submit" className={cn(buttonVariants({ size: "sm" }), "btn-arc")}>
+              {status === "RESUBMISSION_REQUIRED" ? "Resubmit" : "Start Verification"}
+              <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
           ) : null
         }
       />
@@ -293,11 +291,9 @@ export default async function KycPage() {
             ))}
           </ul>
           <div className="mt-5">
-            <Button asChild>
-              <Link href="/dashboard/kyc/submit">
-                Start Verification <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Link>
-            </Button>
+            <Link href="/dashboard/kyc/submit" className={cn(buttonVariants(), "btn-arc")}>
+              Start Verification <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
           </div>
         </div>
       )}

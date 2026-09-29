@@ -11,13 +11,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
 import { AlertTriangle, Eye, EyeOff, Mail } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm() {
-  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<{ message: string; code?: string } | null>(null);
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl");
 
   const {
     register,
@@ -33,14 +34,12 @@ export function LoginForm() {
       return;
     }
     const role = result.data.role;
-    const dest =
+    const defaultDest =
       role === "INVESTOR" ? "/dashboard" :
-      role === "FARMER"   ? "/farmer" :
       ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"].includes(role)
         ? "/admin"
         : "/";
-    router.push(dest);
-    router.refresh();
+    window.location.href = callbackUrl ?? defaultDest;
   }
 
   return (

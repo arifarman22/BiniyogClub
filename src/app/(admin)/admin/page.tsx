@@ -7,7 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import {
-  Users, UserCheck, Sprout, FolderKanban, TrendingUp,
+  Users, UserCheck, FolderKanban, TrendingUp,
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
 } from "lucide-react";
 
@@ -33,7 +33,6 @@ export default async function AdminDashboardPage() {
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <StatCard title="Total Users" value={kpis.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" />} variant="brand" />
         <StatCard title="Investors" value={kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} />
-        <StatCard title="Farmers" value={kpis.totalFarmers.toLocaleString()} icon={<Sprout className="h-5 w-5" />} variant="harvest" />
         <StatCard title="Active Projects" value={kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="brand" />
         <StatCard title="Total Investment" value={fmtBdt(kpis.totalInvestmentBdt)} icon={<TrendingUp className="h-5 w-5" />} variant="finance" />
         <StatCard title="Pending KYC" value={kpis.pendingKyc.toLocaleString()} icon={<ShieldCheck className="h-5 w-5" />} description={kpis.pendingKyc > 0 ? "Needs review" : "All clear"} />

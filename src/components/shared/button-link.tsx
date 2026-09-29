@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import type { VariantProps } from "class-variance-authority";
+import { buttonVariants } from "@/components/ui/button";
 
 type ButtonLinkProps = VariantProps<typeof buttonVariants> & {
   href: string;
@@ -12,7 +12,11 @@ type ButtonLinkProps = VariantProps<typeof buttonVariants> & {
 
 export function ButtonLink({ href, variant, size, className, children, onClick }: ButtonLinkProps) {
   return (
-    <Link href={href} onClick={onClick} className={cn(buttonVariants({ variant, size }), className)}>
+    <Link
+      href={href}
+      onClick={onClick}
+      className={cn(buttonVariants({ variant, size }), "btn-arc", className)}
+    >
       {children}
     </Link>
   );

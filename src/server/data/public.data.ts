@@ -2,8 +2,7 @@ import { db } from "@/lib/db/prisma";
 import type { ProjectStatus } from "@/types/prisma";
 
 const PUBLIC_STATUSES: ProjectStatus[] = [
-  "FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING",
-  "SOLD", "PROFIT_CALCULATION", "DISTRIBUTION", "COMPLETED",
+  "FUNDRAISING", "FUNDED", "ACTIVE", "COMPLETED",
 ];
 
 // ─── Platform Stats ───────────────────────────────────────────────────────────
@@ -13,14 +12,12 @@ export async function getPlatformStats() {
     totalProjects,
     activeProjects,
     totalInvestors,
-    totalFarmers,
     fundedResult,
     completedProjects,
   ] = await Promise.all([
     db.project.count({ where: { deletedAt: null, status: { not: "DRAFT" } } }),
-    db.project.count({ where: { deletedAt: null, status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING"] } } }),
+    db.project.count({ where: { deletedAt: null, status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] } } }),
     db.user.count({ where: { role: "INVESTOR", deletedAt: null, status: "ACTIVE" } }),
-    db.user.count({ where: { role: "FARMER", deletedAt: null, status: "ACTIVE" } }),
     db.project.aggregate({
       _sum: { fundedAmountBdt: true },
       where: { deletedAt: null, status: { not: "DRAFT" } },
@@ -32,7 +29,6 @@ export async function getPlatformStats() {
     totalProjects,
     activeProjects,
     totalInvestors,
-    totalFarmers,
     totalFundedBdt: Number(fundedResult._sum.fundedAmountBdt ?? 0),
     completedProjects,
   };
@@ -44,7 +40,7 @@ export async function getFeaturedProjects(limit = 6) {
   return db.project.findMany({
     where: {
       deletedAt: null,
-      status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING"] as ProjectStatus[] },
+      status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] as ProjectStatus[] },
     },
     select: {
       id: true,
@@ -53,6 +49,7 @@ export async function getFeaturedProjects(limit = 6) {
       description: true,
       category: true,
       status: true,
+      location: true,
       fundingGoalBdt: true,
       fundedAmountBdt: true,
       minInvestmentBdt: true,
@@ -61,16 +58,6 @@ export async function getFeaturedProjects(limit = 6) {
       durationDays: true,
       fundingDeadline: true,
       coverImageUrl: true,
-      farm: {
-        select: {
-          name: true,
-          district: true,
-          division: true,
-          farmerProfile: {
-            select: { user: { select: { name: true, avatarUrl: true } } },
-          },
-        },
-      },
     },
     orderBy: { publishedAt: "desc" },
     take: limit,
@@ -105,22 +92,7 @@ export async function getProjectBySlug(slug: string) {
       coverImageUrl: true,
       imageUrls: true,
       publishedAt: true,
-      farm: {
-        select: {
-          name: true,
-          district: true,
-          division: true,
-          totalAreaAcres: true,
-          farmerProfile: {
-            select: {
-              yearsExperience: true,
-              specializations: true,
-              city: true,
-              user: { select: { name: true, avatarUrl: true } },
-            },
-          },
-        },
-      },
+      manager: { select: { name: true, avatarUrl: true } },
       documents: {
         where: { isPublic: true },
         select: { id: true, name: true, fileUrl: true, mimeType: true, sizeBytes: true, createdAt: true },
@@ -145,37 +117,6 @@ export async function getAllProjectSlugs() {
     select: { slug: true },
   });
   return projects.map((p) => p.slug);
-}
-
-// ─── Farmers ─────────────────────────────────────────────────────────────────
-
-export async function getPublicFarmers(limit = 12) {
-  return db.farmerProfile.findMany({
-    where: {
-      user: { deletedAt: null, status: "ACTIVE" },
-      farms: { some: { deletedAt: null, status: "ACTIVE" } },
-    },
-    select: {
-      id: true,
-      city: true,
-      yearsExperience: true,
-      specializations: true,
-      user: { select: { name: true, avatarUrl: true, createdAt: true } },
-      farms: {
-        where: { deletedAt: null, status: "ACTIVE" },
-        select: {
-          id: true,
-          name: true,
-          district: true,
-          division: true,
-          totalAreaAcres: true,
-          _count: { select: { projects: true } },
-        },
-        take: 3,
-      },
-    },
-    take: limit,
-  });
 }
 
 // ─── Recent Project Updates ───────────────────────────────────────────────────

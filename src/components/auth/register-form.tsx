@@ -9,24 +9,27 @@ import { Input } from "@/components/ui/input";
 import { FormField } from "@/components/ui/form-field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, CheckCircle, Eye, EyeOff, Mail, Phone, User } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useEffect } from "react";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
-  const [done, setDone] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password", "");
+
+  useEffect(() => { setValue("role", "INVESTOR"); }, [setValue]);
 
   async function onSubmit(data: RegisterInput) {
     setServerError(null);
@@ -35,32 +38,10 @@ export function RegisterForm() {
       setServerError(result.error);
       return;
     }
-    setDone(true);
+    window.location.href = "/auth/login";
   }
 
-  if (done) {
-    return (
-      <div className="space-y-4 text-center">
-        <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-success-muted">
-          <CheckCircle className="size-7 text-success" />
-        </div>
-        <div>
-          <p className="font-semibold text-foreground">Check your email</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            We sent a verification link to your email address. Click it to activate your account.
-          </p>
-        </div>
-        <p className="text-xs text-muted-foreground">
-          Didn&apos;t receive it?{" "}
-          <Link href="/auth/resend-verification" className="font-medium text-primary hover:underline">
-            Resend email
-          </Link>
-        </p>
-      </div>
-    );
-  }
-
-  const passwordStrength = getPasswordStrength(password);
+const passwordStrength = getPasswordStrength(password);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -71,31 +52,7 @@ export function RegisterForm() {
         </Alert>
       )}
 
-      {/* Role selector */}
-      <FormField label="I want to" htmlFor="role" error={errors.role?.message} required>
-        <div className="grid grid-cols-2 gap-2">
-          {(["INVESTOR", "FARMER"] as const).map((role) => (
-            <label
-              key={role}
-              className="relative flex cursor-pointer flex-col items-center gap-1 rounded-lg border-2 p-3 text-center transition-colors has-[:checked]:border-primary has-[:checked]:bg-primary/5"
-            >
-              <input
-                type="radio"
-                value={role}
-                className="sr-only"
-                {...register("role")}
-              />
-              <span className="text-lg">{role === "INVESTOR" ? "💰" : "🌾"}</span>
-              <span className="text-sm font-medium">
-                {role === "INVESTOR" ? "Invest" : "Farm"}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {role === "INVESTOR" ? "Fund projects" : "List projects"}
-              </span>
-            </label>
-          ))}
-        </div>
-      </FormField>
+      <input type="hidden" value="INVESTOR" {...register("role")} />
 
       <FormField label="Full name" htmlFor="name" error={errors.name?.message} required>
         <div className="relative">

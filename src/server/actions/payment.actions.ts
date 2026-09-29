@@ -83,6 +83,31 @@ export async function verifyPaymentAction(
   }
 }
 
+/**
+ * Resolves a providerPaymentId → gatewayPaymentId, then verifies.
+ * Used by the mock-payment redirect which only has the provider's payment ID.
+ */
+export async function verifyPaymentByProviderIdAction(
+  providerPaymentId: string,
+): Promise<ActionResult<PaymentVerificationResult>> {
+  try {
+    await requireSession();
+    const gp = await paymentService.getByProviderPaymentId(providerPaymentId);
+    if (!gp) return { success: false, error: "Payment record not found" };
+    const result = await paymentService.verifyPaymentByPolling(gp.id);
+
+    if (result.investmentActivated) {
+      revalidatePath("/dashboard/investments");
+      revalidatePath("/dashboard/transactions");
+      revalidatePath("/admin/projects");
+    }
+
+    return { success: true, data: result };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 // ─── Refund payment ───────────────────────────────────────────────────────────
 
 export async function refundPaymentAction(

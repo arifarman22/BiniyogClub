@@ -9,7 +9,7 @@ export default function RegisterPage() {
   return (
     <AuthCard
       title="Create your account"
-      description="Join Biniyog Club and start investing in agriculture"
+      description="Create your investor account and start growing your wealth"
       footer={
         <>
           Already have an account?{" "}

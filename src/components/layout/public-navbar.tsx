@@ -7,16 +7,18 @@ import { useState } from "react";
 import { Menu, X } from "lucide-react";
 import { ButtonLink } from "@/components/shared/button-link";
 import { cn } from "cn";
+import type { SessionUser } from "@/lib/auth/session";
+import { logoutAction } from "@/server/actions/auth.actions";
 
 const NAV_LINKS = [
   { href: "/projects", label: "Projects" },
-  { href: "/farmers", label: "Farmers" },
+  { href: "/groups", label: "Groups" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/updates", label: "Updates" },
   { href: "/about", label: "About" },
 ];
 
-export function PublicNavbar() {
+export function PublicNavbar({ session }: { session: SessionUser | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -58,8 +60,21 @@ export function PublicNavbar() {
 
         {/* Desktop CTA */}
         <div className="hidden items-center gap-2 md:flex">
-          <ButtonLink href="/auth/login" variant="ghost" size="sm">Sign In</ButtonLink>
-          <ButtonLink href="/auth/register" size="sm">Start Investing</ButtonLink>
+          {session ? (
+            <>
+              <ButtonLink href="/dashboard" size="sm">Dashboard</ButtonLink>
+              <form action={logoutAction}>
+                <button type="submit" className="btn-arc group/button relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background px-4 h-8 text-[0.8rem] font-medium whitespace-nowrap transition-all hover:bg-muted hover:-translate-y-0.5">
+                  Sign Out
+                </button>
+              </form>
+            </>
+          ) : (
+            <>
+              <ButtonLink href="/auth/login" variant="ghost" size="sm">Sign In</ButtonLink>
+              <ButtonLink href="/auth/register" size="sm">Start Investing</ButtonLink>
+            </>
+          )}
         </div>
 
         {/* Mobile toggle */}
@@ -91,8 +106,21 @@ export function PublicNavbar() {
             ))}
           </nav>
           <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
-            <ButtonLink href="/auth/login" variant="outline" size="sm" onClick={() => setOpen(false)}>Sign In</ButtonLink>
-            <ButtonLink href="/auth/register" size="sm" onClick={() => setOpen(false)}>Start Investing</ButtonLink>
+            {session ? (
+              <>
+                <ButtonLink href="/dashboard" size="sm" onClick={() => setOpen(false)}>Dashboard</ButtonLink>
+                <form action={logoutAction}>
+                  <button type="submit" className="btn-arc group/button relative inline-flex w-full shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-background px-4 h-8 text-[0.8rem] font-medium whitespace-nowrap transition-all hover:bg-muted">
+                    Sign Out
+                  </button>
+                </form>
+              </>
+            ) : (
+              <>
+                <ButtonLink href="/auth/login" variant="outline" size="sm" onClick={() => setOpen(false)}>Sign In</ButtonLink>
+                <ButtonLink href="/auth/register" size="sm" onClick={() => setOpen(false)}>Start Investing</ButtonLink>
+              </>
+            )}
           </div>
         </div>
       )}

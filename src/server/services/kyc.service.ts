@@ -191,6 +191,48 @@ export const kycService = {
 
     const updated = await kycRepository.verify(kycId, session.id);
 
+    // Auto-provision InvestorProfile and Wallet if they don't exist yet
+    await db.$transaction(async (tx) => {
+      const existing = await tx.investorProfile.findUnique({
+        where: { userId: kyc.userId },
+        select: { id: true },
+      });
+
+      if (!existing) {
+        await tx.investorProfile.create({
+          data: {
+            userId: kyc.userId,
+            nationalId: kyc.documentNumber ?? undefined,
+            dateOfBirth: kyc.dateOfBirth ?? undefined,
+            address: kyc.addressLine ?? undefined,
+            city: kyc.city ?? undefined,
+            country: kyc.nationality ?? "BD",
+          },
+        });
+      }
+
+      const wallet = await tx.wallet.findUnique({
+        where: { userId: kyc.userId },
+        select: { id: true },
+      });
+      if (!wallet) {
+        await tx.wallet.create({
+          data: { userId: kyc.userId, type: "INVESTOR", cachedBalance: 0, currency: "BDT" },
+        });
+      }
+    });
+
+    // Notify investor
+    await db.notification.create({
+      data: {
+        userId: kyc.userId,
+        type: "KYC_APPROVED",
+        title: "KYC Verified!",
+        body: "Your identity has been verified. You can now invest on Biniyog Club.",
+        data: { kycId },
+      },
+    }).catch(() => null); // non-critical
+
     await db.auditLog.create({
       data: {
         actorId: session.id,

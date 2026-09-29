@@ -14,11 +14,42 @@ import type { SessionUser } from "@/lib/auth/session";
 // Always call this first. Never accept an investorProfileId from outside.
 
 async function resolveProfile(session: SessionUser) {
-  const profile = await db.investorProfile.findUnique({
+  // Try to find existing profile
+  let profile = await db.investorProfile.findUnique({
     where: { userId: session.id },
     select: { id: true },
   });
-  if (!profile) throw new NotFoundError("Investor profile not found. Please complete your profile setup.");
+
+  // If missing but KYC is verified, auto-create from KYC data
+  if (!profile) {
+    const kyc = await db.kyc.findUnique({
+      where: { userId: session.id },
+      select: { status: true, documentNumber: true, dateOfBirth: true, addressLine: true, city: true, nationality: true },
+    });
+    if (!kyc || kyc.status !== "VERIFIED") {
+      throw new NotFoundError("Investor profile not found. Please complete your profile setup.");
+    }
+    profile = await db.investorProfile.upsert({
+      where: { userId: session.id },
+      create: {
+        userId: session.id,
+        nationalId: kyc.documentNumber ?? undefined,
+        dateOfBirth: kyc.dateOfBirth ?? undefined,
+        address: kyc.addressLine ?? undefined,
+        city: kyc.city ?? undefined,
+        country: kyc.nationality ?? "BD",
+      },
+      update: {},
+      select: { id: true },
+    });
+    // Also ensure wallet exists
+    await db.wallet.upsert({
+      where: { userId: session.id },
+      update: {},
+      create: { userId: session.id, type: "INVESTOR", cachedBalance: 0, currency: "BDT" },
+    });
+  }
+
   return profile.id;
 }
 
@@ -119,7 +150,7 @@ export async function getInvestorInvestments(session: SessionUser) {
           expectedReturnPct: true,
           fundingGoalBdt: true,
           fundedAmountBdt: true,
-          farm: { select: { district: true, division: true } },
+          location: true,
         },
       },
       contract: { select: { status: true, signedAt: true } },
@@ -158,14 +189,6 @@ export async function getInvestorProjects(session: SessionUser) {
           startDate: true,
           endDate: true,
           fundingDeadline: true,
-          farm: {
-            select: {
-              name: true,
-              district: true,
-              division: true,
-              farmerProfile: { select: { user: { select: { name: true } } } },
-            },
-          },
           // Only updates for projects this investor is in
           updates: {
             where: { isPublished: true },

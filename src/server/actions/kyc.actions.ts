@@ -3,6 +3,7 @@
 import { kycService } from "@/server/services/kyc.service";
 import {
   kycSubmitSchema,
+  kycDraftSchema,
   kycApproveSchema,
   kycRejectSchema,
   kycRequestResubmissionSchema,
@@ -39,7 +40,7 @@ function serviceError<T>(error: unknown): ActionResult<T> {
 // ─── Investor actions ─────────────────────────────────────────────────────────
 
 export async function saveDraftAction(formData: unknown): Promise<ActionResult<{ kycId: string }>> {
-  const parsed = kycSubmitSchema.partial().safeParse(formData);
+  const parsed = kycDraftSchema.safeParse(formData);
   if (!parsed.success) return validationError(parsed.error.issues);
 
   try {
@@ -56,11 +57,17 @@ export async function uploadDocumentAction(formData: FormData): Promise<ActionRe
   try {
     const session = await requireSession();
 
-    const kycId = formData.get("kycId");
+    const kycId        = formData.get("kycId");
     const documentType = formData.get("documentType");
-    const file = formData.get("file");
+    const side         = formData.get("side");   // "FRONT" | "BACK"
+    const file         = formData.get("file");
 
-    if (typeof kycId !== "string" || typeof documentType !== "string" || !(file instanceof File)) {
+    if (
+      typeof kycId !== "string" ||
+      typeof documentType !== "string" ||
+      typeof side !== "string" ||
+      !(file instanceof File)
+    ) {
       return { success: false, error: "Invalid upload request", code: "VALIDATION_ERROR" };
     }
 
@@ -69,11 +76,19 @@ export async function uploadDocumentAction(formData: FormData): Promise<ActionRe
       return { success: false, error: "Invalid document type", code: "VALIDATION_ERROR" };
     }
 
+    const allowedSides = ["FRONT", "BACK"];
+    if (!allowedSides.includes(side)) {
+      return { success: false, error: "Invalid document side", code: "VALIDATION_ERROR" };
+    }
+
+    // Encode side into documentType so no schema change is needed: e.g. "NATIONAL_ID_FRONT"
+    const storedDocumentType = `${documentType}_${side}`;
+
     const buffer = Buffer.from(await file.arrayBuffer());
     const doc = await kycService.uploadDocument(
       session,
       kycId,
-      documentType,
+      storedDocumentType,
       buffer,
       file.type,
       file.size,

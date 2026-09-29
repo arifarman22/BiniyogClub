@@ -4,8 +4,6 @@ import { requirePermission, requireOwnerOrPermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import {
   NotFoundError,
-  ForbiddenError,
-  ConflictError,
   ValidationError,
 } from "@/lib/errors";
 import type { SessionUser } from "@/lib/auth/session";
@@ -78,17 +76,6 @@ export const projectService = {
   async create(session: SessionUser, input: ProjectInput) {
     await requirePermission(session, PERMISSIONS.PROJECT_CREATE);
 
-    // Verify farm exists and belongs to the session user (if FARMER)
-    const farm = await db.farm.findUnique({
-      where: { id: input.farmId, deletedAt: null },
-      select: { id: true, farmerProfile: { select: { userId: true } } },
-    });
-    if (!farm) throw new NotFoundError("Farm");
-
-    if (session.role === "FARMER" && farm.farmerProfile?.userId !== session.id) {
-      throw new ForbiddenError("You can only create projects for your own farm");
-    }
-
     const slug = await generateSlug(input.title);
 
     return projectRepository.create({
@@ -110,7 +97,6 @@ export const projectService = {
       endDate: input.endDate ?? null,
       coverImageUrl: input.coverImageUrl ?? null,
       imageUrls: input.imageUrls ?? [],
-      farm: { connect: { id: input.farmId } },
       manager: input.managerId ? { connect: { id: input.managerId } } : undefined,
     });
   },
@@ -120,8 +106,7 @@ export const projectService = {
     const project = await projectRepository.findById(projectId);
     if (!project) throw new NotFoundError("Project");
 
-    // Owner (farmer of the farm) or staff with update permission
-    const farmOwnerId = project.farm.farmerProfile?.user.id;
+    const farmOwnerId = undefined;
     await requireOwnerOrPermission(session, farmOwnerId ?? "", PERMISSIONS.PROJECT_UPDATE);
 
     // Only allow edits on DRAFT or PENDING_APPROVAL
@@ -182,12 +167,7 @@ export const projectService = {
     const perm = TRANSITION_PERMISSIONS[key];
 
     if (perm) {
-      if (perm.ownerAllowed) {
-        const farmOwnerId = project.farm.farmerProfile?.user.id;
-        await requireOwnerOrPermission(session, farmOwnerId ?? "", perm.permission as never);
-      } else {
-        await requirePermission(session, perm.permission as never);
-      }
+      await requirePermission(session, perm.permission as never);
     } else {
       // Default: require PROJECT_UPDATE
       await requirePermission(session, PERMISSIONS.PROJECT_UPDATE);
@@ -229,17 +209,12 @@ export const projectService = {
 
     // Public can only see FUNDRAISING+ (non-draft, non-pending)
     const publicStatuses: ProjectStatus[] = [
-      "FUNDRAISING", "FUNDED", "ACTIVE", "HARVESTING",
-      "SOLD", "PROFIT_CALCULATION", "DISTRIBUTION", "COMPLETED",
+      "FUNDRAISING", "FUNDED", "ACTIVE", "COMPLETED",
     ];
 
     if (!publicStatuses.includes(project.status)) {
       if (!session) throw new NotFoundError("Project");
-      // Staff/admin can see all; farmer can see their own
-      const farmOwnerId = project.farm.farmerProfile?.user.id;
-      if (session.id !== farmOwnerId) {
-        await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-      }
+      await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
     }
 
     return project;

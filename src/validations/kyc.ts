@@ -52,15 +52,19 @@ export const kycBankSchema = z.object({
     .or(z.literal("")),
   mobileProvider: z.enum(["bKash", "Nagad", "Rocket", "Upay", "SureCash", ""]).optional(),
   mobileNumber: bdPhone.optional().or(z.literal("")),
-}).refine(
-  (d) => d.bankAccountNumber || d.mobileNumber,
-  { message: "Provide at least one payment method (bank account or mobile banking)", path: ["bankAccountNumber"] },
-);
+});
 
-export const kycSubmitSchema = kycPersonalSchema
+const kycSubmitBase = kycPersonalSchema
   .merge(kycAddressSchema)
   .merge(kycIdentitySchema)
   .merge(kycBankSchema);
+
+export const kycSubmitSchema = kycSubmitBase.refine(
+    (d) => d.bankAccountNumber || d.mobileNumber,
+    { message: "Provide at least one payment method (bank account or mobile banking)", path: ["bankAccountNumber"] },
+  );
+
+export const kycDraftSchema = kycSubmitBase.partial();
 
 export type KycSubmitInput = z.infer<typeof kycSubmitSchema>;
 

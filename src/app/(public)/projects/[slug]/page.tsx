@@ -11,6 +11,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
 import { getProjectBySlug, getAllProjectSlugs } from "@/server/data/public.data";
+import { getSession } from "@/lib/auth/session";
+import { db } from "@/lib/db/prisma";
+import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
+import { ProjectInvestForm } from "@/components/shared/project-invest-form";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -133,8 +137,20 @@ function fileSizeLabel(bytes: number) {
 
 export default async function ProjectDetailPage({ params }: Props) {
   const { slug } = await params;
-  const project = await getProjectBySlug(slug);
+  const [project, session] = await Promise.all([
+    getProjectBySlug(slug),
+    getSession(),
+  ]);
   if (!project) notFound();
+
+  let kycApproved = false;
+  if (session) {
+    const kyc = await db.kyc.findUnique({
+      where: { userId: session.id },
+      select: { status: true },
+    });
+    kycApproved = kyc?.status === "VERIFIED";
+  }
 
   const pct = fundingPct(project.fundedAmountBdt.toString(), project.fundingGoalBdt.toString());
   const remaining = Math.max(0, Number(project.fundingGoalBdt.toString()) - Number(project.fundedAmountBdt.toString()));
@@ -554,14 +570,20 @@ export default async function ProjectDetailPage({ params }: Props) {
 
                   {/* CTA button */}
                   {isOpen ? (
-                    <div className="space-y-2">
-                      <ButtonLink href="/register" className="w-full bg-harvest-500 text-white hover:bg-harvest-600 justify-center">
-                        Invest Now →
-                      </ButtonLink>
-                      <ButtonLink href="/login" variant="outline" className="w-full justify-center">
-                        Sign In to Invest
-                      </ButtonLink>
-                    </div>
+                    <ProjectInvestForm
+                      project={{
+                        id: project.id,
+                        title: project.title,
+                        minInvestmentBdt: Number(project.minInvestmentBdt),
+                        maxInvestmentBdt: project.maxInvestmentBdt ? Number(project.maxInvestmentBdt) : undefined,
+                        expectedReturnPct: Number(project.expectedReturnPct),
+                        returnType: project.returnType,
+                        durationDays: project.durationDays,
+                      }}
+                      isLoggedIn={!!session}
+                      kycApproved={kycApproved}
+                      currentPath={`/projects/${slug}`}
+                    />
                   ) : isClosed ? (
                     <Button className="w-full" variant="outline" disabled>
                       {STATUS_LABELS[project.status] ?? project.status}

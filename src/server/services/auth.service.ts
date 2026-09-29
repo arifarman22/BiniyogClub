@@ -61,12 +61,7 @@ export const authService = {
 
     const passwordHash = await hashPassword(password);
     const user = await userRepository.create({ email, passwordHash, name, phone, role });
-
-    // Fire-and-forget — don't block registration on email delivery
-    authService
-      .sendVerificationEmail(user.id, user.email, user.name)
-      .catch((err) => console.error("[auth] verification email failed:", err));
-
+    await userRepository.verifyEmail(user.id);
     return user;
   },
 
@@ -85,7 +80,6 @@ export const authService = {
     if (!user || !valid) throw new UnauthorizedError("Invalid email or password");
     if (user.deletedAt) throw new UnauthorizedError("Invalid email or password");
     if (user.status === "SUSPENDED") throw new ForbiddenError("Your account has been suspended. Contact support.");
-    if (!user.emailVerified) throw new EmailNotVerifiedError();
 
     const token = generateSecureToken();
     await sessionRepository.create(user.id, token, meta);

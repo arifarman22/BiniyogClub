@@ -25,17 +25,6 @@ export const projectListSelect = {
   coverImageUrl: true,
   createdAt: true,
   updatedAt: true,
-  farm: {
-    select: {
-      id: true,
-      name: true,
-      district: true,
-      division: true,
-      farmerProfile: {
-        select: { user: { select: { id: true, name: true, avatarUrl: true } } },
-      },
-    },
-  },
   manager: { select: { id: true, name: true } },
   _count: { select: { investments: true } },
 } satisfies Prisma.ProjectSelect;
