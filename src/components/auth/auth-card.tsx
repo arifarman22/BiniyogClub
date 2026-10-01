@@ -37,17 +37,10 @@ export function AuthCard({
 
         {/* Logo */}
         <div className="relative z-10 p-10">
-          <Link href="/" className="inline-flex items-center gap-2.5">
-            <Image
-              src="/Biniyog Club Logo Icon PNG.png"
-              alt="Biniyog Club"
-              width={36}
-              height={36}
-              className="h-9 w-9 rounded-lg object-contain"
-            />
-            <span className="text-xl font-bold text-white">
-              Biniyog<span className="text-primary ml-1">Club</span>
-            </span>
+          <Link href="/" className="inline-flex items-center">
+            <div className="relative h-10 w-36">
+              <Image src="/logo.png" alt="Biniyog Club" fill className="object-contain object-left brightness-0 invert" />
+            </div>
           </Link>
         </div>
 
@@ -66,16 +59,11 @@ export function AuthCard({
       <div className="flex w-full lg:w-1/2 flex-col items-center justify-center bg-muted/40 px-6 py-12 sm:px-10">
         <div className="w-full max-w-md space-y-6">
           {/* Mobile logo */}
-          <div className="text-center lg:hidden">
-            <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-foreground">
-              <Image
-                src="/Biniyog Club Logo Icon PNG.png"
-                alt="Biniyog Club"
-                width={32}
-                height={32}
-                className="h-8 w-8 rounded-lg object-contain"
-              />
-              Biniyog<span className="text-primary ml-1">Club</span>
+          <div className="flex justify-center lg:hidden">
+            <Link href="/" className="inline-flex items-center">
+              <div className="relative h-9 w-32">
+                <Image src="/logo.png" alt="Biniyog Club" fill className="object-contain object-left" />
+              </div>
             </Link>
           </div>
 

@@ -10,6 +10,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import { logoutAction } from "@/server/actions/auth.actions";
 
 const NAV_LINKS = [
+  { href: "/", label: "Home" },
   { href: "/projects", label: "Projects" },
   { href: "/groups", label: "Groups" },
   { href: "/how-it-works", label: "How It Works" },
@@ -51,7 +52,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
         {/* Desktop nav */}
         <nav className="hidden items-center gap-0.5 md:flex">
           {NAV_LINKS.map((link) => {
-            const active = pathname === link.href || pathname.startsWith(link.href + "/");
+            const active = link.href === "/" ? pathname === "/" : pathname === link.href || pathname.startsWith(link.href + "/");
             return (
               <Link
                 key={link.href}
