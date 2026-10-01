@@ -18,6 +18,7 @@ import {
   ShieldCheck, Layers, Lock, RefreshCw, X, MapPin, Target,
 } from "lucide-react";
 import { DashboardCharts } from "./dashboard-charts";
+import { InvestorAnalyticsCharts } from "./investor-analytics-charts";
 
 export const metadata: Metadata = { title: "Dashboard — Biniyog Club" };
 
@@ -131,8 +132,31 @@ export default async function DashboardPage() {
   const kycVerified = kycStatus === "VERIFIED";
   const canInvest = kycVerified && session.emailVerified;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recent = (investments as any[]).slice(0, 6);
+  // Distribution history (12 months)
+  const now = new Date();
+  const distributionHistory = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    const label = d.toLocaleDateString("en-BD", { month: "short", year: "2-digit" });
+    const amount = portfolio.investments
+      .flatMap((inv) => inv.distributions)
+      .filter((dist) => {
+        const c = new Date(dist.distributedAt);
+        return c.getFullYear() === d.getFullYear() && c.getMonth() === d.getMonth();
+      })
+      .reduce((s, dist) => s + Number(dist.netAmountBdt), 0);
+    return { month: label, amount };
+  });
+
+  // Status data for pie
+  const STATUS_COLORS: Record<string, string> = {
+    ACTIVE: "#008C64", MATURED: "#10B981", COMPLETED: "#3B82F6",
+    CANCELLED: "#EF4444", PENDING: "#F59E0B", PAYMENT_PENDING: "#F59E0B",
+  };
+  const statusData = Object.entries(portfolio.statusMap)
+    .filter(([, v]) => v > 0)
+    .map(([k, v]) => ({ name: k.replace(/_/g, " "), value: v, color: STATUS_COLORS[k] ?? "#9CA3AF" }));
+
+  const recent = (investments as never[]).slice(0, 6);
   const roi = stats.totalInvested > 0
     ? ((stats.distributedReturns / stats.totalInvested) * 100).toFixed(1)
     : "0.0";
@@ -346,10 +370,12 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Charts row ── */}
-      <DashboardCharts
+      {/* ── Analytics charts ── */}
+      <InvestorAnalyticsCharts
         monthlyHistory={portfolio.monthlyHistory}
         categoryData={categoryData}
+        distributionHistory={distributionHistory}
+        statusData={statusData}
       />
 
       {/* ── Available projects ── */}

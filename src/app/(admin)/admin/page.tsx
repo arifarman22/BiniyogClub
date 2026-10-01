@@ -10,7 +10,10 @@ import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import {
   Users, UserCheck, FolderKanban, TrendingUp,
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
+  BarChart3, Layers, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
+import { getAdminAnalytics } from "@/server/data/admin.data";
+import { AdminAnalyticsCharts } from "./analytics-charts";
 
 export const metadata: Metadata = { title: "Dashboard — Admin" };
 
@@ -21,9 +24,10 @@ const INV_STATUS_VARIANT: Record<string, string> = {
 
 export default async function AdminDashboardPage() {
   const session = await requireSession();
-  const [kpis, activity] = await Promise.all([
+  const [kpis, activity, analytics] = await Promise.all([
     getAdminDashboardKpis(session),
     getAdminRecentActivity(session),
+    getAdminAnalytics(session),
   ]);
 
   return (
@@ -33,12 +37,18 @@ export default async function AdminDashboardPage() {
       {/* KPI grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         <StatCard title="Total Users" value={kpis.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Investors" value={kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} />
-        <StatCard title="Active Projects" value={kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Total Investment" value={fmtBdt(kpis.totalInvestmentBdt)} icon={<TrendingUp className="h-5 w-5" />} variant="finance" />
+        <StatCard title="Investors" value={analytics.kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} />
+        <StatCard title="Active Projects" value={analytics.kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="brand" />
+        <StatCard title="Total Investment" value={fmtBdt(analytics.kpis.totalInvested)} icon={<TrendingUp className="h-5 w-5" />} variant="finance"
+          description={analytics.kpis.investmentGrowthPct
+            ? `${Number(analytics.kpis.investmentGrowthPct) >= 0 ? "+" : ""}${analytics.kpis.investmentGrowthPct}% vs last month`
+            : undefined}
+        />
         <StatCard title="Pending KYC" value={kpis.pendingKyc.toLocaleString()} icon={<ShieldCheck className="h-5 w-5" />} description={kpis.pendingKyc > 0 ? "Needs review" : "All clear"} />
         <StatCard title="Pending Withdrawals" value={kpis.pendingWithdrawals.toLocaleString()} icon={<ArrowDownToLine className="h-5 w-5" />} description={kpis.pendingWithdrawals > 0 ? "Awaiting approval" : "None pending"} />
         <StatCard title="Active Investments" value={kpis.activeInvestments.toLocaleString()} icon={<Clock className="h-5 w-5" />} />
+        <StatCard title="Distributions" value={fmtBdt(analytics.kpis.totalDistributed)} icon={<Layers className="h-5 w-5" />} />
+        <StatCard title="Funding Rate" value={`${analytics.kpis.fundingRate}%`} icon={<BarChart3 className="h-5 w-5" />} description={`${analytics.kpis.completedProjects}/${analytics.kpis.totalProjects} projects`} />
         <StatCard title="Near Maturity" value={kpis.projectsNearMaturity.toLocaleString()} icon={<AlertTriangle className="h-5 w-5" />} description="Projects ending in 30 days" />
       </div>
 
@@ -65,6 +75,16 @@ export default async function AdminDashboardPage() {
           )}
         </div>
       )}
+
+      {/* Analytics charts */}
+      <AdminAnalyticsCharts
+        monthly={analytics.monthly}
+        investmentsByStatus={analytics.investmentsByStatus as never}
+        investmentsByReturnType={analytics.investmentsByReturnType as never}
+        projectsByStatus={analytics.projectsByStatus as never}
+        projectsByCategory={analytics.projectsByCategory as never}
+        topProjects={analytics.topProjects as never}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Recent users */}

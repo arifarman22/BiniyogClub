@@ -514,3 +514,159 @@ export async function getManagersForSelect() {
     orderBy: { name: "asc" },
   });
 }
+
+// ─── Admin Analytics ──────────────────────────────────────────────────────────
+
+export async function getAdminAnalytics(session: SessionUser) {
+  await requirePermission(session, PERMISSIONS.REPORT_VIEW);
+
+  const now = new Date();
+
+  // Build 12-month labels
+  const months = Array.from({ length: 12 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - 11 + i, 1);
+    return { year: d.getFullYear(), month: d.getMonth(), label: d.toLocaleDateString("en-BD", { month: "short", year: "2-digit" }) };
+  });
+
+  const twelveMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+
+  const [
+    investmentsByMonth,
+    distributionsByMonth,
+    withdrawalsByMonth,
+    investmentsByStatus,
+    investmentsByReturnType,
+    projectsByStatus,
+    projectsByCategory,
+    topProjects,
+    investorGrowth,
+    kpiAggregates,
+  ] = await Promise.all([
+    // Monthly investment volume
+    db.investment.findMany({
+      where: { createdAt: { gte: twelveMonthsAgo }, status: { notIn: ["CANCELLED", "REFUNDED"] } },
+      select: { amountBdt: true, createdAt: true },
+    }),
+    // Monthly distributions
+    db.profitDistribution.findMany({
+      where: { distributedAt: { gte: twelveMonthsAgo } },
+      select: { netAmountBdt: true, distributedAt: true },
+    }),
+    // Monthly withdrawals
+    db.withdrawal.findMany({
+      where: { requestedAt: { gte: twelveMonthsAgo }, status: { in: ["COMPLETED", "PROCESSING"] } },
+      select: { netAmountBdt: true, requestedAt: true },
+    }),
+    // Investment breakdown by status
+    db.investment.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+      _sum: { amountBdt: true },
+    }),
+    // Investment breakdown by return type
+    db.investment.groupBy({
+      by: ["returnType"],
+      _count: { _all: true },
+      _sum: { amountBdt: true },
+    }),
+    // Projects by status
+    db.project.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+      where: { deletedAt: null },
+    }),
+    // Projects by category
+    db.project.groupBy({
+      by: ["category"],
+      _count: { _all: true },
+      _sum: { fundedAmountBdt: true },
+      where: { deletedAt: null },
+    }),
+    // Top funded projects
+    db.project.findMany({
+      where: { deletedAt: null, status: { notIn: ["DRAFT"] } },
+      select: {
+        title: true, category: true, status: true,
+        fundingGoalBdt: true, fundedAmountBdt: true,
+        _count: { select: { investments: true } },
+      },
+      orderBy: { fundedAmountBdt: "desc" },
+      take: 8,
+    }),
+    // Monthly new investors
+    db.investorProfile.findMany({
+      where: { createdAt: { gte: twelveMonthsAgo } },
+      select: { createdAt: true },
+    }),
+    // Overall KPI aggregates
+    Promise.all([
+      db.investment.aggregate({
+        _sum: { amountBdt: true },
+        _count: { _all: true },
+        where: { status: { notIn: ["CANCELLED", "REFUNDED"] } },
+      }),
+      db.profitDistribution.aggregate({ _sum: { netAmountBdt: true, platformFeeBdt: true } }),
+      db.investorProfile.count(),
+      db.project.count({ where: { status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] }, deletedAt: null } }),
+      db.project.count({ where: { status: "COMPLETED", deletedAt: null } }),
+      db.project.count({ where: { deletedAt: null } }),
+      db.withdrawal.aggregate({
+        _sum: { netAmountBdt: true },
+        where: { status: "COMPLETED" },
+      }),
+    ]),
+  ]);
+
+  const [invAgg, distAgg, totalInvestors, activeProjects, completedProjects, totalProjects, withdrawalAgg] = kpiAggregates;
+
+  // Aggregate into monthly buckets
+  const monthly = months.map(({ year, month, label }) => {
+    const invested = investmentsByMonth
+      .filter((i) => { const d = new Date(i.createdAt); return d.getFullYear() === year && d.getMonth() === month; })
+      .reduce((s, i) => s + Number(i.amountBdt), 0);
+    const distributed = distributionsByMonth
+      .filter((d) => { const dt = new Date(d.distributedAt); return dt.getFullYear() === year && dt.getMonth() === month; })
+      .reduce((s, d) => s + Number(d.netAmountBdt), 0);
+    const withdrawn = withdrawalsByMonth
+      .filter((w) => { const d = new Date(w.requestedAt); return d.getFullYear() === year && d.getMonth() === month; })
+      .reduce((s, w) => s + Number(w.netAmountBdt), 0);
+    const newInvestors = investorGrowth
+      .filter((p) => { const d = new Date(p.createdAt); return d.getFullYear() === year && d.getMonth() === month; }).length;
+    return { month: label, invested, distributed, withdrawn, newInvestors };
+  });
+
+  const fundingRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
+  const totalInvested = Number(invAgg._sum.amountBdt ?? 0);
+  const totalDistributed = Number(distAgg._sum.netAmountBdt ?? 0);
+  const totalFees = Number(distAgg._sum.platformFeeBdt ?? 0);
+  const totalWithdrawn = Number(withdrawalAgg._sum.netAmountBdt ?? 0);
+
+  // Previous month vs current for growth
+  const currentMonthInvested = monthly[11]?.invested ?? 0;
+  const prevMonthInvested = monthly[10]?.invested ?? 0;
+  const investmentGrowthPct = prevMonthInvested > 0
+    ? (((currentMonthInvested - prevMonthInvested) / prevMonthInvested) * 100).toFixed(1)
+    : null;
+
+  return {
+    monthly,
+    investmentsByStatus,
+    investmentsByReturnType,
+    projectsByStatus,
+    projectsByCategory,
+    topProjects,
+    kpis: {
+      totalInvested,
+      totalDistributed,
+      totalFees,
+      totalWithdrawn,
+      totalInvestors,
+      activeProjects,
+      completedProjects,
+      totalProjects,
+      fundingRate,
+      investmentGrowthPct,
+      totalInvestmentCount: invAgg._count._all,
+    },
+  };
+}
