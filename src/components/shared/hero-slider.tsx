@@ -79,14 +79,14 @@ export function HeroSlider() {
         <div
           className={`mx-auto max-w-4xl text-center transition-all duration-500 rounded-2xl px-6 py-8 sm:px-10 sm:py-10 bg-black/30 backdrop-blur-sm ${animating ? "opacity-0 translate-y-4" : "opacity-100 translate-y-0"}`}
         >
-          <h1 className="mb-4 text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-7xl leading-[1.1]">
+          <h1 className="mb-4 text-3xl font-thin tracking-tight text-white drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)] sm:text-5xl lg:text-7xl leading-[1.1]">
             {slide.headline}{" "}
             <span className="text-brand-300 drop-shadow-[0_2px_16px_rgba(0,0,0,0.8)]">
               {slide.highlight}
             </span>
           </h1>
 
-          <p className="mb-8 mx-auto max-w-2xl text-base text-white leading-relaxed sm:text-lg lg:text-xl drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
+          <p className="mb-8 mx-auto max-w-2xl text-base font-light text-white/80 leading-relaxed sm:text-lg lg:text-xl drop-shadow-[0_1px_8px_rgba(0,0,0,0.9)]">
             {slide.sub}
           </p>
 

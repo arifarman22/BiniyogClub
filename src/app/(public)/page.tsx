@@ -91,7 +91,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection animation="fade-down" className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Business Groups</h2>
+                <h2 className="text-4xl font-thin tracking-tight sm:text-5xl">Business Groups</h2>
                 <p className="mt-3 text-muted-foreground text-lg max-w-xl">
                   Join Mariners, MOHS, Marinozz and more as an Investor, Shareholder, or Director.
                 </p>
@@ -179,7 +179,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection animation="fade-down" className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Featured Projects</h2>
+                <h2 className="text-4xl font-thin tracking-tight sm:text-5xl">Featured Projects</h2>
                 <p className="mt-3 text-muted-foreground text-lg max-w-xl">
                   Verified investment opportunities across Bangladesh — real estate, trade, SME and more.
                 </p>
@@ -225,7 +225,7 @@ export default async function HomePage() {
       <section className="py-12" id="how-it-works" style={{backgroundColor: "#f9fbfa"}}>
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection animation="fade-down" className="mb-10 text-center">
-            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">How Biniyog Club Works</h2>
+            <h2 className="text-4xl font-thin tracking-tight sm:text-5xl">How Biniyog Club Works</h2>
             <p className="mt-4 text-muted-foreground max-w-xl mx-auto text-lg">
               From registration to returns — a transparent four-step journey.
             </p>
@@ -265,7 +265,7 @@ export default async function HomePage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <AnimatedSection animation="fade-right" delay={0}>
-              <h2 className="mb-5 text-4xl font-bold tracking-tight sm:text-5xl leading-tight">
+              <h2 className="mb-5 text-4xl font-thin tracking-tight sm:text-5xl leading-tight">
                 Radical Transparency,{" "}
                 <span className="text-primary">Every Step</span>
               </h2>
@@ -320,7 +320,7 @@ export default async function HomePage() {
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <AnimatedSection animation="fade-down" className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
               <div>
-                <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Project Updates</h2>
+                <h2 className="text-4xl font-thin tracking-tight sm:text-5xl">Project Updates</h2>
                 <p className="mt-3 text-muted-foreground text-lg">Real-time reports from active projects.</p>
               </div>
               <Link href="/updates" className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border px-5 py-2 text-sm font-medium transition-all hover:border-primary hover:text-primary shrink-0">
@@ -366,7 +366,7 @@ export default async function HomePage() {
       <section className="py-12" style={{backgroundColor: "#f9fbfa"}}>
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <AnimatedSection animation="fade-down" className="mb-8 text-center">
-            <h2 className="text-4xl font-bold tracking-tight sm:text-5xl">Frequently Asked Questions</h2>
+            <h2 className="text-4xl font-thin tracking-tight sm:text-5xl">Frequently Asked Questions</h2>
           </AnimatedSection>
 
           <FaqAccordion />
@@ -392,7 +392,7 @@ export default async function HomePage() {
             <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
             Join {stats.totalInvestors.toLocaleString()}+ investors today
           </div>
-          <h2 className="mb-5 text-4xl font-bold text-white sm:text-5xl lg:text-6xl leading-tight">
+          <h2 className="mb-5 text-4xl font-thin text-white sm:text-5xl lg:text-6xl leading-tight">
             Ready to Invest in{" "}
             <span className="text-primary">
               Bangladesh&apos;s Future?
