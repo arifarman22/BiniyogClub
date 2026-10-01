@@ -4,12 +4,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/validations/auth";
 import { loginAction } from "@/server/actions/auth.actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -43,9 +41,9 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
       {serverError && (
-        <Alert variant={serverError.code === "EMAIL_NOT_VERIFIED" ? "default" : "destructive"}>
+        <Alert variant={serverError.code === "EMAIL_NOT_VERIFIED" ? "default" : "destructive"} className="rounded-xl">
           <AlertTriangle className="size-4" />
           <AlertDescription>
             {serverError.message}
@@ -61,56 +59,67 @@ export function LoginForm() {
         </Alert>
       )}
 
-      <FormField label="Email address" htmlFor="email" error={errors.email?.message} required>
+      {/* Email */}
+      <div className="space-y-1.5">
+        <label htmlFor="email" className="text-sm font-medium text-foreground">
+          Email address <span className="text-destructive">*</span>
+        </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="email"
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="pl-9"
+            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
         </div>
-      </FormField>
+        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+      </div>
 
-      <FormField label="Password" htmlFor="password" error={errors.password?.message} required>
+      {/* Password */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <label htmlFor="password" className="text-sm font-medium text-foreground">
+            Password <span className="text-destructive">*</span>
+          </label>
+          <Link href="/auth/forgot-password" className="text-xs font-medium text-primary hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <div className="relative">
+          <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             placeholder="••••••••"
-            className="pr-10"
+            className="h-11 rounded-xl pl-10 pr-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-      </FormField>
-
-      <div className="flex justify-end">
-        <Link
-          href="/auth/forgot-password"
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          Forgot password?
-        </Link>
+        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
       </div>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting && <Spinner size="xs" className="mr-2" />}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isSubmitting && <Spinner size="xs" />}
         Sign in
-      </Button>
+      </button>
     </form>
   );
 }

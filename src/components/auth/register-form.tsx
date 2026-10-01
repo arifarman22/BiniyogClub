@@ -4,15 +4,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@/validations/auth";
 import { registerAction } from "@/server/actions/auth.actions";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FormField } from "@/components/ui/form-field";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Phone, User } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
@@ -41,12 +38,12 @@ export function RegisterForm() {
     window.location.href = "/auth/login";
   }
 
-const passwordStrength = getPasswordStrength(password);
+  const passwordStrength = getPasswordStrength(password);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       {serverError && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="rounded-xl">
           <AlertTriangle className="size-4" />
           <AlertDescription>{serverError}</AlertDescription>
         </Alert>
@@ -54,97 +51,115 @@ const passwordStrength = getPasswordStrength(password);
 
       <input type="hidden" value="INVESTOR" {...register("role")} />
 
-      <FormField label="Full name" htmlFor="name" error={errors.name?.message} required>
+      {/* Full name */}
+      <div className="space-y-1.5">
+        <label htmlFor="name" className="text-sm font-medium text-foreground">
+          Full name <span className="text-destructive">*</span>
+        </label>
         <div className="relative">
-          <User className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="name"
             type="text"
             autoComplete="name"
             placeholder="Your full name"
-            className="pl-9"
+            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.name}
             {...register("name")}
           />
         </div>
-      </FormField>
+        {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+      </div>
 
-      <FormField label="Email address" htmlFor="email" error={errors.email?.message} required>
+      {/* Email */}
+      <div className="space-y-1.5">
+        <label htmlFor="email" className="text-sm font-medium text-foreground">
+          Email address <span className="text-destructive">*</span>
+        </label>
         <div className="relative">
-          <Mail className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="email"
             type="email"
             autoComplete="email"
             placeholder="you@example.com"
-            className="pl-9"
+            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
         </div>
-      </FormField>
+        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+      </div>
 
-      <FormField
-        label="Phone number"
-        htmlFor="phone"
-        error={errors.phone?.message}
-        hint="Bangladeshi number e.g. 01712345678"
-        required
-      >
+      {/* Phone */}
+      <div className="space-y-1.5">
+        <label htmlFor="phone" className="text-sm font-medium text-foreground">
+          Phone number <span className="text-destructive">*</span>
+        </label>
         <div className="relative">
-          <Phone className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="phone"
             type="tel"
             autoComplete="tel"
             placeholder="01712345678"
-            className="pl-9"
+            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.phone}
             {...register("phone")}
           />
         </div>
-      </FormField>
+        {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
+        <p className="text-xs text-muted-foreground">Bangladeshi number e.g. 01712345678</p>
+      </div>
 
-      <FormField label="Password" htmlFor="password" error={errors.password?.message} required>
+      {/* Password */}
+      <div className="space-y-1.5">
+        <label htmlFor="password" className="text-sm font-medium text-foreground">
+          Password <span className="text-destructive">*</span>
+        </label>
         <div className="relative">
+          <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             placeholder="••••••••"
-            className="pr-10"
+            className="h-11 rounded-xl pl-10 pr-10 text-sm focus-visible:ring-primary"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-        {password.length > 0 && (
-          <PasswordStrengthBar strength={passwordStrength} />
-        )}
-      </FormField>
+        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+        {password.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
+      </div>
 
-      <FormField
-        label="Confirm password"
-        htmlFor="confirmPassword"
-        error={errors.confirmPassword?.message}
-        required
-      >
-        <Input
-          id="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          placeholder="••••••••"
-          aria-invalid={!!errors.confirmPassword}
-          {...register("confirmPassword")}
-        />
-      </FormField>
+      {/* Confirm password */}
+      <div className="space-y-1.5">
+        <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+          Confirm password <span className="text-destructive">*</span>
+        </label>
+        <div className="relative">
+          <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            placeholder="••••••••"
+            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            aria-invalid={!!errors.confirmPassword}
+            {...register("confirmPassword")}
+          />
+        </div>
+        {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
+      </div>
 
       <p className="text-xs text-muted-foreground">
         By registering you agree to our{" "}
@@ -153,15 +168,19 @@ const passwordStrength = getPasswordStrength(password);
         <Link href="/privacy" className="font-medium text-primary hover:underline">Privacy Policy</Link>.
       </p>
 
-      <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting && <Spinner size="xs" className="mr-2" />}
+      <button
+        type="submit"
+        disabled={isSubmitting}
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {isSubmitting && <Spinner size="xs" />}
         Create account
-      </Button>
+      </button>
     </form>
   );
 }
 
-// ─── Password strength indicator ─────────────────────────────────────────────
+// ─── Password strength ────────────────────────────────────────────────────────
 
 function getPasswordStrength(password: string): 0 | 1 | 2 | 3 | 4 {
   let score = 0;
@@ -188,9 +207,7 @@ function PasswordStrengthBar({ strength }: { strength: 0 | 1 | 2 | 3 | 4 }) {
         {[1, 2, 3, 4].map((level) => (
           <div
             key={level}
-            className={`h-1 flex-1 rounded-full transition-colors ${
-              level <= strength ? config.color : "bg-muted"
-            }`}
+            className={`h-1 flex-1 rounded-full transition-colors ${level <= strength ? config.color : "bg-muted"}`}
           />
         ))}
       </div>
