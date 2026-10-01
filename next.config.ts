@@ -8,9 +8,18 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "images.unsplash.com",
       },
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+      },
     ],
   },
   serverExternalPackages: ["@prisma/client", "prisma", "exceljs"],
+  logging: {
+    fetches: {
+      fullUrl: process.env.NODE_ENV === "development",
+    },
+  },
 };
 
 export default nextConfig;

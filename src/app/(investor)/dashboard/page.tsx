@@ -17,8 +17,12 @@ import {
   ArrowRight, AlertCircle, Bell, ArrowUpRight, ArrowDownRight,
   ShieldCheck, Layers, Lock, RefreshCw, X, MapPin, Target,
 } from "lucide-react";
-import { DashboardCharts } from "./dashboard-charts";
-import { InvestorAnalyticsCharts } from "./investor-analytics-charts";
+import dynamic from "next/dynamic";
+
+const InvestorAnalyticsCharts = dynamic(
+  () => import("./investor-analytics-charts").then((m) => m.InvestorAnalyticsCharts),
+  { ssr: false },
+);
 
 export const metadata: Metadata = { title: "Dashboard — Biniyog Club" };
 
@@ -62,18 +66,20 @@ export default async function DashboardPage() {
   );
 
   let stats, recentUpdates, investments, portfolio, kyc, availableProjects;
-  kyc = await getInvestorKyc(session).catch(() => null);
-  availableProjects = await getAvailableProjects(6).catch(() => []);
 
   try {
-    [stats, recentUpdates, investments, portfolio] = await Promise.all([
+    [stats, recentUpdates, investments, portfolio, kyc, availableProjects] = await Promise.all([
       getInvestorDashboard(session),
       getInvestorProjectUpdates(session, 4),
       getInvestorInvestments(session),
       getInvestorPortfolio(session),
-    ]);
+      getInvestorKyc(session).catch(() => null),
+      getAvailableProjects(6).catch(() => []),
+    ]) as [Awaited<ReturnType<typeof getInvestorDashboard>>, Awaited<ReturnType<typeof getInvestorProjectUpdates>>, Awaited<ReturnType<typeof getInvestorInvestments>>, Awaited<ReturnType<typeof getInvestorPortfolio>>, Awaited<ReturnType<typeof getInvestorKyc>>, Awaited<ReturnType<typeof getAvailableProjects>>];
   } catch {
-    const kycStatus = kyc?.status ?? "NOT_STARTED";
+    // kyc may be undefined if the whole Promise.all failed; fetch it independently
+    const fallbackKyc = await getInvestorKyc(session).catch(() => null);
+    const kycStatus = fallbackKyc?.status ?? "NOT_STARTED";
     const kycVerified = kycStatus === "VERIFIED";
 
     return (

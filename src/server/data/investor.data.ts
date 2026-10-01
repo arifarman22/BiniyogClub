@@ -12,8 +12,10 @@ import type { SessionUser } from "@/lib/auth/session";
 
 // ─── Internal: resolve investorProfileId from session ────────────────────────
 // Always call this first. Never accept an investorProfileId from outside.
+// Exported so callers that need multiple data functions can resolve once and
+// pass the id directly, avoiding redundant round-trips.
 
-async function resolveProfile(session: SessionUser) {
+export async function resolveProfile(session: SessionUser) {
   // Try to find existing profile
   let profile = await db.investorProfile.findUnique({
     where: { userId: session.id },
@@ -508,19 +510,14 @@ export async function getInvestorKyc(session: SessionUser) {
 export async function getInvestorProjectUpdates(session: SessionUser, limit = 20) {
   const profileId = await resolveProfile(session);
 
-  // Get project IDs this investor is in
-  const investedProjectIds = await db.investment.findMany({
-    where: { investorProfileId: profileId },
-    select: { projectId: true },
-  });
-
-  const projectIds = investedProjectIds.map((i) => i.projectId);
-  if (projectIds.length === 0) return [];
-
+  // Single query: join through investment → project → updates
+  // Avoids the extra round-trip to fetch projectIds separately.
   return db.projectUpdate.findMany({
     where: {
-      projectId: { in: projectIds },
       isPublished: true,
+      project: {
+        investments: { some: { investorProfileId: profileId } },
+      },
     },
     select: {
       id: true,
@@ -535,4 +532,37 @@ export async function getInvestorProjectUpdates(session: SessionUser, limit = 20
     orderBy: { publishedAt: "desc" },
     take: limit,
   });
+}
+
+// ─── Bulk manual payment submissions (for investments page) ──────────────────
+// Fetches the latest submission for each investment in a single query,
+// replacing the N individual queries previously fired per PAYMENT_PENDING item.
+
+export async function getLatestSubmissionsForInvestments(
+  investmentIds: string[],
+  userId: string,
+): Promise<Map<string, { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date }>> {
+  if (investmentIds.length === 0) return new Map();
+
+  const submissions = await db.manualPaymentSubmission.findMany({
+    where: { investmentId: { in: investmentIds }, submittedBy: userId },
+    select: {
+      id: true,
+      investmentId: true,
+      status: true,
+      transactionRef: true,
+      rejectionReason: true,
+      createdAt: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Keep only the latest submission per investment
+  const map = new Map<string, typeof submissions[number]>();
+  for (const sub of submissions) {
+    if (!map.has(sub.investmentId)) {
+      map.set(sub.investmentId, sub);
+    }
+  }
+  return map;
 }

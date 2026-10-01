@@ -12,8 +12,13 @@ import {
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
   BarChart3, Layers, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
+import nextDynamic from "next/dynamic";
 import { getAdminAnalytics } from "@/server/data/admin.data";
-import { AdminAnalyticsCharts } from "./analytics-charts";
+
+const AdminAnalyticsCharts = nextDynamic(
+  () => import("./analytics-charts").then((m) => m.AdminAnalyticsCharts),
+  { ssr: false },
+);
 
 export const metadata: Metadata = { title: "Dashboard — Admin" };
 

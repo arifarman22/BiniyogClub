@@ -60,24 +60,20 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
     | "newest" | "deadline" | "funded_pct" | "goal_asc" | "goal_desc";
   const page = Math.max(1, parseInt(params.page ?? "1", 10));
 
-  const { items, total, totalPages } = await projectRepository.findMany(
-    { status: PUBLIC_STATUSES, category, search },
-    sort,
-    page,
-    12,
-  );
+  const [{ items, total, totalPages }, categoryCountRows] = await Promise.all([
+    projectRepository.findMany(
+      { status: PUBLIC_STATUSES, category, search },
+      sort,
+      page,
+      12,
+    ),
+    projectRepository.countByCategory({ status: PUBLIC_STATUSES }),
+  ]);
 
-  // Category counts for filter chips
-  const categoryCounts = await projectRepository.findMany(
-    { status: PUBLIC_STATUSES },
-    "newest",
-    1,
-    1000,
-  ).then(({ items: all }) => {
-    const counts: Record<string, number> = {};
-    for (const p of all) counts[p.category] = (counts[p.category] ?? 0) + 1;
-    return counts;
-  });
+  // Category counts via groupBy — single aggregation query, no row scan
+  const categoryCounts: Record<string, number> = Object.fromEntries(
+    categoryCountRows.map((r) => [r.category, r.count]),
+  );
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const p = new URLSearchParams();

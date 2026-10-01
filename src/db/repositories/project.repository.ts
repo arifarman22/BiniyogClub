@@ -120,6 +120,16 @@ export const projectRepository = {
     });
     return Object.fromEntries(rows.map((r) => [r.status, r._count.status]));
   },
+
+  async countByCategory(filters: Pick<ProjectFilters, "status"> = {}) {
+    const where = buildWhere({ ...filters, includeDeleted: false });
+    const rows = await db.project.groupBy({
+      by: ["category"],
+      _count: { category: true },
+      where,
+    });
+    return rows.map((r) => ({ category: r.category, count: r._count.category }));
+  },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

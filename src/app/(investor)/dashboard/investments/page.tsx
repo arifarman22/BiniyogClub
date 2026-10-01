@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
-import { getInvestorInvestments } from "@/server/data/investor.data";
-import { getActiveBankAccounts, getSubmissionsForInvestment } from "@/server/data/manual-payment.data";
+import { getInvestorInvestments, getLatestSubmissionsForInvestments } from "@/server/data/investor.data";
+import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
 import { PaymentVerifier } from "@/components/shared/payment-verifier";
 import { SubmitPaymentProofDialog } from "@/components/shared/submit-payment-proof-dialog";
 import { cn } from "cn";
@@ -100,15 +100,11 @@ export default async function InvestmentsPage() {
     );
   }
 
-  // Fetch latest submission for each PAYMENT_PENDING investment
-  const pendingInvestments = investments.filter((i) => i.status === "PAYMENT_PENDING");
-  const submissionMap = new Map<string, Awaited<ReturnType<typeof getSubmissionsForInvestment>>[number] | null>();
-  await Promise.all(
-    pendingInvestments.map(async (inv) => {
-      const subs = await getSubmissionsForInvestment(inv.id, session.id);
-      submissionMap.set(inv.id, subs[0] ?? null);
-    }),
-  );
+  // Fetch latest submission for each PAYMENT_PENDING investment — single bulk query
+  const pendingIds = investments
+    .filter((i) => i.status === "PAYMENT_PENDING")
+    .map((i) => i.id);
+  const submissionMap = await getLatestSubmissionsForInvestments(pendingIds, session.id);
 
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
   const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
