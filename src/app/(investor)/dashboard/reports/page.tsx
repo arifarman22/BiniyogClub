@@ -14,6 +14,8 @@ import { TrendingUp, BarChart3, Receipt, Layers, ArrowUpRight, ArrowDownLeft } f
 import Link from "next/link";
 import { cn } from "cn";
 import type { AsyncComponentProps } from "@/types";
+import type { SessionUser } from "@/lib/auth/session";
+import type { ReportFilters } from "@/server/data/report.data";
 
 export const metadata: Metadata = { title: "Reports — Dashboard" };
 
@@ -92,7 +94,7 @@ export default async function InvestorReportsPage({ searchParams }: AsyncCompone
 
 // ─── Portfolio Tab ────────────────────────────────────────────────────────────
 
-async function PortfolioTab({ session }: { session: never }) {
+async function PortfolioTab({ session }: { session: SessionUser }) {
   const data = await getInvestorPortfolioReport(session);
 
   const roi = data.totalInvested > 0
@@ -153,14 +155,13 @@ async function PortfolioTab({ session }: { session: never }) {
 
 // ─── Investment History Tab ───────────────────────────────────────────────────
 
-async function HistoryTab({ session, filters }: { session: never; filters: never }) {
+async function HistoryTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const investments = await getInvestorInvestments(session);
 
   const filtered = investments.filter((i) => {
-    const f = filters as { dateFrom?: string; dateTo?: string; status?: string };
-    if (f.status && i.status !== f.status) return false;
-    if (f.dateFrom && new Date(i.createdAt) < new Date(f.dateFrom)) return false;
-    if (f.dateTo   && new Date(i.createdAt) > new Date(f.dateTo + "T23:59:59Z")) return false;
+    if (filters.status && i.status !== filters.status) return false;
+    if (filters.dateFrom && new Date(i.createdAt) < new Date(filters.dateFrom)) return false;
+    if (filters.dateTo   && new Date(i.createdAt) > new Date(filters.dateTo + "T23:59:59Z")) return false;
     return true;
   });
 
@@ -211,7 +212,7 @@ async function HistoryTab({ session, filters }: { session: never; filters: never
 
 // ─── Transactions Tab ─────────────────────────────────────────────────────────
 
-async function TransactionsTab({ session, filters }: { session: never; filters: never }) {
+async function TransactionsTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getInvestorTransactionStatement(session, filters);
 
   const totalIn  = data.payments.filter((p) => p.direction === "INBOUND" && p.status === "COMPLETED").reduce((s, p) => s + Number(p.netAmountBdt), 0);
@@ -273,7 +274,7 @@ async function TransactionsTab({ session, filters }: { session: never; filters: 
 
 // ─── Distributions Tab ────────────────────────────────────────────────────────
 
-async function DistributionsTab({ session, filters }: { session: never; filters: never }) {
+async function DistributionsTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const distributions = await getInvestorDistributionHistory(session, filters);
 
   const totalNet   = distributions.reduce((s, d) => s + Number(d.netAmountBdt), 0);

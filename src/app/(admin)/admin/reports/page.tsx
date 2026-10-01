@@ -14,6 +14,8 @@ import { TrendingUp, FolderKanban, Users, BarChart3, Activity, Layers } from "lu
 import Link from "next/link";
 import { cn } from "cn";
 import type { AsyncComponentProps } from "@/types";
+import type { SessionUser } from "@/lib/auth/session";
+import type { ReportFilters } from "@/server/data/report.data";
 
 export const metadata: Metadata = { title: "Reports — Admin" };
 
@@ -102,7 +104,7 @@ export default async function AdminReportsPage({ searchParams }: AsyncComponentP
 
 // ─── Financial Tab ────────────────────────────────────────────────────────────
 
-async function FinancialTab({ session, filters }: { session: never; filters: never }) {
+async function FinancialTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getFinancialReport(session, filters);
 
   const totalInvested  = data.investmentSummary.reduce((s, r) => s + Number(r._sum.amountBdt ?? 0), 0);
@@ -168,7 +170,7 @@ async function FinancialTab({ session, filters }: { session: never; filters: nev
 
 // ─── Projects Tab ─────────────────────────────────────────────────────────────
 
-async function ProjectsTab({ session, filters }: { session: never; filters: never }) {
+async function ProjectsTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getProjectReport(session, filters);
   const totalFunded = Number(data.fundingStats._sum.fundedAmountBdt ?? 0);
   const totalGoal   = Number(data.fundingStats._sum.fundingGoalBdt ?? 0);
@@ -211,7 +213,7 @@ async function ProjectsTab({ session, filters }: { session: never; filters: neve
 
 // ─── Investments Tab ──────────────────────────────────────────────────────────
 
-async function InvestmentsTab({ session, filters }: { session: never; filters: never }) {
+async function InvestmentsTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getInvestmentReport(session, filters);
   const totalAmt = Number(data.aggregates._sum.amountBdt ?? 0);
   const avgAmt   = Number(data.aggregates._avg.amountBdt ?? 0);
@@ -253,7 +255,7 @@ async function InvestmentsTab({ session, filters }: { session: never; filters: n
 
 // ─── Investors Tab ────────────────────────────────────────────────────────────
 
-async function InvestorsTab({ session, filters }: { session: never; filters: never }) {
+async function InvestorsTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getInvestorReport(session, filters);
   const totalInvestors = data.investors.length;
 
@@ -298,7 +300,7 @@ async function InvestorsTab({ session, filters }: { session: never; filters: nev
 
 // ─── Operational Tab ──────────────────────────────────────────────────────────
 
-async function OperationalTab({ session, filters }: { session: never; filters: never }) {
+async function OperationalTab({ session, filters }: { session: SessionUser; filters: ReportFilters }) {
   const data = await getOperationalReport(session, filters);
 
   return (

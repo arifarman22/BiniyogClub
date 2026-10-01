@@ -115,7 +115,7 @@ export function AdminShell({ children, name, role, initials }: Props) {
   const SidebarContent = ({ mini }: { mini: boolean }) => {
     const visibleGroups = NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter((item) => item.roles.length === 0 || item.roles.includes(role)),
+      items: group.items.filter((item: { roles: string[] }) => item.roles.length === 0 || item.roles.includes(role)),
     })).filter((group) => group.items.length > 0);
     return (
     <>
