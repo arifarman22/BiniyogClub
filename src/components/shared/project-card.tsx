@@ -73,7 +73,7 @@ export function ProjectCard({
 
   return (
     <Link href={`/projects/${slug}`} className="group block">
-      <Card className="h-full overflow-hidden transition-shadow hover:shadow-md">
+      <Card className="h-full overflow-hidden rounded-none border border-primary/20 transition-shadow hover:shadow-md">
         <div className="relative h-44 w-full overflow-hidden bg-brand-100">
           {coverImageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element

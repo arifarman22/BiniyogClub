@@ -1,12 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Nunito_Sans } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import { QueryProvider } from "@/components/shared/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toast";
 import "./globals.css";
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito-sans",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
   display: "swap",
   weight: ["300", "400", "500", "600", "700", "800", "900"],
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
   icons: {
     icon: [
-      { url: "/favicon.png", type: "image/png" },
+      { url: "/Biniyog Club Logo Icon PNG.png", type: "image/png" },
     ],
     apple: "/Biniyog Club Logo Icon PNG.png",
   },
@@ -87,7 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${nunitoSans.variable} min-h-screen bg-background font-sans antialiased`}
+        className={`${montserrat.variable} min-h-screen bg-background font-sans antialiased`}
       >
         <QueryProvider>
           <TooltipProvider delay={300}>

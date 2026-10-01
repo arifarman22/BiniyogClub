@@ -91,9 +91,9 @@
   --color-sidebar-ring:               var(--sidebar-ring);
 
   /* ── Typography ── */
-  --font-sans:    var(--font-nunito-sans);
-  --font-mono:    var(--font-nunito-sans);
-  --font-heading: var(--font-nunito-sans);
+  --font-sans:    var(--font-montserrat);
+  --font-mono:    var(--font-montserrat);
+  --font-heading: var(--font-montserrat);
 
   /* ── Radius scale ── */
   --radius-xs:  calc(var(--radius) * 0.4);
