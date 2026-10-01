@@ -136,7 +136,7 @@ const baseInvestment = {
 describe("investmentService.create", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb.kyc.findUnique.mockResolvedValue({ status: "APPROVED" });
+    mockDb.kyc.findUnique.mockResolvedValue({ status: "VERIFIED" });
     mockInvestmentRepo.findByIdempotencyKey.mockResolvedValue(null);
     mockDb.investorProfile.findUnique.mockResolvedValue({ id: "profile-1" });
     mockDb.$queryRaw.mockResolvedValue([baseProject]);
@@ -218,7 +218,7 @@ describe("investmentService.create", () => {
     ).rejects.toThrow(ForbiddenError);
   });
 
-  it("throws ForbiddenError when KYC is not APPROVED", async () => {
+  it("throws ForbiddenError when KYC is not VERIFIED", async () => {
     mockDb.kyc.findUnique.mockResolvedValue({ status: "PENDING" });
 
     await expect(
@@ -602,7 +602,7 @@ describe("investmentService.getById", () => {
 describe("expected return calculation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockDb.kyc.findUnique.mockResolvedValue({ status: "APPROVED" });
+    mockDb.kyc.findUnique.mockResolvedValue({ status: "VERIFIED" });
     mockInvestmentRepo.findByIdempotencyKey.mockResolvedValue(null);
     mockDb.investorProfile.findUnique.mockResolvedValue({ id: "profile-1" });
     mockDb.investment.findFirst.mockResolvedValue(null);

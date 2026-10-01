@@ -209,15 +209,14 @@ describe("canStatic()", () => {
 
 describe("isStaff()", () => {
   it("returns true for all staff roles", () => {
-    const staffRoles: UserRole[] = ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"];
+    const staffRoles: UserRole[] = ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "SUPPORT"];
     for (const role of staffRoles) {
       expect(isStaff(role), `${role} should be staff`).toBe(true);
     }
   });
 
-  it("returns false for INVESTOR and FARMER", () => {
+  it("returns false for INVESTOR", () => {
     expect(isStaff("INVESTOR")).toBe(false);
-    expect(isStaff("FARMER")).toBe(false);
   });
 });
 
@@ -228,7 +227,7 @@ describe("isPlatformAdmin()", () => {
   });
 
   it("returns false for all other roles", () => {
-    const others: UserRole[] = ["FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT", "INVESTOR", "FARMER"];
+    const others: UserRole[] = ["FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "SUPPORT", "INVESTOR"];
     for (const role of others) {
       expect(isPlatformAdmin(role)).toBe(false);
     }

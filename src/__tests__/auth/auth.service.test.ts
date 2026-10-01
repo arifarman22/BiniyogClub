@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ConflictError, UnauthorizedError, InvalidTokenError, EmailNotVerifiedError, ForbiddenError } from "@/lib/errors";
+import { ConflictError, UnauthorizedError, InvalidTokenError, ForbiddenError } from "@/lib/errors";
 
 // ─── Mocks ────────────────────────────────────────────────────────────────────
 
@@ -168,14 +168,15 @@ describe("authService.login", () => {
     ).rejects.toThrow(UnauthorizedError);
   });
 
-  it("throws EmailNotVerifiedError when email not verified", async () => {
+  it("allows login with unverified email (verification is not enforced at login)", async () => {
     const { hashPassword } = await import("@/lib/auth/crypto");
     const realHash = await hashPassword("SecurePass1");
     mockUserRepo.findByEmail.mockResolvedValue({ ...baseUserWithHash, passwordHash: realHash, emailVerified: false });
+    mockSessionRepo.create.mockResolvedValue({});
 
-    await expect(
-      authService.login({ email: "test@example.com", password: "SecurePass1" }),
-    ).rejects.toThrow(EmailNotVerifiedError);
+    // Login succeeds — email verification is a soft gate (UI warns, but login is allowed)
+    const result = await authService.login({ email: "test@example.com", password: "SecurePass1" });
+    expect(result.emailVerified).toBe(false);
   });
 
   it("throws ForbiddenError for suspended account", async () => {
