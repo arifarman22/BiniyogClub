@@ -5,6 +5,7 @@
  */
 
 import { db } from "@/lib/db/prisma";
+import { Prisma } from "@prisma/client";
 import { storage, buildStorageKey, validateDocumentFile } from "@/lib/storage";
 import { requirePermission, requireOwnerOrPermission, isStaff } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
@@ -51,7 +52,7 @@ async function auditDocument(
       action,
       ipAddress: ip,
       userAgent: ua,
-      metadata: metadata ?? undefined,
+      metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
     },
   });
 }

@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
     const date = new Date().toISOString().slice(0, 10);
 
     if (format === "excel" && excelData) {
-      return new NextResponse(excelData, {
+      return new NextResponse(new Uint8Array(excelData), {
         headers: {
           "Content-Type":        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
           "Content-Disposition": `attachment; filename="${filename}_${date}.xlsx"`,

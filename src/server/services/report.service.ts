@@ -187,9 +187,9 @@ export function mapInvestmentRows(investments: ReturnType<typeof Array.prototype
       actualReturn:    inv.actualReturnBdt ? Number(inv.actualReturnBdt) : null,
       returnType:      inv.returnType,
       status:          inv.status,
-      confirmedAt:     inv.confirmedAt,
-      maturedAt:       inv.maturedAt,
-      createdAt:       inv.createdAt,
+      confirmedAt:     inv.confirmedAt as string | null,
+      maturedAt:       inv.maturedAt as string | null,
+      createdAt:       inv.createdAt as string | null,
     };
   });
 }
@@ -219,9 +219,9 @@ export function mapProjectRows(projects: unknown[]): ReportRow[] {
       durationDays:     proj.durationDays,
       investorCount:    proj._count.investments,
       location:         proj.location ?? "",
-      fundingDeadline:  proj.fundingDeadline,
-      completedAt:      proj.completedAt,
-      createdAt:        proj.createdAt,
+      fundingDeadline:  proj.fundingDeadline as string | null,
+      completedAt:      proj.completedAt as string | null,
+      createdAt:        proj.createdAt as string | null,
     };
   });
 }
@@ -244,8 +244,8 @@ export function mapPaymentRows(payments: unknown[]): ReportRow[] {
       netAmountBdt:      Number(pay.netAmountBdt),
       description:       pay.description ?? "",
       externalReference: pay.externalReference ?? "",
-      processedAt:       pay.processedAt,
-      createdAt:         pay.createdAt,
+      processedAt:       pay.processedAt as string | null,
+      createdAt:         pay.createdAt as string | null,
     };
   });
 }
@@ -266,7 +266,7 @@ export function mapDistributionRows(distributions: unknown[]): ReportRow[] {
       amountBdt:      Number(dist.amountBdt),
       platformFeeBdt: Number(dist.platformFeeBdt),
       netAmountBdt:   Number(dist.netAmountBdt),
-      distributedAt:  dist.distributedAt,
+      distributedAt:  dist.distributedAt as string | null,
     };
   });
 }
@@ -293,7 +293,7 @@ export function mapInvestorRows(investors: unknown[]): ReportRow[] {
       occupation:      user.investorProfile?.occupation ?? "",
       investmentCount: user.investorProfile?._count.investments ?? 0,
       totalInvested,
-      createdAt:       user.createdAt,
+      createdAt:       user.createdAt as string | null,
     };
   });
 }
