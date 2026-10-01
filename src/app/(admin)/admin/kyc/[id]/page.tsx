@@ -54,7 +54,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
   const canReview = ["SUBMITTED", "UNDER_REVIEW"].includes(kyc.status);
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="KYC Review"
         breadcrumb={
@@ -77,125 +77,132 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
         </div>
       )}
 
-      {/* User info */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-semibold">User</h2>
-        </div>
-        <InfoRow label="Name" value={user?.name} />
-        <InfoRow label="Email" value={user?.email} />
-        <InfoRow label="Phone" value={user?.phone ?? undefined} />
-        <InfoRow label="Role" value={user?.role} />
-        <InfoRow
-          label="Submitted"
-          value={
-            kyc.submittedAt
-              ? new Date(kyc.submittedAt).toLocaleString("en-BD")
-              : undefined
-          }
-        />
-      </div>
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Left column */}
+        <div className="space-y-6">
+          {/* User info */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold">User</h2>
+            </div>
+            <InfoRow label="Name" value={user?.name} />
+            <InfoRow label="Email" value={user?.email} />
+            <InfoRow label="Phone" value={user?.phone ?? undefined} />
+            <InfoRow label="Role" value={user?.role} />
+            <InfoRow
+              label="Submitted"
+              value={
+                kyc.submittedAt
+                  ? new Date(kyc.submittedAt).toLocaleString("en-BD")
+                  : undefined
+              }
+            />
+          </div>
 
-      {/* Personal info */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <User className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-semibold">Personal Information</h2>
-        </div>
-        <InfoRow label="Full name" value={kyc.fullName} />
-        <InfoRow
-          label="Date of birth"
-          value={
-            kyc.dateOfBirth
-              ? new Date(kyc.dateOfBirth).toLocaleDateString("en-BD", {
-                  day: "numeric",
-                  month: "long",
-                  year: "numeric",
-                })
-              : undefined
-          }
-        />
-        <InfoRow label="Nationality" value={kyc.nationality ?? undefined} />
-      </div>
+          {/* Personal info */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <User className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold">Personal Information</h2>
+            </div>
+            <InfoRow label="Full name" value={kyc.fullName} />
+            <InfoRow
+              label="Date of birth"
+              value={
+                kyc.dateOfBirth
+                  ? new Date(kyc.dateOfBirth).toLocaleDateString("en-BD", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : undefined
+              }
+            />
+            <InfoRow label="Nationality" value={kyc.nationality ?? undefined} />
+          </div>
 
-      {/* Address */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <MapPin className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-semibold">Address</h2>
+          {/* Address */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold">Address</h2>
+            </div>
+            <InfoRow label="Address" value={kyc.addressLine} />
+            <InfoRow label="City" value={kyc.city} />
+            <InfoRow label="District" value={kyc.district} />
+            <InfoRow label="Division" value={kyc.division} />
+            <InfoRow label="Postal code" value={kyc.postalCode} />
+          </div>
         </div>
-        <InfoRow label="Address" value={kyc.addressLine} />
-        <InfoRow label="City" value={kyc.city} />
-        <InfoRow label="District" value={kyc.district} />
-        <InfoRow label="Division" value={kyc.division} />
-        <InfoRow label="Postal code" value={kyc.postalCode} />
-      </div>
 
-      {/* Identity document */}
-      <div className="rounded-xl border border-border bg-card p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <CreditCard className="h-4 w-4 text-muted-foreground" />
-          <h2 className="font-semibold">Identity Document</h2>
-        </div>
-        <InfoRow
-          label="Document type"
-          value={kyc.documentType ? (DOC_LABELS[kyc.documentType] ?? kyc.documentType) : undefined}
-        />
-        <InfoRow label="Document number" value={kyc.documentNumber} />
+        {/* Right column */}
+        <div className="space-y-6">
+          {/* Identity document */}
+          <div className="rounded-xl border border-border bg-card p-6">
+            <div className="mb-4 flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold">Identity Document</h2>
+            </div>
+            <InfoRow
+              label="Document type"
+              value={kyc.documentType ? (DOC_LABELS[kyc.documentType] ?? kyc.documentType) : undefined}
+            />
+            <InfoRow label="Document number" value={kyc.documentNumber} />
 
-        {/* Document files */}
-        {(kyc as typeof kyc & { documents: { id: string; documentType: string; mimeType: string; sizeBytes: number; verifiedAt: Date | null; createdAt: Date }[] }).documents.length > 0 && (
-          <div className="mt-4 space-y-2">
-            <p className="text-sm text-muted-foreground">Uploaded files</p>
-            {(kyc as typeof kyc & { documents: { id: string; documentType: string; mimeType: string; sizeBytes: number; verifiedAt: Date | null; createdAt: Date }[] }).documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
-              >
-                <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 text-primary shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium">
-                      {DOC_LABELS[doc.documentType] ?? doc.documentType}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {doc.mimeType} · {(doc.sizeBytes / 1024).toFixed(0)} KB
-                      {doc.verifiedAt && <span className="ml-2 text-success">· Verified</span>}
-                    </p>
+            {/* Document files */}
+            {(kyc as typeof kyc & { documents: { id: string; documentType: string; mimeType: string; sizeBytes: number; verifiedAt: Date | null; createdAt: Date }[] }).documents.length > 0 && (
+              <div className="mt-4 space-y-2">
+                <p className="text-sm text-muted-foreground">Uploaded files</p>
+                {(kyc as typeof kyc & { documents: { id: string; documentType: string; mimeType: string; sizeBytes: number; verifiedAt: Date | null; createdAt: Date }[] }).documents.map((doc) => (
+                  <div
+                    key={doc.id}
+                    className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
+                  >
+                    <div className="flex items-center gap-3">
+                      <FileText className="h-4 w-4 text-primary shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium">
+                          {DOC_LABELS[doc.documentType] ?? doc.documentType}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.mimeType} · {(doc.sizeBytes / 1024).toFixed(0)} KB
+                          {doc.verifiedAt && <span className="ml-2 text-success">· Verified</span>}
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href={`/api/kyc/documents/${doc.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-medium text-primary hover:underline"
+                    >
+                      View ↗
+                    </a>
                   </div>
-                </div>
-                {/* Route through private API — never expose storageKey */}
-                <a
-                  href={`/api/kyc/documents/${doc.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  View ↗
-                </a>
+                ))}
               </div>
-            ))}
+            )}
           </div>
-        )}
-      </div>
 
-      {/* Bank / MFS */}
-      {(kyc.bankName || kyc.bankAccountNumber || kyc.mobileProvider || kyc.mobileNumber) && (
-        <div className="rounded-xl border border-border bg-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <Landmark className="h-4 w-4 text-muted-foreground" />
-            <h2 className="font-semibold">Payment Information</h2>
-          </div>
-          <InfoRow label="Bank name" value={kyc.bankName} />
-          <InfoRow label="Account number" value={kyc.bankAccountNumber} />
-          <InfoRow label="Mobile provider" value={kyc.mobileProvider} />
-          <InfoRow label="Mobile number" value={kyc.mobileNumber} />
+          {/* Bank / MFS */}
+          {(kyc.bankName || kyc.bankAccountNumber || kyc.mobileProvider || kyc.mobileNumber) && (
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <Landmark className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-semibold">Payment Information</h2>
+              </div>
+              <InfoRow label="Bank name" value={kyc.bankName} />
+              <InfoRow label="Account number" value={kyc.bankAccountNumber} />
+              <InfoRow label="Mobile provider" value={kyc.mobileProvider} />
+              <InfoRow label="Mobile number" value={kyc.mobileNumber} />
+            </div>
+          )}
+
+          {/* Review actions */}
+          {canReview && <KycReviewActions kycId={kyc.id} currentStatus={kyc.status} />}
         </div>
-      )}
-
-      {/* Review actions */}
-      {canReview && <KycReviewActions kycId={kyc.id} currentStatus={kyc.status} />}
+      </div>
     </div>
   );
 }
