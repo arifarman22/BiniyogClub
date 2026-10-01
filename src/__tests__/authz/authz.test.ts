@@ -102,7 +102,7 @@ describe("requirePermission()", () => {
   });
 
   it("ForbiddenError message includes the permission key", async () => {
-    const session = makeSession("FARMER");
+    const session = makeSession("INVESTOR");
     mockPermissions([]);
     try {
       await requirePermission(session, "audit.view");
@@ -162,20 +162,20 @@ describe("canAccessResource()", () => {
   beforeEach(() => vi.clearAllMocks());
 
   it("returns true for owner", async () => {
-    const session = makeSession("FARMER", "farmer-1");
-    expect(await canAccessResource(session, "farmer-1", "farm.view")).toBe(true);
+    const session = makeSession("INVESTOR", "investor-1");
+    expect(await canAccessResource(session, "investor-1", "project.view")).toBe(true);
   });
 
   it("returns true for non-owner with permission", async () => {
-    const session = makeSession("FIELD_OFFICER", "officer-1");
-    mockPermissions(["farm.view"]);
-    expect(await canAccessResource(session, "farmer-1", "farm.view")).toBe(true);
+    const session = makeSession("PROJECT_MANAGER", "officer-1");
+    mockPermissions(["project.view"]);
+    expect(await canAccessResource(session, "investor-1", "project.view")).toBe(true);
   });
 
   it("returns false for non-owner without permission", async () => {
     const session = makeSession("INVESTOR", "investor-1");
     mockPermissions(["investment.create"]);
-    expect(await canAccessResource(session, "farmer-1", "farm.view")).toBe(false);
+    expect(await canAccessResource(session, "investor-2", "project.view")).toBe(false);
   });
 });
 
@@ -195,7 +195,7 @@ describe("canStatic()", () => {
 
   it("returns false for role without permission in matrix", () => {
     expect(canStatic("INVESTOR", "project.approve")).toBe(false);
-    expect(canStatic("FARMER", "audit.view")).toBe(false);
+    expect(canStatic("INVESTOR", "audit.view")).toBe(false);
     expect(canStatic("SUPPORT", "user.delete")).toBe(false);
   });
 
