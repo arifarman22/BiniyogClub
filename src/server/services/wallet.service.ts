@@ -250,6 +250,67 @@ export const walletService = {
   },
 
   /**
+   * Investor cancels their own PENDING withdrawal.
+   * Reverses the ledger reservation and restores balance.
+   */
+  async cancelWithdrawal(session: SessionUser, withdrawalId: string) {
+    const withdrawal = await db.withdrawal.findUnique({
+      where: { id: withdrawalId },
+      select: {
+        id: true,
+        status: true,
+        amountBdt: true,
+        ledgerTransactionId: true,
+        wallet: { select: { id: true, userId: true } },
+      },
+    });
+    if (!withdrawal) throw new NotFoundError("Withdrawal");
+    if (withdrawal.wallet.userId !== session.id) throw new ForbiddenError("Access denied");
+    if (withdrawal.status !== "PENDING") {
+      throw new ValidationError(`Only PENDING withdrawals can be cancelled (current: ${withdrawal.status})`);
+    }
+
+    const idempotencyKey = generateIdempotencyKey(IDEMPOTENCY_PREFIXES.REFUND);
+
+    return db.$transaction(
+      async (tx) => {
+        await tx.withdrawal.update({
+          where: { id: withdrawalId },
+          data: { status: "CANCELLED" },
+        });
+
+        // Reverse the ledger reservation
+        const { ledgerTx } = await ledgerService.recordRefund(
+          session.id,
+          Number(withdrawal.amountBdt),
+          {
+            referenceId: withdrawalId,
+            referenceType: "Withdrawal",
+            idempotencyKey,
+            description: "Withdrawal cancelled by investor",
+            metadata: { withdrawalId, cancelledBy: session.id },
+          },
+        );
+
+        // Audit log
+        await tx.auditLog.create({
+          data: {
+            actorId: session.id,
+            action: "UPDATE",
+            entityType: "Withdrawal",
+            entityId: withdrawalId,
+            before: { status: "PENDING" },
+            after: { status: "CANCELLED" },
+          },
+        });
+
+        return { ledgerTx };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
    * Approve a withdrawal request (Finance Officer / Admin).
    * Moves status to APPROVED; actual processing is separate.
    */

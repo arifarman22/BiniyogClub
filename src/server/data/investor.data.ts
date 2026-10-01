@@ -278,6 +278,24 @@ export async function getInvestorPortfolio(session: SessionUser) {
   return { investments, categoryMap, statusMap, monthlyHistory };
 }
 
+// ─── Available projects for dashboard ───────────────────────────────────────
+
+export async function getAvailableProjects(limit = 6) {
+  return db.project.findMany({
+    where: { status: "FUNDRAISING", deletedAt: null },
+    select: {
+      id: true, title: true, slug: true, category: true, status: true,
+      location: true, coverImageUrl: true,
+      fundingGoalBdt: true, fundedAmountBdt: true, minInvestmentBdt: true,
+      expectedReturnPct: true, returnType: true, durationDays: true,
+      fundingDeadline: true,
+      _count: { select: { investments: true } },
+    },
+    orderBy: { publishedAt: "desc" },
+    take: limit,
+  });
+}
+
 // ─── Wallet ───────────────────────────────────────────────────────────────────
 
 export async function getInvestorWallet(session: SessionUser) {

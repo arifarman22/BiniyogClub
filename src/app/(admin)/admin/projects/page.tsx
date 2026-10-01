@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import { getAdminProjects, getProjectStatusCounts } from "@/server/data/admin.data";
+import { DeleteProjectButton } from "@/components/admin/delete-project-button";
 import type { ProjectStatus, ProjectCategory } from "@prisma/client";
 
 export const metadata: Metadata = { title: "Projects — Admin" };
@@ -194,6 +195,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
                         <Link href={`/admin/projects/${p.id}/edit`} className={cn(buttonVariants({ size: "xs", variant: "ghost" }))}>
                           Edit
                         </Link>
+                        <DeleteProjectButton projectId={p.id} projectTitle={p.title} />
                       </div>
                     </td>
                   </tr>

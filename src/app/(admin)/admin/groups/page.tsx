@@ -8,6 +8,9 @@ import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ManualPaymentActions } from "@/components/admin/manual-payment-actions";
+import { EditTierDialog } from "@/components/admin/edit-tier-dialog";
+import { EditGroupDialog } from "@/components/admin/edit-group-dialog";
+import { EditEntityDialog } from "@/components/admin/edit-entity-dialog";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/utils";
 import type { AsyncComponentProps } from "@/types";
@@ -72,24 +75,65 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
               <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{group.name}</span>
+                  {group.tagline && <span className="text-xs text-muted-foreground">{group.tagline}</span>}
                   <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium",
                     group.isActive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-border")}>
                     {group.isActive ? "Active" : "Inactive"}
                   </span>
                 </div>
+                <EditGroupDialog group={{
+                  id: group.id,
+                  name: group.name,
+                  tagline: group.tagline ?? null,
+                  description: group.description,
+                  isActive: group.isActive,
+                }} />
               </div>
               <div className="divide-y divide-border">
                 {group.entities.map((entity) => (
                   <div key={entity.id} className="px-4 py-3">
-                    <p className="text-sm font-medium mb-2">{entity.name}</p>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium">{entity.name}</p>
+                        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium",
+                          entity.isActive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-border")}>
+                          {entity.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </div>
+                      <EditEntityDialog entity={{
+                        id: entity.id,
+                        name: entity.name,
+                        description: entity.description,
+                        isActive: entity.isActive,
+                      }} />
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {entity.tiers.map((tier) => (
                         <div key={tier.id} className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs">
-                          <span className="mr-1">{TIER_ICONS[tier.type] ?? "💼"}</span>
-                          <span className="font-medium">{tier.name}</span>
-                          <span className="ml-2 text-muted-foreground">
-                            {fmtBdt(tier.minAmountBdt)} min · {tier._count.investments} investors
-                          </span>
+                          <div className="flex items-center justify-between gap-3">
+                            <div>
+                              <span className="mr-1">{TIER_ICONS[tier.type] ?? "💼"}</span>
+                              <span className="font-medium">{tier.name}</span>
+                              <span className="ml-2 text-muted-foreground">
+                                {fmtBdt(tier.minAmountBdt)} min · {tier._count.investments} investors
+                              </span>
+                            </div>
+                            <EditTierDialog
+                              tier={{
+                                id: tier.id,
+                                name: tier.name,
+                                description: tier.description,
+                                benefits: tier.benefits,
+                                minAmountBdt: Number(tier.minAmountBdt),
+                                maxAmountBdt: tier.maxAmountBdt != null ? Number(tier.maxAmountBdt) : null,
+                                expectedReturnPct: tier.expectedReturnPct != null ? Number(tier.expectedReturnPct) : null,
+                                durationMonths: tier.durationMonths,
+                                totalUnits: tier.totalUnits,
+                                availableUnits: tier.availableUnits,
+                                isActive: tier.isActive,
+                              }}
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>

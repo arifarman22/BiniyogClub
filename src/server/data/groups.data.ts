@@ -33,7 +33,7 @@ export async function getAllGroups() {
 
 export async function getGroupBySlug(slug: string) {
   return db.businessGroup.findUnique({
-    where: { slug: slug.toUpperCase() as never },
+    where: { slug: slug.toUpperCase() as never, isActive: true },
     select: {
       id: true, slug: true, name: true, tagline: true,
       description: true, logoUrl: true, coverUrl: true,
@@ -87,7 +87,7 @@ export async function getMyGroupInvestments(session: SessionUser) {
     where: { investorUserId: session.id },
     select: {
       id: true, status: true, amountBdt: true, plotNumber: true,
-      sharePercentage: true, receiptNumber: true,
+      sharePercentage: true, receiptNumber: true, notes: true,
       confirmedAt: true, createdAt: true,
       tier: {
         select: {
@@ -129,7 +129,7 @@ export async function getAdminGroupInvestments(opts: {
       where,
       select: {
         id: true, status: true, amountBdt: true, plotNumber: true,
-        sharePercentage: true, receiptNumber: true, confirmedAt: true, createdAt: true,
+        sharePercentage: true, receiptNumber: true, confirmedAt: true, createdAt: true, notes: true,
         tier: {
           select: {
             type: true, name: true,
@@ -156,13 +156,16 @@ export async function getAdminGroupInvestments(opts: {
 export async function getAllGroupsAdmin() {
   return db.businessGroup.findMany({
     select: {
-      id: true, slug: true, name: true, isActive: true, createdAt: true,
+      id: true, slug: true, name: true, tagline: true, description: true, isActive: true, createdAt: true,
       entities: {
         select: {
-          id: true, name: true, slug: true, isActive: true,
+          id: true, name: true, slug: true, description: true, isActive: true,
           tiers: {
             select: {
-              id: true, type: true, name: true, minAmountBdt: true,
+              id: true, type: true, name: true, description: true, benefits: true,
+              minAmountBdt: true, maxAmountBdt: true,
+              expectedReturnPct: true, durationMonths: true,
+              totalUnits: true, availableUnits: true,
               isActive: true, sortOrder: true,
               _count: { select: { investments: true } },
             },

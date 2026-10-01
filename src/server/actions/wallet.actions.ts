@@ -72,6 +72,20 @@ export async function requestWithdrawalAction(
   }
 }
 
+export async function cancelWithdrawalAction(
+  withdrawalId: string,
+): Promise<ActionResult<void>> {
+  if (!withdrawalId) return { success: false, error: "Withdrawal ID required" };
+  try {
+    const session = await requireSession();
+    await walletService.cancelWithdrawal(session, withdrawalId);
+    revalidatePath("/dashboard/wallet");
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function approveWithdrawalAction(
   formData: unknown,
 ): Promise<ActionResult<void>> {

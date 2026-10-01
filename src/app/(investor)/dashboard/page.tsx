@@ -8,13 +8,14 @@ import {
   getInvestorInvestments,
   getInvestorPortfolio,
   getInvestorKyc,
+  getAvailableProjects,
 } from "@/server/data/investor.data";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
   TrendingUp, Wallet, CheckCircle2, Clock, BarChart3,
   ArrowRight, AlertCircle, Bell, ArrowUpRight, ArrowDownRight,
-  ShieldCheck, Layers, Lock, RefreshCw, X,
+  ShieldCheck, Layers, Lock, RefreshCw, X, MapPin, Target,
 } from "lucide-react";
 import { DashboardCharts } from "./dashboard-charts";
 
@@ -59,9 +60,9 @@ export default async function DashboardPage() {
     redirect("/auth/login?callbackUrl=/dashboard"),
   );
 
-  let stats, recentUpdates, investments, portfolio, kyc;
-  // getInvestorKyc is safe — queries by userId, no profile needed
+  let stats, recentUpdates, investments, portfolio, kyc, availableProjects;
   kyc = await getInvestorKyc(session).catch(() => null);
+  availableProjects = await getAvailableProjects(6).catch(() => []);
 
   try {
     [stats, recentUpdates, investments, portfolio] = await Promise.all([
@@ -350,6 +351,95 @@ export default async function DashboardPage() {
         monthlyHistory={portfolio.monthlyHistory}
         categoryData={categoryData}
       />
+
+      {/* ── Available projects ── */}
+      {availableProjects.length > 0 && (
+        <div>
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Target className="h-4 w-4 text-muted-foreground" />
+              <h2 className="font-semibold text-sm">Open for Investment</h2>
+            </div>
+            <Link href="/projects" className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "text-xs h-7 px-2")}>
+              View all <ArrowRight className="ml-1 h-3 w-3" />
+            </Link>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {availableProjects.map((p) => {
+              const pct = Math.min(100, Math.round((Number(p.fundedAmountBdt) / Number(p.fundingGoalBdt)) * 100));
+              const daysLeft = Math.max(0, Math.ceil((new Date(p.fundingDeadline).getTime() - Date.now()) / 86400000));
+              return (
+                <Link
+                  key={p.id}
+                  href={`/projects/${p.slug}`}
+                  className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  {/* Cover */}
+                  <div className="relative h-32 bg-gradient-to-br from-brand-700 to-brand-500">
+                    {p.coverImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.coverImageUrl} alt={p.title} className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center">
+                        <TrendingUp className="h-8 w-8 text-white/40" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                    <span className="absolute bottom-2 left-3 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white">
+                      {p.category.replace(/_/g, " ")}
+                    </span>
+                    <span className="absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5 text-[10px] text-white">
+                      <Clock className="h-2.5 w-2.5" /> {daysLeft}d left
+                    </span>
+                  </div>
+
+                  <div className="p-4 space-y-3">
+                    <div>
+                      <p className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">{p.title}</p>
+                      {p.location && (
+                        <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
+                          <MapPin className="h-3 w-3" /> {p.location}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Funding bar */}
+                    <div>
+                      <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+                        <span>{pct}% funded</span>
+                        <span>৳{Number(p.fundingGoalBdt).toLocaleString("en-BD")} goal</span>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                      </div>
+                    </div>
+
+                    {/* Stats row */}
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="rounded-lg bg-muted/40 py-1.5">
+                        <p className="text-xs font-bold text-success">{(Number(p.expectedReturnPct) * 100).toFixed(0)}%</p>
+                        <p className="text-[9px] text-muted-foreground">Return</p>
+                      </div>
+                      <div className="rounded-lg bg-muted/40 py-1.5">
+                        <p className="text-xs font-bold">{p.durationDays}d</p>
+                        <p className="text-[9px] text-muted-foreground">Duration</p>
+                      </div>
+                      <div className="rounded-lg bg-muted/40 py-1.5">
+                        <p className="text-xs font-bold">{p._count.investments}</p>
+                        <p className="text-[9px] text-muted-foreground">Investors</p>
+                      </div>
+                    </div>
+
+                    <p className="text-[10px] text-muted-foreground">
+                      Min ৳{Number(p.minInvestmentBdt).toLocaleString("en-BD")}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Bottom grid: investments + updates ── */}
       <div className="grid gap-6 lg:grid-cols-5">

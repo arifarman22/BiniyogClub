@@ -104,3 +104,17 @@ export async function archiveProjectAction(projectId: string): Promise<ActionRes
     return serviceError(error);
   }
 }
+
+export async function deleteProjectAction(projectId: string): Promise<ActionResult<void>> {
+  if (!projectId) return { success: false, error: "Project ID required" };
+
+  try {
+    const session = await requireSession();
+    await projectService.delete(session, projectId);
+    revalidatePath("/admin/projects");
+    revalidatePath("/projects");
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}

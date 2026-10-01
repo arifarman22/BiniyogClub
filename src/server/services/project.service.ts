@@ -191,6 +191,14 @@ export const projectService = {
     return projectRepository.update(projectId, { deletedAt: new Date() });
   },
 
+  // ── Admin force delete (soft) ────────────────────────────────────────────────
+  async delete(session: SessionUser, projectId: string) {
+    await requirePermission(session, PERMISSIONS.PROJECT_DELETE);
+    const project = await projectRepository.findById(projectId);
+    if (!project) throw new NotFoundError("Project");
+    return projectRepository.update(projectId, { deletedAt: new Date() });
+  },
+
   // ── Get single (with auth) ───────────────────────────────────────────────────
   async getById(session: SessionUser | null, projectId: string) {
     const project = await projectRepository.findById(projectId);

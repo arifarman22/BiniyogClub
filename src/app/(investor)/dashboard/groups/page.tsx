@@ -107,6 +107,30 @@ export default async function DashboardGroupsPage() {
                   </span>
                 </div>
 
+                {/* Extra details set by admin */}
+                {(inv.plotNumber || inv.sharePercentage != null || inv.notes) && (
+                  <div className="border-t border-border bg-muted/10 px-4 py-3 flex flex-wrap gap-x-6 gap-y-1.5">
+                    {inv.plotNumber && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Plot No.</p>
+                        <p className="text-sm font-medium">{inv.plotNumber}</p>
+                      </div>
+                    )}
+                    {inv.sharePercentage != null && (
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Share</p>
+                        <p className="text-sm font-medium">{Number(inv.sharePercentage).toFixed(4)}%</p>
+                      </div>
+                    )}
+                    {inv.notes && (
+                      <div className="w-full">
+                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Notes</p>
+                        <p className="text-sm text-muted-foreground">{inv.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {inv.status === "PAYMENT_PENDING" && (
                   <div className="border-t border-border bg-muted/20 px-4 py-3 space-y-2">
                     {latestPayment && (
