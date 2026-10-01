@@ -23,7 +23,7 @@
 - [ ] Email verification flow
 - [ ] Login with HttpOnly session cookie
 - [ ] Logout
-- [ ] Forgot password / reset password
+- [ ] Forgot credentials / reset flow
 - [ ] OTP verification (2FA-ready)
 - [ ] Protected route middleware
 - [ ] User profile page (view + edit)
