@@ -198,10 +198,10 @@ export default async function HomePage() {
                     description={project.description}
                     category={project.category}
                     status={project.status}
-                    fundingGoalBdt={project.fundingGoalBdt}
-                    fundedAmountBdt={project.fundedAmountBdt}
-                    minInvestmentBdt={project.minInvestmentBdt}
-                    expectedReturnPct={project.expectedReturnPct}
+                    fundingGoalBdt={Number(project.fundingGoalBdt)}
+                    fundedAmountBdt={Number(project.fundedAmountBdt)}
+                    minInvestmentBdt={Number(project.minInvestmentBdt)}
+                    expectedReturnPct={Number(project.expectedReturnPct)}
                     returnType={project.returnType}
                     durationDays={project.durationDays}
                     fundingDeadline={project.fundingDeadline}

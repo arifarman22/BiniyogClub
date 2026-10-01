@@ -36,7 +36,7 @@ function auditLog(
   after: object,
 ) {
   return db.auditLog.create({
-    data: { actorId, action, entityType: "DistributionBatch", entityId, before, after },
+    data: { actorId, action, entityType: "DistributionBatch", entityId, before: before ?? undefined, after },
   });
 }
 

@@ -60,7 +60,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
             </div>
             <h1 className="text-xl font-bold">{batch.project.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {batch._count?.lineItems ?? batch.lineItems.length} investors · Created {fmtDate(batch.createdAt)}
+              {batch.lineItems.length} investors · Created {fmtDate(batch.createdAt)}
             </p>
           </div>
         </div>
