@@ -7,7 +7,7 @@
 import { db } from "@/lib/db/prisma";
 import { Prisma } from "@prisma/client";
 import { storage, buildStorageKey, validateDocumentFile } from "@/lib/storage";
-import { requirePermission, requireOwnerOrPermission, isStaff } from "@/lib/authz";
+import { requirePermission, requireOwnerOrPermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import {
   ForbiddenError,
@@ -129,10 +129,7 @@ async function getSignedDownloadUrl(session: SessionUser, documentId: string): P
     const hasRoleAccess = allowedRoles.length === 0 || allowedRoles.includes(session.role);
 
     if (!isOwner && !hasRoleAccess) {
-      // Staff with DOCUMENT_MANAGE can always access
-      if (!isStaff(session.role)) {
-        throw new ForbiddenError("You do not have access to this document");
-      }
+      // Staff with DOCUMENT_MANAGE can always access, but must have the permission
       await requirePermission(session, PERMISSIONS.DOCUMENT_MANAGE);
     }
   }

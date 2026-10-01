@@ -400,6 +400,25 @@ export async function streamProjectsForExport(session: SessionUser, f: ReportFil
 }
 
 export async function streamInvestorPaymentsForExport(session: SessionUser, f: ReportFilters) {
+  // Investors see only their own payments; staff need REPORT_VIEW
+  const isAdmin = ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "SUPPORT"].includes(session.role);
+  if (isAdmin) {
+    await requirePermission(session, PERMISSIONS.REPORT_VIEW);
+    return db.payment.findMany({
+      where: {
+        ...(f.status  && { status: f.status as never }),
+        ...(f.dateFrom || f.dateTo ? { createdAt: dateRange(f.dateFrom, f.dateTo) } : {}),
+      },
+      select: {
+        id: true, direction: true, method: true, status: true,
+        amountBdt: true, feeBdt: true, netAmountBdt: true,
+        description: true, externalReference: true, processedAt: true, createdAt: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  // Investor: scoped to own wallet only
   return db.payment.findMany({
     where: {
       wallet: { userId: session.id },

@@ -260,6 +260,28 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     const amountBdt = Number(inv.amountBdt);
 
     await db.$transaction(async (tx) => {
+      // Lock investment row to prevent concurrent approval
+      const [lockedInv] = await tx.$queryRaw<Array<{ id: string; status: string }>>`
+        SELECT id, status FROM investments WHERE id = ${investmentId} FOR UPDATE
+      `;
+      if (!lockedInv || lockedInv.status !== "PENDING") {
+        throw new ValidationError("Investment is no longer in PENDING status");
+      }
+
+      // Lock project row to prevent overfunding race condition
+      const [project] = await tx.$queryRaw<
+        Array<{ id: string; status: string; funding_goal_bdt: string; funded_amount_bdt: string }>
+      >`
+        SELECT id, status, funding_goal_bdt, funded_amount_bdt
+        FROM projects WHERE id = ${inv.projectId} FOR UPDATE
+      `;
+      if (!project) throw new NotFoundError("Project");
+
+      const remaining = Number(project.funding_goal_bdt) - Number(project.funded_amount_bdt);
+      if (amountBdt > remaining) {
+        throw new ValidationError("Project capacity exceeded. Cannot approve this investment.");
+      }
+
       // Activate investment
       await tx.investment.update({
         where: { id: investmentId },
@@ -291,7 +313,7 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
           data: { investmentId, receiptNumber },
         },
       });
-    });
+    }, { isolationLevel: "Serializable" });
 
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
 

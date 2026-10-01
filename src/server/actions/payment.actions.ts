@@ -68,7 +68,19 @@ export async function verifyPaymentAction(
   }
 
   try {
-    await requireSession();
+    const session = await requireSession();
+
+    // Ownership check: verify the gateway payment belongs to this session's wallet
+    const gp = await paymentService.getById(parsed.data.gatewayPaymentId);
+    const { db } = await import("@/lib/db/prisma");
+    const wallet = await db.wallet.findUnique({
+      where: { userId: session.id },
+      select: { id: true },
+    });
+    if (!wallet || gp.walletId !== wallet.id) {
+      return { success: false, error: "Access denied", code: "FORBIDDEN" };
+    }
+
     const result = await paymentService.verifyPaymentByPolling(parsed.data.gatewayPaymentId);
 
     if (result.investmentActivated) {
@@ -91,9 +103,20 @@ export async function verifyPaymentByProviderIdAction(
   providerPaymentId: string,
 ): Promise<ActionResult<PaymentVerificationResult>> {
   try {
-    await requireSession();
+    const session = await requireSession();
     const gp = await paymentService.getByProviderPaymentId(providerPaymentId);
     if (!gp) return { success: false, error: "Payment record not found" };
+
+    // Ownership check
+    const { db } = await import("@/lib/db/prisma");
+    const wallet = await db.wallet.findUnique({
+      where: { userId: session.id },
+      select: { id: true },
+    });
+    if (!wallet || gp.walletId !== wallet.id) {
+      return { success: false, error: "Access denied", code: "FORBIDDEN" };
+    }
+
     const result = await paymentService.verifyPaymentByPolling(gp.id);
 
     if (result.investmentActivated) {
@@ -119,7 +142,13 @@ export async function refundPaymentAction(
   }
 
   try {
-    await requireSession();
+    const session = await requireSession();
+
+    // Only staff with PAYMENT_VERIFY permission can issue refunds
+    const { requirePermission } = await import("@/lib/authz");
+    const { PERMISSIONS } = await import("@/lib/authz/permissions");
+    await requirePermission(session, PERMISSIONS.PAYMENT_VERIFY);
+
     const result = await paymentService.refundPayment(
       parsed.data.gatewayPaymentId,
       parsed.data.reason,

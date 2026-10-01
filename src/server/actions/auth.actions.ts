@@ -40,8 +40,9 @@ function serviceError(error: unknown): ActionResult {
   if (error instanceof AppError) {
     return { success: false, error: error.message, code: error.code };
   }
+  // Never leak internal error details to the client
   console.error("[action error]", error instanceof Error ? error.message : error);
-  return { success: false, error: `Server error: ${error instanceof Error ? error.message : "Unknown error"}` };
+  return { success: false, error: "An unexpected error occurred. Please try again." };
 }
 
 async function getRequestMeta() {

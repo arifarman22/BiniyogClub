@@ -13,7 +13,7 @@
  * Webhook secret: "mock-webhook-secret" (set MOCK_WEBHOOK_SECRET in .env to override)
  */
 
-import { createHmac, randomUUID } from "crypto";
+import { createHmac, randomUUID, timingSafeEqual } from "crypto";
 import type {
   PaymentProvider,
   CreatePaymentRequest,
@@ -105,13 +105,20 @@ export const mockProvider: PaymentProvider = {
   },
 
   async verifyWebhook(req: WebhookVerificationRequest): Promise<WebhookVerificationResult> {
-    // Verify HMAC-SHA256 signature
+    // Verify HMAC-SHA256 signature using constant-time comparison
     const signature = req.headers["x-mock-signature"];
     const expected = createHmac("sha256", WEBHOOK_SECRET)
       .update(req.rawBody)
       .digest("hex");
 
-    if (signature !== expected) {
+    // Constant-time comparison to prevent timing attacks
+    const sigBuffer = Buffer.from(typeof signature === "string" ? signature : "", "hex");
+    const expBuffer = Buffer.from(expected, "hex");
+    const signatureValid =
+      sigBuffer.length === expBuffer.length &&
+      timingSafeEqual(sigBuffer, expBuffer);
+
+    if (!signatureValid) {
       return {
         valid: false,
         eventId: "",

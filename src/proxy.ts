@@ -9,8 +9,23 @@ const PROTECTED_PREFIXES = [
   "/staff",
 ];
 
+// API routes that require authentication (block unauthenticated access at edge)
+const PROTECTED_API_PREFIXES = [
+  "/api/reports",
+  "/api/documents",
+  "/api/kyc",
+];
+
+const SESSION_COOKIE_NAME = "bc_session";
+
+// Minimum token length — our tokens are 64 hex chars (32 bytes)
+const MIN_TOKEN_LENGTH = 32;
+
 function getSessionToken(request: NextRequest): string | undefined {
-  return request.cookies.get("bc_session")?.value;
+  const value = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  // Reject obviously invalid tokens at the edge (real validation happens in getSession())
+  if (!value || value.length < MIN_TOKEN_LENGTH) return undefined;
+  return value;
 }
 
 export function proxy(request: NextRequest): NextResponse {
@@ -18,15 +33,40 @@ export function proxy(request: NextRequest): NextResponse {
   const token = getSessionToken(request);
   const isAuthenticated = Boolean(token);
 
-  // Enforce authentication on protected portals
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  if (isProtected && !isAuthenticated) {
-    const loginUrl = new URL("/auth/login", request.url);
+  // Enforce authentication on protected page routes
+  const isProtectedPage = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isProtectedPage && !isAuthenticated) {
+    const loginUrl = new URL(
+      pathname.startsWith("/admin") ? "/admin/login" : "/auth/login",
+      request.url,
+    );
     loginUrl.searchParams.set("callbackUrl", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  return NextResponse.next();
+  // Enforce authentication on protected API routes
+  const isProtectedApi = PROTECTED_API_PREFIXES.some((p) => pathname.startsWith(p));
+  if (isProtectedApi && !isAuthenticated) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const response = NextResponse.next();
+
+  // ── Security headers ────────────────────────────────────────────────────────
+  response.headers.set("X-Content-Type-Options", "nosniff");
+  response.headers.set("X-Frame-Options", "DENY");
+  response.headers.set("X-XSS-Protection", "1; mode=block");
+  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+
+  if (process.env.NODE_ENV === "production") {
+    response.headers.set(
+      "Strict-Transport-Security",
+      "max-age=63072000; includeSubDomains; preload",
+    );
+  }
+
+  return response;
 }
 
 export const config = {

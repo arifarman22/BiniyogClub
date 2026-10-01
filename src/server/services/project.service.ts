@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/prisma";
 import { projectRepository } from "@/db/repositories/project.repository";
-import { requirePermission, requireOwnerOrPermission } from "@/lib/authz";
+import { requirePermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import {
   NotFoundError,
@@ -98,13 +98,8 @@ export const projectService = {
     const project = await projectRepository.findById(projectId);
     if (!project) throw new NotFoundError("Project");
 
-    const farmOwnerId = undefined;
-    await requireOwnerOrPermission(session, farmOwnerId ?? "", PERMISSIONS.PROJECT_UPDATE);
-
-    // Only allow edits on DRAFT or PENDING_APPROVAL
-    if (!["DRAFT", "PENDING_APPROVAL"].includes(project.status)) {
-      // Staff with PROJECT_UPDATE can edit at any stage
-    }
+    // All project updates require explicit PROJECT_UPDATE permission
+    await requirePermission(session, PERMISSIONS.PROJECT_UPDATE);
 
     const slug = input.title && input.title !== project.title
       ? await generateSlug(input.title, projectId)
