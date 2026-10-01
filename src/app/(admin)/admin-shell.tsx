@@ -16,44 +16,46 @@ const NAV_GROUPS = [
   {
     label: "Overview",
     items: [
-      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
-      { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+      { href: "/admin",         label: "Dashboard", icon: LayoutDashboard, exact: true, roles: [] },
+      { href: "/admin/reports", label: "Reports",   icon: BarChart3,        roles: [] },
     ],
   },
   {
     label: "People",
     items: [
-      { href: "/admin/users", label: "Users", icon: Users },
-      { href: "/admin/investors", label: "Investors", icon: UserCheck },
-      { href: "/admin/kyc", label: "KYC Reviews", icon: ShieldCheck },
+      { href: "/admin/users",     label: "Users",       icon: Users,      roles: ["SUPER_ADMIN", "ADMIN"] },
+      { href: "/admin/investors", label: "Investors",   icon: UserCheck,  roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/kyc",       label: "KYC Reviews", icon: ShieldCheck, roles: ["SUPER_ADMIN", "ADMIN", "KYC_OFFICER"] },
     ],
   },
   {
     label: "Projects",
     items: [
-      { href: "/admin/projects", label: "Projects", icon: FolderKanban },
+      { href: "/admin/projects", label: "Projects", icon: FolderKanban, roles: ["SUPER_ADMIN", "ADMIN", "PROJECT_MANAGER", "FINANCE_OFFICER"] },
     ],
   },
   {
     label: "Finance",
     items: [
-      { href: "/admin/investments", label: "Investments", icon: TrendingUp },
-      { href: "/admin/groups", label: "Group Invest", icon: Building2 },
-      { href: "/admin/payments", label: "Payments", icon: CreditCard },
-      { href: "/admin/withdrawals", label: "Withdrawals", icon: ArrowDownToLine },
-      { href: "/admin/distributions", label: "Distributions", icon: PieChart },
+      { href: "/admin/investments",  label: "Investments",  icon: TrendingUp,      roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/groups",       label: "Group Invest", icon: Building2,       roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/payments",     label: "Payments",     icon: CreditCard,      roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/withdrawals",  label: "Withdrawals",  icon: ArrowDownToLine, roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/distributions",label: "Distributions",icon: PieChart,        roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
     ],
   },
   {
     label: "System",
     items: [
-      { href: "/admin/notifications", label: "Notifications", icon: Bell },
-      { href: "/admin/documents", label: "Documents", icon: FileText },
-      { href: "/admin/audit-logs", label: "Audit Logs", icon: ScrollText },
-      { href: "/admin/settings", label: "Settings", icon: Settings },
+      { href: "/admin/notifications", label: "Notifications", icon: Bell,      roles: ["SUPER_ADMIN", "ADMIN"] },
+      { href: "/admin/documents",     label: "Documents",     icon: FileText,  roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER"] },
+      { href: "/admin/audit-logs",    label: "Audit Logs",    icon: ScrollText, roles: ["SUPER_ADMIN", "ADMIN"] },
+      { href: "/admin/settings",      label: "Settings",      icon: Settings,  roles: ["SUPER_ADMIN", "ADMIN"] },
     ],
   },
 ];
+
+// roles: [] means visible to all staff
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -110,7 +112,12 @@ export function AdminShell({ children, name, role, initials }: Props) {
     return exact ? pathname === href : pathname.startsWith(href);
   }
 
-  const SidebarContent = ({ mini }: { mini: boolean }) => (
+  const SidebarContent = ({ mini }: { mini: boolean }) => {
+    const visibleGroups = NAV_GROUPS.map((group) => ({
+      ...group,
+      items: group.items.filter((item) => item.roles.length === 0 || item.roles.includes(role)),
+    })).filter((group) => group.items.length > 0);
+    return (
     <>
       {/* Logo */}
       <div className="flex h-14 shrink-0 items-center gap-2.5 border-b border-sidebar-border px-4">
@@ -130,7 +137,7 @@ export function AdminShell({ children, name, role, initials }: Props) {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto p-2 pt-3 space-y-4">
-        {NAV_GROUPS.map((group) => (
+        {visibleGroups.map((group) => (
           <div key={group.label}>
             {!mini && (
               <p className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wider text-sidebar-foreground/40">
@@ -189,7 +196,8 @@ export function AdminShell({ children, name, role, initials }: Props) {
         </form>
       </div>
     </>
-  );
+    );
+  };
 
   return (
     <div className="flex min-h-screen bg-muted/30">
