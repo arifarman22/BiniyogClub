@@ -51,7 +51,7 @@ async function auditDocument(
       action,
       ipAddress: ip,
       userAgent: ua,
-      metadata: metadata ?? null,
+      metadata: metadata ?? undefined,
     },
   });
 }

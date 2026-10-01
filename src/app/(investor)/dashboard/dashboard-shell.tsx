@@ -8,7 +8,7 @@ import { cn } from "cn";
 import {
   Menu, X, ChevronLeft, Bell, LogOut, User, ExternalLink,
   LayoutDashboard, TrendingUp, FolderOpen, PieChart, Wallet,
-  ArrowLeftRight, FileText, ShieldCheck, Building2,
+  ArrowLeftRight, FileText, ShieldCheck, Building2, BarChart3,
 } from "lucide-react";
 import { logoutAction } from "@/server/actions/auth.actions";
 
@@ -21,6 +21,7 @@ const NAV = [
   { href: "/dashboard/wallet",        label: "Wallet",        icon: Wallet },
   { href: "/dashboard/transactions",  label: "Transactions",  icon: ArrowLeftRight },
   { href: "/dashboard/documents",     label: "Documents",     icon: FileText },
+  { href: "/dashboard/reports",        label: "Reports",       icon: BarChart3 },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/profile",       label: "Profile",       icon: User },
   { href: "/dashboard/kyc",           label: "KYC",           icon: ShieldCheck },

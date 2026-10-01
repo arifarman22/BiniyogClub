@@ -95,7 +95,7 @@ export const kycService = {
       throw new ConflictError("Documents cannot be removed in the current KYC status");
     }
 
-    await storage.delete(doc.storageKey);
+    await storage.delete(doc.storageKey, doc.mimeType);
     await kycRepository.deleteDocument(documentId);
 
     await db.auditLog.create({
@@ -319,6 +319,6 @@ export const kycService = {
       await requirePermission(session, "kyc.view");
     }
 
-    return storage.getSignedUrl(doc.storageKey, 300);
+    return storage.getSignedUrl(doc.storageKey, doc.mimeType, 300);
   },
 };

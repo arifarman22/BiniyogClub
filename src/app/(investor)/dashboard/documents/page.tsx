@@ -51,7 +51,7 @@ export default async function DocumentsPage() {
   const myDocs = await documentService.getDocumentsByOwner(session, session.id);
 
   const docsByCategory = myDocs.reduce<Partial<Record<DocumentCategory, typeof myDocs>>>((acc, doc) => {
-    const cat = doc.category as DocumentCategory;
+    const cat = (doc as unknown as { category: DocumentCategory }).category;
     if (!acc[cat]) acc[cat] = [];
     acc[cat]!.push(doc);
     return acc;
@@ -158,7 +158,6 @@ export default async function DocumentsPage() {
                       <p className="text-sm font-medium truncate">{doc.name}</p>
                       <p className="text-xs text-muted-foreground">
                         {fmtSize(doc.sizeBytes)} · {fmtDate(doc.createdAt)}
-                        {doc.isFinalized && <span className="ml-2 text-orange-600">· Finalized</span>}
                       </p>
                     </div>
                     <DocumentDownloadButton documentId={doc.id} />
