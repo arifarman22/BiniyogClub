@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { MapPin, Phone } from "lucide-react";
 
 const FOOTER_LINKS = {
   Invest: [
@@ -76,6 +77,38 @@ export function PublicFooter() {
               </ul>
             </div>
           ))}
+        </div>
+
+        {/* Contact + Map */}
+        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2">
+          {/* Contact info */}
+          <div>
+            <h3 className="mb-4 text-xs font-semibold uppercase tracking-widest text-foreground">Contact Us</h3>
+            <ul className="space-y-3">
+              <li className="flex items-start gap-2.5 text-sm text-muted-foreground">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                <span>MG SAM Center, 12 Mohakhali C/A, Dhaka-1212</span>
+              </li>
+              <li className="flex items-center gap-2.5 text-sm text-muted-foreground">
+                <Phone className="h-4 w-4 shrink-0 text-primary" />
+                <a href="tel:+8801335149033" className="transition-colors hover:text-primary">+880 1335-149033</a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Google Map */}
+          <div className="overflow-hidden rounded-xl border border-border">
+            <iframe
+              title="Biniyog Club Office Location"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3650.6!2d90.4018!3d23.7806!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3755c7715a40a947%3A0x517e5e5e5e5e5e5e!2s12%20Mohakhali%20C%2FA%2C%20Dhaka%201212!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd"
+              width="100%"
+              height="200"
+              style={{ border: 0 }}
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
         </div>
 
         {/* Bottom bar */}
