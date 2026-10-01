@@ -20,7 +20,14 @@ async function getPermissionsForSession(session: SessionUser): Promise<Set<Permi
     select: { permission: { select: { key: true } } },
   });
 
-  const perms = new Set(rows.map((r) => r.permission.key as Permission));
+  // Fall back to static compile-time map if DB has no rows for this role
+  let perms: Set<Permission>;
+  if (rows.length > 0) {
+    perms = new Set(rows.map((r) => r.permission.key as Permission));
+  } else {
+    perms = new Set(ROLE_PERMISSIONS[session.role as keyof typeof ROLE_PERMISSIONS] ?? []);
+  }
+
   permissionCache.set(session, perms);
   return perms;
 }
