@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
-import { getAdminDashboardKpis, getAdminRecentActivity } from "@/server/data/admin.data";
+import { getAdminDashboardKpis, getAdminRecentActivity, getAdminAnalytics } from "@/server/data/admin.data";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
@@ -12,13 +12,7 @@ import {
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
   BarChart3, Layers, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
-import nextDynamic from "next/dynamic";
-import { getAdminAnalytics } from "@/server/data/admin.data";
-
-const AdminAnalyticsCharts = nextDynamic(
-  () => import("./analytics-charts").then((m) => m.AdminAnalyticsCharts),
-  { ssr: false },
-);
+import { AdminAnalyticsCharts } from "./analytics-charts-lazy";
 
 export const metadata: Metadata = { title: "Dashboard — Admin" };
 

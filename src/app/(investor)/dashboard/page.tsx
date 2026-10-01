@@ -17,12 +17,7 @@ import {
   ArrowRight, AlertCircle, Bell, ArrowUpRight, ArrowDownRight,
   ShieldCheck, Layers, Lock, RefreshCw, X, MapPin, Target,
 } from "lucide-react";
-import dynamic from "next/dynamic";
-
-const InvestorAnalyticsCharts = dynamic(
-  () => import("./investor-analytics-charts").then((m) => m.InvestorAnalyticsCharts),
-  { ssr: false },
-);
+import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 
 export const metadata: Metadata = { title: "Dashboard — Biniyog Club" };
 
