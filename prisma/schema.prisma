@@ -8,7 +8,698 @@ datasource db {
   directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
-// ─── Auth & Identity ──────────────────────────────────────────────────────────
+model BusinessGroup {
+  id          String        @id @default(uuid())
+  slug        GroupSlug     @unique
+  name        String
+  tagline     String?
+  description String
+  logoUrl     String?
+  coverUrl    String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  entities    GroupEntity[]
+
+  @@map("business_groups")
+}
+
+model GroupEntity {
+  id          String        @id @default(uuid())
+  groupId     String
+  name        String
+  slug        String        @unique
+  description String
+  logoUrl     String?
+  isActive    Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  group       BusinessGroup @relation(fields: [groupId], references: [id])
+  tiers       GroupTier[]
+
+  @@index([groupId])
+  @@map("group_entities")
+}
+
+model GroupTier {
+  id                String            @id @default(uuid())
+  entityId          String
+  type              TierType
+  name              String
+  description       String
+  benefits          String[]          @default([])
+  minAmountBdt      Decimal           @db.Decimal(14, 2)
+  maxAmountBdt      Decimal?          @db.Decimal(14, 2)
+  plotSizeSqft      Decimal?          @db.Decimal(10, 2)
+  pricePerSqftBdt   Decimal?          @db.Decimal(10, 2)
+  totalUnits        Int?
+  availableUnits    Int?
+  expectedReturnPct Decimal?          @db.Decimal(6, 4)
+  durationMonths    Int?
+  isActive          Boolean           @default(true)
+  sortOrder         Int               @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  investments       GroupInvestment[]
+  entity            GroupEntity       @relation(fields: [entityId], references: [id])
+
+  @@index([entityId])
+  @@map("group_tiers")
+}
+
+model GroupInvestment {
+  id              String                   @id @default(uuid())
+  tierId          String
+  investorUserId  String
+  status          GroupInvestmentStatus    @default(PENDING)
+  amountBdt       Decimal                  @db.Decimal(14, 2)
+  plotNumber      String?
+  plotSizeSqft    Decimal?                 @db.Decimal(10, 2)
+  sharePercentage Decimal?                 @db.Decimal(6, 4)
+  notes           String?
+  receiptNumber   String?                  @unique
+  confirmedAt     DateTime?
+  cancelledAt     DateTime?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  manualPayments  GroupInvestmentPayment[]
+  investor        User                     @relation("GroupInvestments", fields: [investorUserId], references: [id])
+  tier            GroupTier                @relation(fields: [tierId], references: [id])
+
+  @@index([tierId])
+  @@index([investorUserId])
+  @@index([status])
+  @@map("group_investments")
+}
+
+model GroupInvestmentPayment {
+  id                String              @id @default(uuid())
+  groupInvestmentId String
+  submittedBy       String
+  status            ManualPaymentStatus @default(SUBMITTED)
+  amountBdt         Decimal             @db.Decimal(14, 2)
+  bankAccountId     String
+  transactionRef    String
+  proofFileUrl      String
+  proofMimeType     String
+  notes             String?
+  reviewedBy        String?
+  reviewedAt        DateTime?
+  rejectionReason   String?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  groupInvestment   GroupInvestment     @relation(fields: [groupInvestmentId], references: [id])
+
+  @@index([groupInvestmentId])
+  @@index([status])
+  @@map("group_investment_payments")
+}
+
+model User {
+  id                 String              @id @default(uuid())
+  email              String              @unique
+  passwordHash       String
+  name               String
+  phone              String?             @unique
+  role               UserRole            @default(INVESTOR)
+  status             UserStatus          @default(ACTIVE)
+  avatarUrl          String?
+  emailVerified      Boolean             @default(false)
+  phoneVerified      Boolean             @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  auditLogs          AuditLog[]          @relation("AuditActor")
+  documents          Document[]
+  groupInvestments   GroupInvestment[]   @relation("GroupInvestments")
+  investorProfile    InvestorProfile?
+  kyc                Kyc?
+  notifications      Notification[]
+  managedProjects    Project[]           @relation("ProjectManager")
+  sessions           Session[]
+  verificationTokens VerificationToken[]
+  wallet             Wallet?
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
+  @@index([deletedAt])
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  userAgent String?
+  ipAddress String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  id        String                @id @default(uuid())
+  userId    String
+  token     String                @unique
+  type      VerificationTokenType
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime              @default(now())
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId, type])
+  @@map("verification_tokens")
+}
+
+model Permission {
+  id              String           @id @default(uuid())
+  key             String           @unique
+  description     String
+  createdAt       DateTime         @default(now())
+  rolePermissions RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  id           String     @id @default(uuid())
+  role         UserRole
+  permissionId String
+  createdAt    DateTime   @default(now())
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([role, permissionId])
+  @@index([role])
+  @@map("role_permissions")
+}
+
+model Kyc {
+  id                String           @id @default(uuid())
+  userId            String           @unique
+  status            KycStatus        @default(NOT_STARTED)
+  submittedAt       DateTime?
+  reviewedAt        DateTime?
+  reviewedBy        String?
+  reviewNote        String?
+  expiresAt         DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  fullName          String?
+  dateOfBirth       DateTime?
+  nationality       String?          @default("BD")
+  addressLine       String?
+  city              String?
+  district          String?
+  division          String?
+  postalCode        String?
+  documentType      KycDocumentType?
+  documentNumber    String?
+  bankName          String?
+  bankAccountNumber String?
+  mobileProvider    String?
+  mobileNumber      String?
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents         KycDocument[]
+
+  @@index([status])
+  @@index([reviewedBy])
+  @@map("kyc")
+}
+
+model KycDocument {
+  id           String    @id @default(uuid())
+  kycId        String
+  documentType String
+  verifiedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  storageKey   String
+  mimeType     String
+  sizeBytes    Int
+  kyc          Kyc       @relation(fields: [kycId], references: [id], onDelete: Cascade)
+
+  @@index([kycId])
+  @@map("kyc_documents")
+}
+
+model InvestorProfile {
+  id                   String       @id @default(uuid())
+  userId               String       @unique
+  nationalId           String?      @unique
+  dateOfBirth          DateTime?
+  address              String?
+  city                 String?
+  country              String       @default("BD")
+  occupation           String?
+  annualIncomeRange    String?
+  investmentExperience String?
+  riskTolerance        String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  investments          Investment[]
+  user                 User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("investor_profiles")
+}
+
+model Project {
+  id                 String               @id @default(uuid())
+  title              String
+  slug               String               @unique
+  description        String
+  category           ProjectCategory
+  status             ProjectStatus        @default(DRAFT)
+  fundingGoalBdt     Decimal              @db.Decimal(14, 2)
+  fundingMinBdt      Decimal              @db.Decimal(14, 2)
+  fundedAmountBdt    Decimal              @default(0) @db.Decimal(14, 2)
+  minInvestmentBdt   Decimal              @db.Decimal(14, 2)
+  maxInvestmentBdt   Decimal?             @db.Decimal(14, 2)
+  returnType         ReturnType
+  expectedReturnPct  Decimal              @db.Decimal(6, 4)
+  durationDays       Int
+  fundingDeadline    DateTime
+  startDate          DateTime?
+  endDate            DateTime?
+  coverImageUrl      String?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  approvedAt         DateTime?
+  publishedAt        DateTime?
+  completedAt        DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?
+  deletedAt          DateTime?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  managerId          String?
+  riskInfo           String?
+  location           String?
+  imageUrls          String[]             @default([])
+  rejectionReason    String?
+  documents          Document[]
+  investments        Investment[]
+  distributions      ProfitDistribution[]
+  updates            ProjectUpdate[]
+  distributionRule   DistributionRule?
+  distributionBatches DistributionBatch[]
+  manager            User?                @relation("ProjectManager", fields: [managerId], references: [id])
+
+  @@index([managerId])
+  @@index([status])
+  @@index([category])
+  @@index([slug])
+  @@index([fundingDeadline])
+  @@index([deletedAt])
+  @@map("projects")
+}
+
+model ProjectUpdate {
+  id          String            @id @default(uuid())
+  projectId   String
+  authorId    String
+  type        ProjectUpdateType
+  title       String
+  content     String
+  isPublished Boolean           @default(true)
+  publishedAt DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  project     Project           @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+  @@index([type])
+  @@map("project_updates")
+}
+
+model Investment {
+  id                 String                    @id @default(uuid())
+  investorProfileId  String
+  projectId          String
+  status             InvestmentStatus          @default(PENDING)
+  amountBdt          Decimal                   @db.Decimal(14, 2)
+  expectedReturnBdt  Decimal                   @db.Decimal(14, 2)
+  actualReturnBdt    Decimal?                  @db.Decimal(14, 2)
+  returnType         ReturnType
+  confirmedAt        DateTime?
+  activatedAt        DateTime?
+  maturedAt          DateTime?
+  cancelledAt        DateTime?
+  cancellationReason String?
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
+  idempotencyKey     String?                   @unique
+  paymentPendingAt   DateTime?
+  refundedAt         DateTime?
+  completedAt        DateTime?
+  receiptNumber      String?                   @unique
+  gatewayPayments    GatewayPayment[]
+  contract           InvestmentContract?
+  investorProfile    InvestorProfile           @relation(fields: [investorProfileId], references: [id])
+  project            Project                   @relation(fields: [projectId], references: [id])
+  ledgerTransactions LedgerTransaction[]
+  manualPayments     ManualPaymentSubmission[]
+  distributions      ProfitDistribution[]
+  distributionLines  DistributionLineItem[]
+
+  @@index([investorProfileId])
+  @@index([projectId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@map("investments")
+}
+
+model InvestmentContract {
+  id              String         @id @default(uuid())
+  investmentId    String         @unique
+  status          ContractStatus @default(DRAFT)
+  contractUrl     String?
+  templateVersion String
+  terms           Json
+  sentAt          DateTime?
+  signedAt        DateTime?
+  signedByIp      String?
+  expiresAt       DateTime?
+  voidedAt        DateTime?
+  voidReason      String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  investment      Investment     @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("investment_contracts")
+}
+
+model ProfitDistribution {
+  id             String     @id @default(uuid())
+  projectId      String
+  investmentId   String
+  amountBdt      Decimal    @db.Decimal(14, 2)
+  platformFeeBdt Decimal    @db.Decimal(14, 2)
+  netAmountBdt   Decimal    @db.Decimal(14, 2)
+  distributedAt  DateTime
+  notes          String?
+  createdAt      DateTime   @default(now())
+  investment     Investment @relation(fields: [investmentId], references: [id])
+  project        Project    @relation(fields: [projectId], references: [id])
+
+  @@index([projectId])
+  @@index([investmentId])
+  @@index([distributedAt])
+  @@map("profit_distributions")
+}
+
+model Wallet {
+  id            String           @id @default(uuid())
+  userId        String           @unique
+  type          WalletType
+  cachedBalance Decimal          @default(0) @db.Decimal(14, 2)
+  currency      String           @default("BDT")
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+  ledgerEntries LedgerEntry[]
+  payments      Payment[]
+  snapshots     WalletSnapshot[]
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  withdrawals   Withdrawal[]
+
+  @@index([type])
+  @@map("wallets")
+}
+
+model WalletSnapshot {
+  id            String   @id @default(uuid())
+  walletId      String
+  balanceBdt    Decimal  @db.Decimal(14, 2)
+  ledgerEntryId String
+  createdAt     DateTime @default(now())
+  wallet        Wallet   @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([createdAt])
+  @@map("wallet_snapshots")
+}
+
+model LedgerTransaction {
+  id             String                @id @default(uuid())
+  type           LedgerTransactionType
+  investmentId   String?
+  referenceId    String?
+  referenceType  String?
+  description    String
+  amountBdt      Decimal               @db.Decimal(14, 2)
+  createdAt      DateTime              @default(now())
+  status         LedgerTxStatus        @default(POSTED)
+  idempotencyKey String?               @unique
+  currency       String                @default("BDT")
+  metadata       Json?
+  postedAt       DateTime              @default(now())
+  voidedAt       DateTime?
+  voidReason     String?
+  entries        LedgerEntry[]
+  investment     Investment?           @relation(fields: [investmentId], references: [id])
+
+  @@index([type])
+  @@index([status])
+  @@index([investmentId])
+  @@index([referenceId, referenceType])
+  @@index([idempotencyKey])
+  @@index([postedAt])
+  @@index([createdAt])
+  @@map("ledger_transactions")
+}
+
+model LedgerEntry {
+  id                  String            @id @default(uuid())
+  ledgerTransactionId String
+  walletId            String
+  entryType           LedgerEntryType
+  amountBdt           Decimal           @db.Decimal(14, 2)
+  balanceAfterBdt     Decimal           @db.Decimal(14, 2)
+  createdAt           DateTime          @default(now())
+  ledgerTransaction   LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id])
+  wallet              Wallet            @relation(fields: [walletId], references: [id])
+
+  @@index([ledgerTransactionId])
+  @@index([entryType])
+  @@index([createdAt])
+  @@index([walletId])
+  @@map("ledger_entries")
+}
+
+model BankAccount {
+  id            String   @id @default(uuid())
+  bankName      String
+  accountName   String
+  accountNumber String
+  routingNumber String?
+  branchName    String?
+  instructions  String?
+  isActive      Boolean  @default(true)
+  createdBy     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@map("bank_accounts")
+}
+
+model ManualPaymentSubmission {
+  id              String              @id @default(uuid())
+  investmentId    String
+  submittedBy     String
+  status          ManualPaymentStatus @default(SUBMITTED)
+  amountBdt       Decimal             @db.Decimal(14, 2)
+  bankAccountId   String
+  transactionRef  String
+  proofFileUrl    String
+  proofMimeType   String
+  notes           String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  investment      Investment          @relation(fields: [investmentId], references: [id])
+
+  @@index([investmentId])
+  @@index([status])
+  @@index([submittedBy])
+  @@index([createdAt])
+  @@map("manual_payment_submissions")
+}
+
+model GatewayPayment {
+  id                String               @id @default(uuid())
+  investmentId      String
+  walletId          String?
+  provider          String
+  status            GatewayPaymentStatus @default(INITIATED)
+  amountBdt         Decimal              @db.Decimal(14, 2)
+  currency          String               @default("BDT")
+  idempotencyKey    String               @unique
+  providerPaymentId String?
+  providerOrderId   String?
+  checkoutUrl       String?
+  verifiedAt        DateTime?
+  verifiedBy        String?
+  expiresAt         DateTime?
+  failureReason     String?
+  providerMetadata  Json?
+  callbackPayload   Json?
+  refundedAt        DateTime?
+  refundReference   String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now()) @updatedAt
+  investment        Investment           @relation(fields: [investmentId], references: [id])
+
+  @@index([investmentId])
+  @@index([provider])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([providerPaymentId])
+  @@index([createdAt])
+  @@map("gateway_payments")
+}
+
+model WebhookEvent {
+  id          String   @id @default(uuid())
+  provider    String
+  eventId     String
+  eventType   String
+  processedAt DateTime @default(now())
+  payload     Json
+
+  @@unique([provider, eventId])
+  @@index([provider, eventId])
+  @@index([processedAt])
+  @@map("webhook_events")
+}
+
+model Payment {
+  id                String           @id @default(uuid())
+  walletId          String
+  direction         PaymentDirection
+  method            PaymentMethod
+  status            PaymentStatus    @default(PENDING)
+  amountBdt         Decimal          @db.Decimal(14, 2)
+  feeBdt            Decimal          @default(0) @db.Decimal(14, 2)
+  netAmountBdt      Decimal          @db.Decimal(14, 2)
+  currency          String           @default("BDT")
+  externalReference String?
+  gatewayResponse   Json?
+  description       String?
+  processedAt       DateTime?
+  failedAt          DateTime?
+  failureReason     String?
+  refundedAt        DateTime?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  idempotencyKey    String?          @unique
+  wallet            Wallet           @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([status])
+  @@index([direction])
+  @@index([idempotencyKey])
+  @@index([externalReference])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+model Withdrawal {
+  id                  String           @id @default(uuid())
+  walletId            String
+  status              WithdrawalStatus @default(PENDING)
+  amountBdt           Decimal          @db.Decimal(14, 2)
+  feeBdt              Decimal          @default(0) @db.Decimal(14, 2)
+  netAmountBdt        Decimal          @db.Decimal(14, 2)
+  bankName            String?
+  accountNumber       String?
+  accountName         String?
+  mobileNumber        String?
+  method              PaymentMethod
+  requestedAt         DateTime         @default(now())
+  approvedAt          DateTime?
+  approvedBy          String?
+  processedAt         DateTime?
+  completedAt         DateTime?
+  rejectedAt          DateTime?
+  rejectionReason     String?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  idempotencyKey      String?          @unique
+  ledgerTransactionId String?
+  wallet              Wallet           @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([status])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@map("withdrawals")
+}
+
+model Document {
+  id         String             @id @default(uuid())
+  uploadedBy String
+  entityType DocumentEntityType
+  entityId   String
+  name       String
+  fileUrl    String
+  mimeType   String
+  sizeBytes  Int
+  isPublic   Boolean            @default(false)
+  createdAt  DateTime           @default(now())
+  project    Project            @relation(fields: [entityId], references: [id], map: "document_project_fk")
+  uploader   User               @relation(fields: [uploadedBy], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([uploadedBy])
+  @@map("documents")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?
+  isRead    Boolean          @default(false)
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id         String      @id @default(uuid())
+  actorId    String?
+  action     AuditAction
+  entityType String
+  entityId   String
+  before     Json?
+  after      Json?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime    @default(now())
+  actor      User?       @relation("AuditActor", fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
 
 enum UserRole {
   SUPER_ADMIN
@@ -32,8 +723,6 @@ enum VerificationTokenType {
   OTP
 }
 
-// ─── KYC ─────────────────────────────────────────────────────────────────────
-
 enum KycStatus {
   NOT_STARTED
   SUBMITTED
@@ -50,9 +739,8 @@ enum KycDocumentType {
   UTILITY_BILL
   BANK_STATEMENT
   TAX_CERTIFICATE
+  LAND_DEED
 }
-
-// ─── Project ──────────────────────────────────────────────────────────────────
 
 enum ProjectStatus {
   DRAFT
@@ -81,8 +769,6 @@ enum ProjectUpdateType {
   FINANCIAL_REPORT
 }
 
-// ─── Investment ───────────────────────────────────────────────────────────────
-
 enum InvestmentStatus {
   PENDING
   PAYMENT_PENDING
@@ -106,8 +792,6 @@ enum ContractStatus {
   EXPIRED
   VOIDED
 }
-
-// ─── Financial ────────────────────────────────────────────────────────────────
 
 enum WalletType {
   INVESTOR
@@ -184,8 +868,6 @@ enum WithdrawalStatus {
   CANCELLED
 }
 
-// ─── Documents & Notifications ────────────────────────────────────────────────
-
 enum DocumentEntityType {
   USER
   KYC
@@ -206,6 +888,7 @@ enum NotificationType {
   KYC_REJECTED
   WITHDRAWAL_APPROVED
   WITHDRAWAL_COMPLETED
+  DISTRIBUTION_POSTED
   SYSTEM
 }
 
@@ -220,9 +903,8 @@ enum AuditAction {
   LOGIN
   LOGOUT
   EXPORT
+  VOID
 }
-
-// ─── Business Groups ─────────────────────────────────────────────────────────
 
 enum GroupSlug {
   MARINERS
@@ -246,743 +928,100 @@ enum GroupInvestmentStatus {
   COMPLETED
 }
 
-model BusinessGroup {
-  id          String    @id @default(uuid())
-  slug        GroupSlug @unique
-  name        String
-  tagline     String?
-  description String
-  logoUrl     String?
-  coverUrl    String?
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  entities GroupEntity[]
-
-  @@map("business_groups")
+enum DistributionBatchStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  POSTED
+  VOIDED
 }
 
-model GroupEntity {
-  id          String   @id @default(uuid())
-  groupId     String
-  name        String
-  slug        String   @unique
-  description String
-  logoUrl     String?
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  group BusinessGroup @relation(fields: [groupId], references: [id])
-  tiers GroupTier[]
-
-  @@index([groupId])
-  @@map("group_entities")
+enum DistributionLineStatus {
+  PENDING
+  POSTED
+  VOIDED
 }
 
-model GroupTier {
-  id                String   @id @default(uuid())
-  entityId          String
-  type              TierType
-  name              String
-  description       String
-  benefits          String[]
-  minAmountBdt      Decimal  @db.Decimal(14, 2)
-  maxAmountBdt      Decimal? @db.Decimal(14, 2)
-  plotSizeSqft      Decimal? @db.Decimal(10, 2)
-  pricePerSqftBdt   Decimal? @db.Decimal(10, 2)
-  totalUnits        Int?
-  availableUnits    Int?
-  expectedReturnPct Decimal? @db.Decimal(6, 4)
-  durationMonths    Int?
-  isActive          Boolean  @default(true)
-  sortOrder         Int      @default(0)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+// ─── Distribution ─────────────────────────────────────────────────────────────
 
-  entity      GroupEntity       @relation(fields: [entityId], references: [id])
-  investments GroupInvestment[]
+model DistributionRule {
+  id               String   @id @default(uuid())
+  projectId        String   @unique
+  investorSharePct Decimal  @db.Decimal(6, 4)
+  platformFeePct   Decimal  @db.Decimal(6, 4)
+  notes            String?
+  createdBy        String
+  updatedBy        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  @@index([entityId])
-  @@map("group_tiers")
+  project Project             @relation(fields: [projectId], references: [id])
+  batches DistributionBatch[]
+
+  @@index([projectId])
+  @@map("distribution_rules")
 }
 
-model GroupInvestment {
-  id             String                @id @default(uuid())
-  tierId         String
-  investorUserId String
-  status         GroupInvestmentStatus @default(PENDING)
-  amountBdt      Decimal               @db.Decimal(14, 2)
-  plotNumber     String?
-  plotSizeSqft   Decimal?              @db.Decimal(10, 2)
-  sharePercentage Decimal?             @db.Decimal(6, 4)
-  notes          String?
-  receiptNumber  String?               @unique
-  confirmedAt    DateTime?
-  cancelledAt    DateTime?
-  createdAt      DateTime              @default(now())
-  updatedAt      DateTime              @updatedAt
+model DistributionBatch {
+  id               String                  @id @default(uuid())
+  projectId        String
+  ruleId           String
+  status           DistributionBatchStatus @default(DRAFT)
+  ruleSnapshot     Json
+  totalRevenueBdt  Decimal                 @db.Decimal(14, 2)
+  totalExpensesBdt Decimal                 @db.Decimal(14, 2)
+  netRevenueBdt    Decimal                 @db.Decimal(14, 2)
+  investorPoolBdt  Decimal                 @db.Decimal(14, 2)
+  totalGrossBdt    Decimal                 @db.Decimal(14, 2)
+  totalFeeBdt      Decimal                 @db.Decimal(14, 2)
+  totalNetBdt      Decimal                 @db.Decimal(14, 2)
+  notes            String?
+  createdBy        String
+  submittedBy      String?
+  submittedAt      DateTime?
+  approvedBy       String?
+  approvedAt       DateTime?
+  postedBy         String?
+  postedAt         DateTime?
+  voidedBy         String?
+  voidedAt         DateTime?
+  voidReason       String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
-  tier     GroupTier @relation(fields: [tierId], references: [id])
-  investor User      @relation("GroupInvestments", fields: [investorUserId], references: [id])
-  manualPayments GroupInvestmentPayment[]
+  project   Project                @relation(fields: [projectId], references: [id])
+  rule      DistributionRule       @relation(fields: [ruleId], references: [id])
+  lineItems DistributionLineItem[]
 
-  @@index([tierId])
+  @@index([projectId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("distribution_batches")
+}
+
+model DistributionLineItem {
+  id                  String                 @id @default(uuid())
+  batchId             String
+  investmentId        String
+  investorUserId      String
+  investorSharePct    Decimal                @db.Decimal(10, 6)
+  principalBdt        Decimal                @db.Decimal(14, 2)
+  grossAmountBdt      Decimal                @db.Decimal(14, 2)
+  platformFeeBdt      Decimal                @db.Decimal(14, 2)
+  netAmountBdt        Decimal                @db.Decimal(14, 2)
+  status              DistributionLineStatus @default(PENDING)
+  ledgerTransactionId String?
+  postedAt            DateTime?
+  voidedAt            DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+
+  batch      DistributionBatch @relation(fields: [batchId], references: [id])
+  investment Investment        @relation(fields: [investmentId], references: [id])
+
+  @@index([batchId])
+  @@index([investmentId])
   @@index([investorUserId])
   @@index([status])
-  @@map("group_investments")
-}
-
-model GroupInvestmentPayment {
-  id                String              @id @default(uuid())
-  groupInvestmentId String
-  submittedBy       String
-  status            ManualPaymentStatus @default(SUBMITTED)
-  amountBdt         Decimal             @db.Decimal(14, 2)
-  bankAccountId     String
-  transactionRef    String
-  proofFileUrl      String
-  proofMimeType     String
-  notes             String?
-  reviewedBy        String?
-  reviewedAt        DateTime?
-  rejectionReason   String?
-  createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
-
-  groupInvestment GroupInvestment @relation(fields: [groupInvestmentId], references: [id])
-
-  @@index([groupInvestmentId])
-  @@index([status])
-  @@map("group_investment_payments")
-}
-
-// ─── Auth & Identity Models ───────────────────────────────────────────────────
-
-model User {
-  id            String     @id @default(uuid())
-  email         String     @unique
-  passwordHash  String
-  name          String
-  phone         String?    @unique
-  role          UserRole   @default(INVESTOR)
-  status        UserStatus @default(ACTIVE)
-  avatarUrl     String?
-  emailVerified Boolean    @default(false)
-  phoneVerified Boolean    @default(false)
-  deletedAt     DateTime?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  sessions            Session[]
-  verificationTokens  VerificationToken[]
-  kyc                 Kyc?
-  investorProfile     InvestorProfile?
-  wallet              Wallet?
-  notifications       Notification[]
-  auditLogs           AuditLog[]        @relation("AuditActor")
-  documents           Document[]
-  managedProjects     Project[]         @relation("ProjectManager")
-  groupInvestments    GroupInvestment[] @relation("GroupInvestments")
-
-  @@index([email])
-  @@index([role])
-  @@index([status])
-  @@index([deletedAt])
-  @@map("users")
-}
-
-model Session {
-  id        String   @id @default(uuid())
-  userId    String
-  token     String   @unique
-  userAgent String?
-  ipAddress String?
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("sessions")
-}
-
-model VerificationToken {
-  id        String                @id @default(uuid())
-  userId    String
-  token     String                @unique
-  type      VerificationTokenType
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime              @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([token])
-  @@index([userId, type])
-  @@map("verification_tokens")
-}
-
-// ─── Role-Based Access Control ────────────────────────────────────────────────
-
-model Permission {
-  id          String   @id @default(uuid())
-  key         String   @unique
-  description String
-  createdAt   DateTime @default(now())
-
-  rolePermissions RolePermission[]
-
-  @@map("permissions")
-}
-
-model RolePermission {
-  id           String   @id @default(uuid())
-  role         UserRole
-  permissionId String
-  createdAt    DateTime @default(now())
-
-  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
-
-  @@unique([role, permissionId])
-  @@index([role])
-  @@map("role_permissions")
-}
-
-// ─── KYC ─────────────────────────────────────────────────────────────────────
-
-model Kyc {
-  id              String    @id @default(uuid())
-  userId          String    @unique
-  status          KycStatus @default(NOT_STARTED)
-  fullName        String?
-  dateOfBirth     DateTime?
-  nationality     String?   @default("BD")
-  addressLine     String?
-  city            String?
-  district        String?
-  division        String?
-  postalCode      String?
-  documentType    KycDocumentType?
-  documentNumber  String?
-  bankName        String?
-  bankAccountNumber String?
-  mobileProvider  String?
-  mobileNumber    String?
-  submittedAt     DateTime?
-  reviewedAt      DateTime?
-  reviewedBy      String?
-  reviewNote      String?
-  expiresAt       DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents KycDocument[]
-
-  @@index([status])
-  @@index([reviewedBy])
-  @@map("kyc")
-}
-
-model KycDocument {
-  id           String   @id @default(uuid())
-  kycId        String
-  documentType String
-  storageKey   String
-  mimeType     String
-  sizeBytes    Int
-  verifiedAt   DateTime?
-  createdAt    DateTime @default(now())
-
-  kyc Kyc @relation(fields: [kycId], references: [id], onDelete: Cascade)
-
-  @@index([kycId])
-  @@map("kyc_documents")
-}
-
-// ─── User Profiles ────────────────────────────────────────────────────────────
-
-model InvestorProfile {
-  id                   String    @id @default(uuid())
-  userId               String    @unique
-  nationalId           String?   @unique
-  dateOfBirth          DateTime?
-  address              String?
-  city                 String?
-  country              String    @default("BD")
-  occupation           String?
-  annualIncomeRange    String?
-  investmentExperience String?
-  riskTolerance        String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  investments Investment[]
-
-  @@map("investor_profiles")
-}
-
-// ─── Projects ─────────────────────────────────────────────────────────────────
-
-model Project {
-  id                 String          @id @default(uuid())
-  managerId          String?
-  title              String
-  slug               String          @unique
-  description        String
-  category           ProjectCategory
-  status             ProjectStatus   @default(DRAFT)
-  riskInfo           String?
-  location           String?
-  fundingGoalBdt     Decimal         @db.Decimal(14, 2)
-  fundingMinBdt      Decimal         @db.Decimal(14, 2)
-  fundedAmountBdt    Decimal         @db.Decimal(14, 2) @default(0)
-  minInvestmentBdt   Decimal         @db.Decimal(14, 2)
-  maxInvestmentBdt   Decimal?        @db.Decimal(14, 2)
-  returnType         ReturnType
-  expectedReturnPct  Decimal         @db.Decimal(6, 4)
-  durationDays       Int
-  fundingDeadline    DateTime
-  startDate          DateTime?
-  endDate            DateTime?
-  coverImageUrl      String?
-  imageUrls          String[]
-  reviewedBy         String?
-  reviewedAt         DateTime?
-  approvedAt         DateTime?
-  publishedAt        DateTime?
-  completedAt        DateTime?
-  cancelledAt        DateTime?
-  cancellationReason String?
-  rejectionReason    String?
-  deletedAt          DateTime?
-  createdAt          DateTime        @default(now())
-  updatedAt          DateTime        @updatedAt
-
-  manager       User?               @relation("ProjectManager", fields: [managerId], references: [id])
-  investments   Investment[]
-  updates       ProjectUpdate[]
-  distributions ProfitDistribution[]
-  documents     Document[]
-
-  @@index([managerId])
-  @@index([status])
-  @@index([category])
-  @@index([slug])
-  @@index([fundingDeadline])
-  @@index([deletedAt])
-  @@map("projects")
-}
-
-model ProjectUpdate {
-  id          String            @id @default(uuid())
-  projectId   String
-  authorId    String
-  type        ProjectUpdateType @default(GENERAL)
-  title       String
-  content     String
-  isPublished Boolean           @default(true)
-  publishedAt DateTime?
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  project Project @relation(fields: [projectId], references: [id])
-
-  @@index([projectId])
-  @@index([type])
-  @@map("project_updates")
-}
-
-// ─── Investments ──────────────────────────────────────────────────────────────
-
-model Investment {
-  id                 String           @id @default(uuid())
-  investorProfileId  String
-  projectId          String
-  status             InvestmentStatus @default(PENDING)
-  amountBdt          Decimal          @db.Decimal(14, 2)
-  expectedReturnBdt  Decimal          @db.Decimal(14, 2)
-  actualReturnBdt    Decimal?         @db.Decimal(14, 2)
-  returnType         ReturnType
-  idempotencyKey     String?          @unique
-  paymentPendingAt   DateTime?
-  confirmedAt        DateTime?
-  activatedAt        DateTime?
-  maturedAt          DateTime?
-  cancelledAt        DateTime?
-  refundedAt         DateTime?
-  completedAt        DateTime?
-  cancellationReason String?
-  receiptNumber      String?          @unique
-  createdAt          DateTime         @default(now())
-  updatedAt          DateTime         @updatedAt
-
-  investorProfile    InvestorProfile      @relation(fields: [investorProfileId], references: [id])
-  project            Project              @relation(fields: [projectId], references: [id])
-  contract           InvestmentContract?
-  distributions      ProfitDistribution[]
-  ledgerTransactions LedgerTransaction[]
-  gatewayPayments    GatewayPayment[]
-  manualPayments     ManualPaymentSubmission[]
-
-  @@index([investorProfileId])
-  @@index([projectId])
-  @@index([status])
-  @@index([idempotencyKey])
-  @@map("investments")
-}
-
-model InvestmentContract {
-  id              String         @id @default(uuid())
-  investmentId    String         @unique
-  status          ContractStatus @default(DRAFT)
-  contractUrl     String?
-  templateVersion String
-  terms           Json
-  sentAt          DateTime?
-  signedAt        DateTime?
-  signedByIp      String?
-  expiresAt       DateTime?
-  voidedAt        DateTime?
-  voidReason      String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-
-  investment Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
-
-  @@index([status])
-  @@map("investment_contracts")
-}
-
-model ProfitDistribution {
-  id             String   @id @default(uuid())
-  projectId      String
-  investmentId   String
-  amountBdt      Decimal  @db.Decimal(14, 2)
-  platformFeeBdt Decimal  @db.Decimal(14, 2)
-  netAmountBdt   Decimal  @db.Decimal(14, 2)
-  distributedAt  DateTime
-  notes          String?
-  createdAt      DateTime @default(now())
-
-  project    Project    @relation(fields: [projectId], references: [id])
-  investment Investment @relation(fields: [investmentId], references: [id])
-
-  @@index([projectId])
-  @@index([investmentId])
-  @@index([distributedAt])
-  @@map("profit_distributions")
-}
-
-// ─── Wallets & Ledger ─────────────────────────────────────────────────────────
-
-model Wallet {
-  id            String     @id @default(uuid())
-  userId        String     @unique
-  type          WalletType
-  cachedBalance Decimal    @db.Decimal(14, 2) @default(0)
-  currency      String     @default("BDT")
-  isActive      Boolean    @default(true)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
-
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  ledgerEntries LedgerEntry[]
-  payments      Payment[]
-  withdrawals   Withdrawal[]
-  snapshots     WalletSnapshot[]
-
-  @@index([type])
-  @@map("wallets")
-}
-
-model WalletSnapshot {
-  id            String   @id @default(uuid())
-  walletId      String
-  balanceBdt    Decimal  @db.Decimal(14, 2)
-  ledgerEntryId String
-  createdAt     DateTime @default(now())
-
-  wallet Wallet @relation(fields: [walletId], references: [id])
-
-  @@index([walletId])
-  @@index([createdAt])
-  @@map("wallet_snapshots")
-}
-
-model LedgerTransaction {
-  id             String                @id @default(uuid())
-  type           LedgerTransactionType
-  status         LedgerTxStatus        @default(POSTED)
-  investmentId   String?
-  referenceId    String?
-  referenceType  String?
-  idempotencyKey String?               @unique
-  description    String
-  amountBdt      Decimal               @db.Decimal(14, 2)
-  currency       String                @default("BDT")
-  metadata       Json?
-  postedAt       DateTime              @default(now())
-  voidedAt       DateTime?
-  voidReason     String?
-  createdAt      DateTime              @default(now())
-
-  investment Investment?   @relation(fields: [investmentId], references: [id])
-  entries    LedgerEntry[]
-
-  @@index([type])
-  @@index([status])
-  @@index([investmentId])
-  @@index([referenceId, referenceType])
-  @@index([idempotencyKey])
-  @@index([postedAt])
-  @@map("ledger_transactions")
-}
-
-model LedgerEntry {
-  id                  String          @id @default(uuid())
-  ledgerTransactionId String
-  walletId            String
-  entryType           LedgerEntryType
-  amountBdt           Decimal         @db.Decimal(14, 2)
-  balanceAfterBdt     Decimal         @db.Decimal(14, 2)
-  createdAt           DateTime        @default(now())
-
-  ledgerTransaction LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id])
-  wallet            Wallet            @relation(fields: [walletId], references: [id])
-
-  @@index([ledgerTransactionId])
-  @@index([walletId, createdAt])
-  @@index([entryType])
-  @@map("ledger_entries")
-}
-
-// ─── Manual Payment (Bank Transfer Proof) ────────────────────────────────────
-
-model BankAccount {
-  id            String   @id @default(uuid())
-  bankName      String
-  accountName   String
-  accountNumber String
-  routingNumber String?
-  branchName    String?
-  instructions  String?
-  isActive      Boolean  @default(true)
-  createdBy     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-
-  @@index([isActive])
-  @@map("bank_accounts")
-}
-
-model ManualPaymentSubmission {
-  id             String              @id @default(uuid())
-  investmentId   String
-  submittedBy    String
-  status         ManualPaymentStatus @default(SUBMITTED)
-  amountBdt      Decimal             @db.Decimal(14, 2)
-  bankAccountId  String
-  transactionRef String
-  proofFileUrl   String
-  proofMimeType  String
-  notes          String?
-  reviewedBy     String?
-  reviewedAt     DateTime?
-  rejectionReason String?
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
-
-  investment Investment @relation(fields: [investmentId], references: [id])
-
-  @@index([investmentId])
-  @@index([status])
-  @@index([submittedBy])
-  @@index([createdAt])
-  @@map("manual_payment_submissions")
-}
-
-// ─── Payments & Withdrawals ───────────────────────────────────────────────────
-
-model GatewayPayment {
-  id                String               @id @default(uuid())
-  investmentId      String
-  walletId          String?
-  provider          String
-  status            GatewayPaymentStatus @default(INITIATED)
-  amountBdt         Decimal              @db.Decimal(14, 2)
-  currency          String               @default("BDT")
-  idempotencyKey    String               @unique
-  providerPaymentId String?
-  providerOrderId   String?
-  checkoutUrl       String?
-  verifiedAt        DateTime?
-  verifiedBy        String?
-  expiresAt         DateTime?
-  failureReason     String?
-  providerMetadata  Json?
-  callbackPayload   Json?
-  refundedAt        DateTime?
-  refundReference   String?
-  createdAt         DateTime             @default(now())
-  updatedAt         DateTime             @updatedAt
-
-  investment Investment @relation(fields: [investmentId], references: [id])
-
-  @@index([investmentId])
-  @@index([provider])
-  @@index([status])
-  @@index([idempotencyKey])
-  @@index([providerPaymentId])
-  @@index([createdAt])
-  @@map("gateway_payments")
-}
-
-model WebhookEvent {
-  id          String   @id @default(uuid())
-  provider    String
-  eventId     String
-  eventType   String
-  processedAt DateTime @default(now())
-  payload     Json
-
-  @@unique([provider, eventId])
-  @@index([provider, eventId])
-  @@index([processedAt])
-  @@map("webhook_events")
-}
-
-model Payment {
-  id                String           @id @default(uuid())
-  walletId          String
-  direction         PaymentDirection
-  method            PaymentMethod
-  status            PaymentStatus    @default(PENDING)
-  amountBdt         Decimal          @db.Decimal(14, 2)
-  feeBdt            Decimal          @db.Decimal(14, 2) @default(0)
-  netAmountBdt      Decimal          @db.Decimal(14, 2)
-  currency          String           @default("BDT")
-  idempotencyKey    String?          @unique
-  externalReference String?
-  gatewayResponse   Json?
-  description       String?
-  processedAt       DateTime?
-  failedAt          DateTime?
-  failureReason     String?
-  refundedAt        DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-
-  wallet Wallet @relation(fields: [walletId], references: [id])
-
-  @@index([walletId])
-  @@index([status])
-  @@index([direction])
-  @@index([idempotencyKey])
-  @@index([externalReference])
-  @@index([createdAt])
-  @@map("payments")
-}
-
-model Withdrawal {
-  id                  String           @id @default(uuid())
-  walletId            String
-  status              WithdrawalStatus @default(PENDING)
-  amountBdt           Decimal          @db.Decimal(14, 2)
-  feeBdt              Decimal          @db.Decimal(14, 2) @default(0)
-  netAmountBdt        Decimal          @db.Decimal(14, 2)
-  bankName            String?
-  accountNumber       String?
-  accountName         String?
-  mobileNumber        String?
-  method              PaymentMethod
-  idempotencyKey      String?          @unique
-  ledgerTransactionId String?
-  requestedAt         DateTime         @default(now())
-  approvedAt          DateTime?
-  approvedBy          String?
-  processedAt         DateTime?
-  completedAt         DateTime?
-  rejectedAt          DateTime?
-  rejectionReason     String?
-  createdAt           DateTime         @default(now())
-  updatedAt           DateTime         @updatedAt
-
-  wallet Wallet @relation(fields: [walletId], references: [id])
-
-  @@index([walletId])
-  @@index([status])
-  @@index([idempotencyKey])
-  @@index([createdAt])
-  @@map("withdrawals")
-}
-
-// ─── Documents ────────────────────────────────────────────────────────────────
-
-model Document {
-  id         String             @id @default(uuid())
-  uploadedBy String
-  entityType DocumentEntityType
-  entityId   String
-  name       String
-  fileUrl    String
-  mimeType   String
-  sizeBytes  Int
-  isPublic   Boolean            @default(false)
-  createdAt  DateTime           @default(now())
-
-  uploader User     @relation(fields: [uploadedBy], references: [id])
-  project  Project? @relation(fields: [entityId], references: [id], map: "document_project_fk")
-
-  @@index([entityType, entityId])
-  @@index([uploadedBy])
-  @@map("documents")
-}
-
-// ─── Notifications ────────────────────────────────────────────────────────────
-
-model Notification {
-  id        String           @id @default(uuid())
-  userId    String
-  type      NotificationType
-  title     String
-  body      String
-  data      Json?
-  isRead    Boolean          @default(false)
-  readAt    DateTime?
-  createdAt DateTime         @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId, isRead])
-  @@index([userId, createdAt])
-  @@map("notifications")
-}
-
-// ─── Audit Log ────────────────────────────────────────────────────────────────
-
-model AuditLog {
-  id         String      @id @default(uuid())
-  actorId    String?
-  action     AuditAction
-  entityType String
-  entityId   String
-  before     Json?
-  after      Json?
-  ipAddress  String?
-  userAgent  String?
-  createdAt  DateTime    @default(now())
-
-  actor User? @relation("AuditActor", fields: [actorId], references: [id])
-
-  @@index([actorId])
-  @@index([entityType, entityId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("audit_logs")
+  @@map("distribution_line_items")
 }

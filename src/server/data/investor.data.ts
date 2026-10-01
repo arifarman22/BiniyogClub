@@ -60,7 +60,10 @@ export async function getInvestorDashboard(session: SessionUser) {
 
   const [investments, wallet, pendingPayments] = await Promise.all([
     db.investment.findMany({
-      where: { investorProfileId: profileId },
+      where: {
+        investorProfileId: profileId,
+        status: { notIn: ["PENDING"] },
+      },
       select: {
         id: true,
         status: true,
@@ -122,7 +125,10 @@ export async function getInvestorInvestments(session: SessionUser) {
   const profileId = await resolveProfile(session);
 
   return db.investment.findMany({
-    where: { investorProfileId: profileId },
+    where: {
+      investorProfileId: profileId,
+      status: { notIn: ["PENDING"] },
+    },
     select: {
       id: true,
       status: true,
@@ -165,9 +171,9 @@ export async function getInvestorInvestments(session: SessionUser) {
 export async function getInvestorProjects(session: SessionUser) {
   const profileId = await resolveProfile(session);
 
-  // Only projects where this investor has an investment
+  // Only projects where this investor has an approved investment
   const investments = await db.investment.findMany({
-    where: { investorProfileId: profileId },
+    where: { investorProfileId: profileId, status: { notIn: ["PENDING"] } },
     select: {
       id: true,
       status: true,
@@ -189,7 +195,6 @@ export async function getInvestorProjects(session: SessionUser) {
           startDate: true,
           endDate: true,
           fundingDeadline: true,
-          // Only updates for projects this investor is in
           updates: {
             where: { isPublished: true },
             select: { id: true, title: true, type: true, publishedAt: true, content: true },

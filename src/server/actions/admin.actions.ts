@@ -233,6 +233,74 @@ export async function completeWithdrawalAction(withdrawalId: string): Promise<Ac
 
 // ─── Investment management ────────────────────────────────────────────────────
 
+function generateReceiptNumber(): string {
+  const ts = Date.now().toString(36).toUpperCase();
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+  return `BC-${ts}-${rand}`;
+}
+
+export async function approveInvestmentAdminAction(investmentId: string): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
+
+    const inv = await db.investment.findUnique({
+      where: { id: investmentId },
+      select: {
+        id: true, status: true, amountBdt: true, projectId: true,
+        investorProfile: { select: { user: { select: { id: true } } } },
+        project: { select: { title: true, fundingGoalBdt: true, fundedAmountBdt: true, status: true } },
+      },
+    });
+    if (!inv) throw new NotFoundError("Investment");
+    if (inv.status !== "PENDING") throw new ValidationError("Only PENDING investments can be approved");
+
+    const receiptNumber = generateReceiptNumber();
+    const now = new Date();
+    const amountBdt = Number(inv.amountBdt);
+
+    await db.$transaction(async (tx) => {
+      // Activate investment
+      await tx.investment.update({
+        where: { id: investmentId },
+        data: { status: "ACTIVE", confirmedAt: now, activatedAt: now, receiptNumber },
+      });
+
+      // Increment project funded amount
+      const updatedProject = await tx.project.update({
+        where: { id: inv.projectId },
+        data: { fundedAmountBdt: { increment: amountBdt } },
+        select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+      });
+
+      // Auto-transition project to FUNDED if goal reached
+      if (
+        Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
+        updatedProject.status === "FUNDRAISING"
+      ) {
+        await tx.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
+      }
+
+      // Notify investor
+      await tx.notification.create({
+        data: {
+          userId: inv.investorProfile.user.id,
+          type: "INVESTMENT_CONFIRMED",
+          title: "Investment Approved",
+          body: `Your investment in "${inv.project.title}" has been approved. Receipt: ${receiptNumber}`,
+          data: { investmentId, receiptNumber },
+        },
+      });
+    });
+
+    await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
+
+    revalidatePath("/admin/investments");
+    revalidatePath("/dashboard/investments");
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
+
 export async function cancelInvestmentAdminAction(investmentId: string, reason: string): Promise<ActionResult<void>> {
   try {
     const session = await requireSession();

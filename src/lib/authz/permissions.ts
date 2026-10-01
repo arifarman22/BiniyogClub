@@ -39,6 +39,13 @@ export const PERMISSIONS = {
   KYC_REVIEW:         "kyc.review",
   KYC_APPROVE:        "kyc.approve",
 
+  // ── Distribution management ──────────────────────────────────────────────
+  DISTRIBUTION_VIEW:    "distribution.view",
+  DISTRIBUTION_CREATE:  "distribution.create",
+  DISTRIBUTION_APPROVE: "distribution.approve",
+  DISTRIBUTION_POST:    "distribution.post",
+  DISTRIBUTION_VOID:    "distribution.void",
+
   // ── Reports ──────────────────────────────────────────────────────────────
   REPORT_VIEW:        "report.view",
 
@@ -75,8 +82,13 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "kyc.submit":         "Submit own KYC documents",
   "kyc.review":         "Review KYC submissions",
   "kyc.approve":        "Approve or reject KYC submissions",
-  "report.view":        "Access platform reports and analytics",
-  "audit.view":         "View audit logs",
+  "distribution.view":    "View distribution batches and line items",
+  "distribution.create":  "Create and calculate distribution batches",
+  "distribution.approve": "Approve distribution batches for posting",
+  "distribution.post":    "Post approved distributions to investor ledgers",
+  "distribution.void":    "Void a posted distribution batch",
+  "report.view":          "Access platform reports and analytics",
+  "audit.view":           "View audit logs",
 };
 
 const P = PERMISSIONS;
@@ -91,6 +103,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.PAYMENT_VIEW, P.PAYMENT_VERIFY,
     P.WITHDRAWAL_VIEW, P.WITHDRAWAL_APPROVE,
     P.KYC_VIEW, P.KYC_REVIEW, P.KYC_APPROVE,
+    P.DISTRIBUTION_VIEW, P.DISTRIBUTION_CREATE, P.DISTRIBUTION_APPROVE, P.DISTRIBUTION_POST, P.DISTRIBUTION_VOID,
     P.REPORT_VIEW,
     P.AUDIT_VIEW,
   ],
@@ -99,6 +112,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.PAYMENT_VIEW, P.PAYMENT_VERIFY,
     P.WITHDRAWAL_VIEW, P.WITHDRAWAL_APPROVE,
     P.INVESTMENT_VIEW,
+    P.DISTRIBUTION_VIEW, P.DISTRIBUTION_CREATE, P.DISTRIBUTION_APPROVE, P.DISTRIBUTION_POST, P.DISTRIBUTION_VOID,
     P.REPORT_VIEW,
     P.USER_VIEW,
   ],
@@ -106,6 +120,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   PROJECT_MANAGER: [
     P.PROJECT_VIEW, P.PROJECT_CREATE, P.PROJECT_UPDATE, P.PROJECT_APPROVE, P.PROJECT_PUBLISH, P.PROJECT_ARCHIVE,
     P.INVESTMENT_VIEW,
+    P.DISTRIBUTION_VIEW,
     P.REPORT_VIEW,
     P.USER_VIEW,
   ],
