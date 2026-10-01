@@ -156,7 +156,7 @@ export default async function DashboardPage() {
     .filter(([, v]) => v > 0)
     .map(([k, v]) => ({ name: k.replace(/_/g, " "), value: v, color: STATUS_COLORS[k] ?? "#9CA3AF" }));
 
-  const recent = (investments as never[]).slice(0, 6);
+  const recent = investments.slice(0, 6);
   const roi = stats.totalInvested > 0
     ? ((stats.distributedReturns / stats.totalInvested) * 100).toFixed(1)
     : "0.0";
