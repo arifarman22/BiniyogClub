@@ -1,10 +1,11 @@
 /**
  * Storage abstraction — Cloudinary provider.
- * KYC documents are uploaded to a private folder and accessed via signed URLs.
+ * All documents are stored as authenticated (private) resources.
  * Never expose storageKey (public_id) directly to the client.
  */
 
 import { v2 as cloudinary } from "cloudinary";
+import type { DocumentCategory } from "@/types/prisma";
 
 function configureCloudinary() {
   cloudinary.config({
@@ -21,24 +22,27 @@ export interface UploadResult {
 
 export interface StorageProvider {
   upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult>;
-  delete(key: string): Promise<void>;
-  getSignedUrl(key: string, expiresInSeconds?: number): Promise<string>;
+  delete(key: string, mimeType: string): Promise<void>;
+  getSignedUrl(key: string, mimeType: string, expiresInSeconds?: number): Promise<string>;
+}
+
+function getResourceType(mimeType: string): "image" | "raw" {
+  if (mimeType.startsWith("image/")) return "image";
+  return "raw"; // PDF and all other binary files
 }
 
 class CloudinaryProvider implements StorageProvider {
   async upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult> {
     configureCloudinary();
-    const resourceType = mimeType === "application/pdf" ? "raw" : "image";
+    const resourceType = getResourceType(mimeType);
 
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
         {
           public_id:     key,
           resource_type: resourceType,
-          // Private delivery type — not publicly accessible
           type:          "authenticated",
           overwrite:     true,
-          // Never apply transformations to identity documents
           invalidate:    true,
         },
         (error, result) => {
@@ -50,21 +54,23 @@ class CloudinaryProvider implements StorageProvider {
     });
   }
 
-  async delete(key: string): Promise<void> {
+  async delete(key: string, mimeType: string): Promise<void> {
     configureCloudinary();
+    const resourceType = getResourceType(mimeType);
     await cloudinary.uploader.destroy(key, {
       type:          "authenticated",
-      resource_type: "image",
+      resource_type: resourceType,
       invalidate:    true,
     });
   }
 
-  async getSignedUrl(key: string, expiresInSeconds = 300): Promise<string> {
+  async getSignedUrl(key: string, mimeType: string, expiresInSeconds = 300): Promise<string> {
     configureCloudinary();
+    const resourceType = getResourceType(mimeType);
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
     return cloudinary.url(key, {
       type:          "authenticated",
-      resource_type: "image",
+      resource_type: resourceType,
       sign_url:      true,
       expires_at:    expiresAt,
       secure:        true,
@@ -74,25 +80,69 @@ class CloudinaryProvider implements StorageProvider {
 
 export const storage: StorageProvider = new CloudinaryProvider();
 
-// ─── Allowed KYC document MIME types ─────────────────────────────────────────
+// ─── Storage key builders ─────────────────────────────────────────────────────
 
-export const ALLOWED_KYC_MIME_TYPES = [
+export function buildStorageKey(category: DocumentCategory, entityId: string, filename: string): string {
+  const folder = CATEGORY_FOLDERS[category] ?? "documents/misc";
+  // Sanitize filename — strip extension, keep alphanumeric + dash
+  const base = filename.replace(/\.[^.]+$/, "").replace(/[^a-zA-Z0-9-_]/g, "_").slice(0, 60);
+  return `${folder}/${entityId}/${base}_${Date.now()}`;
+}
+
+const CATEGORY_FOLDERS: Record<DocumentCategory, string> = {
+  KYC:                    "documents/kyc",
+  PROJECT_DOCUMENT:       "documents/projects",
+  INVESTMENT_AGREEMENT:   "documents/agreements",
+  PAYMENT_RECEIPT:        "documents/receipts/payment",
+  INVESTMENT_RECEIPT:     "documents/receipts/investment",
+  DISTRIBUTION_STATEMENT: "documents/distributions",
+  HARVEST_REPORT:         "documents/harvest",
+  FARM_DOCUMENT:          "documents/farm",
+};
+
+// ─── File validation ──────────────────────────────────────────────────────────
+
+export const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
   "application/pdf",
 ] as const;
 
-export type AllowedKycMimeType = (typeof ALLOWED_KYC_MIME_TYPES)[number];
+export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
-export const MAX_KYC_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
+// Per-category size limits (bytes)
+const CATEGORY_SIZE_LIMITS: Record<DocumentCategory, number> = {
+  KYC:                    5  * 1024 * 1024,  // 5 MB
+  PROJECT_DOCUMENT:       10 * 1024 * 1024,  // 10 MB
+  INVESTMENT_AGREEMENT:   5  * 1024 * 1024,  // 5 MB — generated PDFs
+  PAYMENT_RECEIPT:        5  * 1024 * 1024,
+  INVESTMENT_RECEIPT:     5  * 1024 * 1024,
+  DISTRIBUTION_STATEMENT: 5  * 1024 * 1024,
+  HARVEST_REPORT:         10 * 1024 * 1024,
+  FARM_DOCUMENT:          10 * 1024 * 1024,
+};
 
-export function validateKycFile(mimeType: string, sizeBytes: number): string | null {
-  if (!ALLOWED_KYC_MIME_TYPES.includes(mimeType as AllowedKycMimeType)) {
+export function validateDocumentFile(
+  mimeType: string,
+  sizeBytes: number,
+  category: DocumentCategory,
+): string | null {
+  if (!ALLOWED_MIME_TYPES.includes(mimeType as AllowedMimeType)) {
     return "File must be JPEG, PNG, WebP, or PDF";
   }
-  if (sizeBytes > MAX_KYC_FILE_SIZE_BYTES) {
-    return "File must be smaller than 5 MB";
+  const limit = CATEGORY_SIZE_LIMITS[category];
+  if (sizeBytes > limit) {
+    return `File must be smaller than ${limit / (1024 * 1024)} MB`;
   }
   return null;
+}
+
+// ─── Legacy KYC helpers (backwards compat) ───────────────────────────────────
+
+export const ALLOWED_KYC_MIME_TYPES = ALLOWED_MIME_TYPES;
+export const MAX_KYC_FILE_SIZE_BYTES = CATEGORY_SIZE_LIMITS.KYC;
+
+export function validateKycFile(mimeType: string, sizeBytes: number): string | null {
+  return validateDocumentFile(mimeType, sizeBytes, "KYC");
 }

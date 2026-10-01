@@ -646,22 +646,53 @@ model Withdrawal {
 }
 
 model Document {
-  id         String             @id @default(uuid())
-  uploadedBy String
-  entityType DocumentEntityType
-  entityId   String
-  name       String
-  fileUrl    String
-  mimeType   String
-  sizeBytes  Int
-  isPublic   Boolean            @default(false)
-  createdAt  DateTime           @default(now())
-  project    Project            @relation(fields: [entityId], references: [id], map: "document_project_fk")
-  uploader   User               @relation(fields: [uploadedBy], references: [id])
+  id              String             @id @default(uuid())
+  uploadedBy      String
+  entityType      DocumentEntityType
+  entityId        String
+  category        DocumentCategory   @default(PROJECT_DOCUMENT)
+  name            String
+  description     String?
+  fileUrl         String
+  storageKey      String?
+  mimeType        String
+  sizeBytes       Int
+  isPublic        Boolean            @default(false)
+  isFinalized     Boolean            @default(false)
+  templateVersion String?
+  generatedAt     DateTime?
+  expiresAt       DateTime?
+  allowedRoles    String[]           @default([])
+  ownerUserId     String?
+  deletedAt       DateTime?
+  createdAt       DateTime           @default(now())
+  project         Project            @relation(fields: [entityId], references: [id], map: "document_project_fk")
+  uploader        User               @relation(fields: [uploadedBy], references: [id])
+  auditLogs       DocumentAuditLog[]
 
   @@index([entityType, entityId])
   @@index([uploadedBy])
+  @@index([category])
+  @@index([ownerUserId])
+  @@index([deletedAt])
   @@map("documents")
+}
+
+model DocumentAuditLog {
+  id         String   @id @default(uuid())
+  documentId String
+  actorId    String?
+  action     String
+  ipAddress  String?
+  userAgent  String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("document_audit_logs")
 }
 
 model Notification {
@@ -874,6 +905,17 @@ enum DocumentEntityType {
   PROJECT
   INVESTMENT
   CONTRACT
+}
+
+enum DocumentCategory {
+  KYC
+  PROJECT_DOCUMENT
+  INVESTMENT_AGREEMENT
+  PAYMENT_RECEIPT
+  INVESTMENT_RECEIPT
+  DISTRIBUTION_STATEMENT
+  HARVEST_REPORT
+  FARM_DOCUMENT
 }
 
 enum NotificationType {

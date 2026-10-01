@@ -51,6 +51,13 @@ export const PERMISSIONS = {
 
   // ── Audit ────────────────────────────────────────────────────────────────
   AUDIT_VIEW:         "audit.view",
+
+  // ── Documents ────────────────────────────────────────────────────────────
+  DOCUMENT_VIEW:      "document.view",
+  DOCUMENT_UPLOAD:    "document.upload",
+  DOCUMENT_DOWNLOAD:  "document.download",
+  DOCUMENT_DELETE:    "document.delete",
+  DOCUMENT_MANAGE:    "document.manage",
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -89,6 +96,11 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "distribution.void":    "Void a posted distribution batch",
   "report.view":          "Access platform reports and analytics",
   "audit.view":           "View audit logs",
+  "document.view":        "View document metadata",
+  "document.upload":      "Upload documents",
+  "document.download":    "Download documents via signed URL",
+  "document.delete":      "Delete documents",
+  "document.manage":      "Manage all documents (admin)",
 };
 
 const P = PERMISSIONS;
@@ -106,6 +118,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.DISTRIBUTION_VIEW, P.DISTRIBUTION_CREATE, P.DISTRIBUTION_APPROVE, P.DISTRIBUTION_POST, P.DISTRIBUTION_VOID,
     P.REPORT_VIEW,
     P.AUDIT_VIEW,
+    P.DOCUMENT_VIEW, P.DOCUMENT_UPLOAD, P.DOCUMENT_DOWNLOAD, P.DOCUMENT_DELETE, P.DOCUMENT_MANAGE,
   ],
 
   FINANCE_OFFICER: [
@@ -115,6 +128,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.DISTRIBUTION_VIEW, P.DISTRIBUTION_CREATE, P.DISTRIBUTION_APPROVE, P.DISTRIBUTION_POST, P.DISTRIBUTION_VOID,
     P.REPORT_VIEW,
     P.USER_VIEW,
+    P.DOCUMENT_VIEW, P.DOCUMENT_UPLOAD, P.DOCUMENT_DOWNLOAD,
   ],
 
   PROJECT_MANAGER: [
@@ -123,11 +137,13 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.DISTRIBUTION_VIEW,
     P.REPORT_VIEW,
     P.USER_VIEW,
+    P.DOCUMENT_VIEW, P.DOCUMENT_UPLOAD, P.DOCUMENT_DOWNLOAD,
   ],
 
   KYC_OFFICER: [
     P.KYC_VIEW, P.KYC_REVIEW, P.KYC_APPROVE,
     P.USER_VIEW,
+    P.DOCUMENT_VIEW, P.DOCUMENT_DOWNLOAD,
   ],
 
   SUPPORT: [
@@ -137,6 +153,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.KYC_VIEW,
     P.PAYMENT_VIEW,
     P.WITHDRAWAL_VIEW,
+    P.DOCUMENT_VIEW,
   ],
 
   INVESTOR: [
@@ -144,5 +161,6 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.PROJECT_VIEW,
     P.KYC_SUBMIT,
     P.WITHDRAWAL_REQUEST,
+    P.DOCUMENT_VIEW, P.DOCUMENT_UPLOAD, P.DOCUMENT_DOWNLOAD,
   ],
 };

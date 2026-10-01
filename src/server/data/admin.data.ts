@@ -397,13 +397,15 @@ export async function getAdminNotifications(
 
 export async function getAdminDocuments(
   session: SessionUser,
-  opts: { search?: string; entityType?: string; page?: number },
+  opts: { search?: string; entityType?: string; category?: string; page?: number },
 ) {
   await requirePermission(session, PERMISSIONS.PROJECT_VIEW);
-  const { search, entityType, page = 1 } = opts;
+  const { search, entityType, category, page = 1 } = opts;
 
   const where = {
+    deletedAt: null,
     ...(entityType && { entityType: entityType as never }),
+    ...(category   && { category:   category   as never }),
     ...(search && {
       OR: [
         { name: { contains: search, mode: "insensitive" as const } },
@@ -416,8 +418,9 @@ export async function getAdminDocuments(
     db.document.findMany({
       where,
       select: {
-        id: true, name: true, entityType: true, entityId: true,
-        mimeType: true, sizeBytes: true, isPublic: true, createdAt: true,
+        id: true, name: true, description: true, entityType: true, entityId: true,
+        category: true, mimeType: true, sizeBytes: true, isPublic: true,
+        isFinalized: true, templateVersion: true, generatedAt: true, createdAt: true,
         uploader: { select: { id: true, name: true } },
       },
       orderBy: { createdAt: "desc" },

@@ -20,6 +20,7 @@ export type {
   PaymentDirection,
   WithdrawalStatus,
   DocumentEntityType,
+  DocumentCategory,
   NotificationType,
   AuditAction,
   User,
