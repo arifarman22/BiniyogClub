@@ -11,8 +11,9 @@ import type { ActionResult } from "./auth.actions";
 
 function svcErr<T>(e: unknown): ActionResult<T> {
   if (e instanceof AppError) return { success: false, error: e.message, code: e.code };
+  const msg = e instanceof Error ? e.message : String(e);
   console.error("[manual-payment action]", e);
-  return { success: false, error: "An unexpected error occurred." };
+  return { success: false, error: msg };
 }
 
 // ─── Bank Account Management (Admin / Finance Officer) ────────────────────────
