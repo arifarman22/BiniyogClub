@@ -1,12 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Clock, MapPin } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "cn";
+import {
+  Clock,
+  MapPin,
+  TrendingUp,
+  Building2,
+  Coins,
+  Briefcase,
+  Cpu,
+  Landmark,
+  Sparkles,
+  ChevronRight,
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ProjectCategory, ProjectStatus, ReturnType } from "@prisma/client";
 
-type ProjectCardProps = {
+export type ProjectCardProps = {
   slug: string;
   title: string;
   description: string;
@@ -21,133 +30,238 @@ type ProjectCardProps = {
   fundingDeadline: Date | string;
   coverImageUrl?: string | null;
   location?: string | null;
+  priority?: boolean;
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  REAL_ESTATE:    "Real Estate",
-  TRADE_FINANCE:  "Trade Finance",
-  SME:            "SME",
-  TECHNOLOGY:     "Technology",
-  INFRASTRUCTURE: "Infrastructure",
-  OTHER:          "Other",
-};
-
-const STATUS_STYLES: Record<string, string> = {
-  FUNDRAISING: "bg-harvest-100 text-harvest-600 border-harvest-400/30",
-  FUNDED:      "bg-brand-100 text-brand-700 border-brand-400/30",
-  ACTIVE:      "bg-brand-100 text-brand-700 border-brand-400/30",
-  COMPLETED:   "bg-muted text-muted-foreground border-border",
-  CANCELLED:   "bg-destructive/10 text-destructive border-destructive/20",
+const CATEGORY_META: Record<
+  string,
+  { label: string; icon: typeof Building2 }
+> = {
+  REAL_ESTATE: { label: "Real Estate", icon: Building2 },
+  TRADE_FINANCE: { label: "Trade Finance", icon: Coins },
+  SME: { label: "SME Business", icon: Briefcase },
+  TECHNOLOGY: { label: "Technology", icon: Cpu },
+  INFRASTRUCTURE: { label: "Infrastructure", icon: Landmark },
+  OTHER: { label: "General", icon: Sparkles },
 };
 
 const STATUS_LABELS: Record<string, string> = {
   FUNDRAISING: "Open for Investment",
-  FUNDED:      "Fully Funded",
-  ACTIVE:      "In Progress",
-  COMPLETED:   "Completed",
-  CANCELLED:   "Cancelled",
+  FUNDED: "Fully Funded",
+  ACTIVE: "In Progress",
+  COMPLETED: "Completed",
+  CANCELLED: "Cancelled",
 };
 
 function formatBdt(amount: number | string) {
   const n = Number(amount);
+  if (n >= 10000000) return `৳${(n / 10000000).toFixed(1)} Cr`;
   if (n >= 100000) return `৳${(n / 100000).toFixed(1)}L`;
   if (n >= 1000) return `৳${(n / 1000).toFixed(0)}K`;
   return `৳${n.toLocaleString()}`;
 }
 
 function fundingPercent(funded: number | string, goal: number | string) {
-  return Math.min(Math.round((Number(funded) / Number(goal)) * 100), 100);
+  const g = Number(goal);
+  if (!g) return 0;
+  return Math.min(Math.round((Number(funded) / g) * 100), 100);
 }
 
 function daysLeft(deadline: Date | string) {
-  return Math.max(0, Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000));
+  return Math.max(
+    0,
+    Math.ceil((new Date(deadline).getTime() - Date.now()) / 86400000),
+  );
 }
 
 export function ProjectCard({
-  slug, title, description, category, status,
-  fundingGoalBdt, fundedAmountBdt, minInvestmentBdt,
-  expectedReturnPct, returnType, durationDays,
-  fundingDeadline, coverImageUrl, location,
+  slug,
+  title,
+  description,
+  category,
+  status,
+  fundingGoalBdt,
+  fundedAmountBdt,
+  minInvestmentBdt,
+  expectedReturnPct,
+  returnType,
+  durationDays,
+  fundingDeadline,
+  coverImageUrl,
+  location,
+  priority = false,
 }: ProjectCardProps) {
   const pct = fundingPercent(fundedAmountBdt, fundingGoalBdt);
   const days = daysLeft(fundingDeadline);
+  const catMeta = CATEGORY_META[category] ?? {
+    label: category,
+    icon: Sparkles,
+  };
+  const CategoryIcon = catMeta.icon;
 
   return (
-    <Link href={`/projects/${slug}`} className="group block">
-      <Card className="h-full overflow-hidden rounded-none border border-primary/20 transition-shadow hover:shadow-md">
-        <div className="relative h-44 w-full overflow-hidden bg-brand-100">
-          {coverImageUrl ? (
-            <Image
-              src={coverImageUrl}
-              alt={title}
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-            />
+    <Link
+      href={`/projects/${slug}`}
+      className="group relative flex flex-col h-full overflow-hidden rounded-3xl border border-border/70 dark:border-white/10 bg-card/95 backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] transition-all duration-500 hover:-translate-y-2 hover:border-primary/50 hover:shadow-[0_20px_45px_-12px_rgba(0,140,100,0.18)] dark:hover:shadow-[0_20px_45px_-12px_rgba(0,140,100,0.25)] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-transparent before:via-primary/80 before:to-transparent before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500 before:z-20"
+    >
+      {/* ── Visual Media Container ── */}
+      <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-slate-950">
+        {coverImageUrl ? (
+          <Image
+            src={coverImageUrl}
+            alt={title}
+            fill
+            priority={priority}
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-900/60 to-slate-950">
+            <TrendingUp className="h-14 w-14 text-emerald-400/40" />
+          </div>
+        )}
+
+        {/* Dual Cinematic Gradients */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/20 to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
+
+        {/* Top Badges Dock */}
+        <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10">
+          {/* Category Chip */}
+          <div className="inline-flex items-center gap-1.5 rounded-full bg-black/45 backdrop-blur-md border border-white/20 px-3 py-1 text-[11px] font-normal tracking-wider text-white uppercase shadow-sm">
+            <CategoryIcon className="h-3 w-3 text-emerald-400" />
+            <span>{catMeta.label}</span>
+          </div>
+
+          {/* Status Badge */}
+          {status === "FUNDRAISING" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-400/40 px-3 py-1 text-[11px] font-normal text-emerald-300 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span>Open</span>
+            </span>
+          ) : status === "FUNDED" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-teal-950/80 backdrop-blur-md border border-teal-400/30 px-3 py-1 text-[11px] font-normal text-teal-300 shadow-sm">
+              Fully Funded
+            </span>
+          ) : status === "ACTIVE" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 backdrop-blur-md border border-blue-400/30 px-3 py-1 text-[11px] font-normal text-blue-300 shadow-sm">
+              In Progress
+            </span>
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-100 to-brand-200">
-              <span className="text-4xl">📈</span>
-            </div>
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 px-3 py-1 text-[11px] font-normal text-slate-300 shadow-sm">
+              {STATUS_LABELS[status] ?? status}
+            </span>
           )}
-          <span className={cn(
-            "absolute right-2 top-2 rounded-full border px-2 py-0.5 text-xs font-medium",
-            STATUS_STYLES[status] ?? "bg-muted text-muted-foreground",
-          )}>
-            {STATUS_LABELS[status] ?? status}
-          </span>
         </div>
 
-        <CardContent className="p-4">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <Badge variant="secondary" className="text-xs">
-              {CATEGORY_LABELS[category] ?? category}
-            </Badge>
-            {location && (
-              <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                <MapPin className="h-3 w-3" />
-                {location}
-              </span>
-            )}
-          </div>
+        {/* Bottom Overlay inside Media Header */}
+        <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between gap-2 z-10">
+          {location ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[11px] font-light text-white/90">
+              <MapPin className="h-3 w-3 text-emerald-400 shrink-0" />
+              <span className="truncate max-w-[140px]">{location}</span>
+            </span>
+          ) : (
+            <span />
+          )}
 
-          <h3 className="mb-1 line-clamp-2 text-sm font-semibold leading-snug group-hover:text-primary">
+          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-400/40 px-2.5 py-0.5 text-[11px] font-normal text-emerald-300 shadow-sm ml-auto">
+            <TrendingUp className="h-3 w-3 text-emerald-400 shrink-0" />
+            <span>{Number(expectedReturnPct).toFixed(0)}% ROI</span>
+          </span>
+        </div>
+      </div>
+
+      {/* ── Content Section ── */}
+      <div className="flex flex-1 flex-col p-6 gap-4">
+        {/* Title & Description */}
+        <div>
+          <h3 className="text-lg font-normal sm:font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary leading-snug line-clamp-2">
             {title}
           </h3>
-          <p className="mb-3 line-clamp-2 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-1.5 text-xs sm:text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
+            {description}
+          </p>
+        </div>
 
-          <div className="mb-3">
-            <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-              <span>{pct}% funded</span>
-              <span>{formatBdt(fundingGoalBdt)} goal</span>
-            </div>
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
-            </div>
+        {/* High-End FinTech Progress Bar */}
+        <div className="mt-auto pt-1">
+          <div className="mb-2 flex items-center justify-between text-xs font-light">
+            <span className="text-foreground font-normal">
+              {formatBdt(fundedAmountBdt)}{" "}
+              <span className="font-light text-muted-foreground">
+                raised of {formatBdt(fundingGoalBdt)}
+              </span>
+            </span>
+            <span className="font-normal text-primary bg-primary/10 px-2 py-0.5 rounded-full text-[11px]">
+              {pct}%
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800 p-0.5 border border-border/40">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-400 transition-all duration-1000 shadow-xs"
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+        </div>
+
+        {/* 3-Column Financial KPI Bento */}
+        <div className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50/80 dark:bg-slate-800/40 p-2.5 border border-border/60">
+          <div className="flex flex-col items-center justify-center rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/40 py-2 px-1 text-center">
+            <span className="text-xs sm:text-sm font-normal sm:font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
+              <TrendingUp className="h-3 w-3 shrink-0" />
+              {Number(expectedReturnPct).toFixed(0)}%
+            </span>
+            <span className="text-[10px] font-light uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">
+              {returnType === "FIXED_RETURN" ? "Fixed Return" : "Est. Return"}
+            </span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 border-t border-border pt-3">
-            <div className="text-center">
-              <p className="text-xs font-semibold text-primary">{Number(expectedReturnPct).toFixed(0)}%</p>
-              <p className="text-[10px] text-muted-foreground">{returnType === "FIXED_RETURN" ? "Fixed" : "Est."} Return</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-semibold">{durationDays}d</p>
-              <p className="text-[10px] text-muted-foreground">Duration</p>
-            </div>
-            <div className="text-center">
-              <p className="text-xs font-semibold">{formatBdt(minInvestmentBdt)}</p>
-              <p className="text-[10px] text-muted-foreground">Min. Invest</p>
-            </div>
+          <div className="flex flex-col items-center justify-center rounded-xl bg-card/60 dark:bg-slate-800/60 border border-border/40 py-2 px-1 text-center">
+            <span className="text-xs sm:text-sm font-normal sm:font-medium text-foreground">
+              {durationDays >= 30
+                ? `${Math.round(durationDays / 30)} Mo`
+                : `${durationDays}d`}
+            </span>
+            <span className="text-[10px] font-light uppercase tracking-widest text-muted-foreground mt-0.5">
+              Term
+            </span>
           </div>
 
-          {status === "FUNDRAISING" && (
-            <p className="mt-2 flex items-center gap-1 text-xs text-muted-foreground">
-              <Clock className="h-3 w-3" />
-              {days > 0 ? `${days} days left` : "Closing soon"}
-            </p>
+          <div className="flex flex-col items-center justify-center rounded-xl bg-card/60 dark:bg-slate-800/60 border border-border/40 py-2 px-1 text-center">
+            <span className="text-xs sm:text-sm font-normal sm:font-medium text-foreground truncate max-w-[85px]">
+              {formatBdt(minInvestmentBdt)}
+            </span>
+            <span className="text-[10px] font-light uppercase tracking-widest text-muted-foreground mt-0.5">
+              Min. Entry
+            </span>
+          </div>
+        </div>
+
+        {/* Action Footer */}
+        <div className="pt-3 flex items-center justify-between border-t border-border/60">
+          {status === "FUNDRAISING" ? (
+            <div className="inline-flex items-center gap-1.5 text-xs font-light text-muted-foreground">
+              <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
+              <span>{days > 0 ? `${days} days left` : "Closing soon"}</span>
+            </div>
+          ) : (
+            <span className="text-xs font-light text-muted-foreground">
+              {STATUS_LABELS[status] ?? status}
+            </span>
           )}
-        </CardContent>
-      </Card>
+
+          <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-normal sm:font-medium text-primary group-hover:underline">
+            <span>View Opportunity</span>
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:translate-x-1 shadow-xs">
+              <ChevronRight className="h-3.5 w-3.5" />
+            </div>
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }

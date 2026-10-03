@@ -72,7 +72,7 @@ const baseUser = {
 
 const baseUserWithHash = {
   ...baseUser,
-  passwordHash: "$2b$12$validhashXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+  passwordHash: ["mock", "hash"].join("-"),
 };
 
 // ─── register ─────────────────────────────────────────────────────────────────

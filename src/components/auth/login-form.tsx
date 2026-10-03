@@ -7,12 +7,13 @@ import { loginAction } from "@/server/actions/auth.actions";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<{ message: string; code?: string } | null>(null);
   const searchParams = useSearchParams();
@@ -33,24 +34,27 @@ export function LoginForm() {
     }
     const role = result.data.role;
     const defaultDest =
-      role === "INVESTOR" ? "/dashboard" :
-      ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"].includes(role)
+      role === "INVESTOR"
+        ? "/dashboard"
+        : ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"].includes(role)
         ? "/admin"
         : "/";
-    window.location.href = callbackUrl ?? defaultDest;
+    const dest = callbackUrl ?? defaultDest;
+    router.push(dest);
+    router.refresh();
   }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
       {serverError && (
-        <Alert variant={serverError.code === "EMAIL_NOT_VERIFIED" ? "default" : "destructive"} className="rounded-xl">
+        <Alert variant={serverError.code === "EMAIL_NOT_VERIFIED" ? "default" : "destructive"} className="rounded-2xl">
           <AlertTriangle className="size-4" />
           <AlertDescription>
             {serverError.message}
             {serverError.code === "EMAIL_NOT_VERIFIED" && (
               <span>
                 {" "}
-                <Link href="/auth/resend-verification" className="font-medium underline">
+                <Link href="/auth/resend-verification" className="font-semibold underline">
                   Resend verification email
                 </Link>
               </span>
@@ -61,8 +65,8 @@ export function LoginForm() {
 
       {/* Email */}
       <div className="space-y-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-foreground">
-          Email address <span className="text-destructive">*</span>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Email Address <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -70,22 +74,22 @@ export function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
-            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            placeholder="investor@example.com"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
         </div>
-        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        {errors.email && <p className="text-xs text-destructive font-medium">{errors.email.message}</p>}
       </div>
 
       {/* Password */}
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">
-          <label htmlFor="password" className="text-sm font-medium text-foreground">
+          <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Password <span className="text-destructive">*</span>
           </label>
-          <Link href="/auth/forgot-password" className="text-xs font-medium text-primary hover:underline">
+          <Link href="/auth/forgot-password" className="text-xs font-semibold text-primary hover:underline">
             Forgot password?
           </Link>
         </div>
@@ -96,29 +100,36 @@ export function LoginForm() {
             type={showPassword ? "text" : "password"}
             autoComplete="current-password"
             placeholder="••••••••"
-            className="h-11 rounded-xl pl-10 pr-10 text-sm focus-visible:ring-primary"
+            className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+        {errors.password && <p className="text-xs text-destructive font-medium">{errors.password.message}</p>}
       </div>
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-brand-400 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isSubmitting && <Spinner size="xs" />}
-        Sign in
+        {isSubmitting ? (
+          <Spinner size="xs" />
+        ) : (
+          <>
+            <span>Sign In to Portfolio</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </>
+        )}
       </button>
     </form>
   );

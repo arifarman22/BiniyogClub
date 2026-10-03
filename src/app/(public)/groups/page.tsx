@@ -52,9 +52,9 @@ export default async function GroupsPage() {
       {/* Hero */}
       <section className="bg-gradient-to-br from-gray-900 to-gray-800 py-16 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-white/50">Biniyog Club</p>
-          <h1 className="text-4xl font-bold sm:text-5xl">Business Groups</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-lg text-white/70">
+          <p className="mb-3 text-xs font-light uppercase tracking-widest text-white/60">Biniyog Club</p>
+          <h1 className="text-4xl font-light tracking-tight sm:text-5xl text-white">Business Groups</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base sm:text-lg font-light text-white/75 leading-relaxed">
             Join our partner business groups as an Investor, Shareholder, Director, or property owner.
             Each group offers structured tiers designed for every level of participation.
           </p>
@@ -93,58 +93,70 @@ export default async function GroupsPage() {
       <section className="py-12">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
           {groups.map((group) => (
-            <div key={group.id} className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+            <div key={group.id} className="overflow-hidden rounded-3xl border border-border/80 dark:border-white/10 bg-card shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.4)]">
               {/* Group header */}
-              <div className={`bg-gradient-to-r ${GROUP_GRADIENTS[group.slug] ?? "from-gray-800 to-gray-700"} px-6 py-8 text-white`}>
-                <div className="flex items-start justify-between gap-4">
+              <div className={`bg-gradient-to-r ${GROUP_GRADIENTS[group.slug] ?? "from-gray-800 to-gray-700"} px-6 sm:px-8 py-8 sm:py-10 text-white relative overflow-hidden`}>
+                <div className="absolute inset-0 bg-black/15 pointer-events-none" />
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
                   <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-white/10 text-white">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/15 backdrop-blur-md border border-white/20 text-white shadow-inner">
                       {GROUP_ICONS[group.slug]}
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold">{group.name}</h2>
-                      {group.tagline && <p className="mt-0.5 text-sm text-white/70">{group.tagline}</p>}
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-white/90 uppercase mb-1">
+                        {group.slug}
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">{group.name}</h2>
+                      {group.tagline && <p className="mt-1 text-sm text-white/80 font-medium">{group.tagline}</p>}
                     </div>
                   </div>
                   <Link
                     href={`/groups/${group.slug.toLowerCase()}`}
-                    className="shrink-0 rounded-lg border border-white/30 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20 transition-colors flex items-center gap-1"
+                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/15 backdrop-blur-md px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/25 transition-all shadow-sm self-start"
                   >
-                    View Details <ChevronRight className="h-4 w-4" />
+                    <span>View Full Details</span>
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
-                <p className="mt-4 max-w-2xl text-sm text-white/80 leading-relaxed">{group.description}</p>
+                <p className="relative z-10 mt-5 max-w-3xl text-sm sm:text-base text-white/85 leading-relaxed font-normal">{group.description}</p>
               </div>
 
               {/* Entities & tiers */}
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/60">
                 {group.entities.map((entity) => (
-                  <div key={entity.id} className="p-6">
-                    <div className="mb-4 flex items-center justify-between">
+                  <div key={entity.id} className="p-6 sm:p-8">
+                    <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                       <div>
-                        <h3 className="font-semibold">{entity.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">{entity.description}</p>
+                        <h3 className="text-lg font-bold text-foreground">{entity.name}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{entity.description}</p>
                       </div>
                       <Link
                         href={`/groups/${group.slug.toLowerCase()}/${entity.slug}`}
-                        className="text-xs text-primary hover:underline flex items-center gap-0.5"
+                        className="text-xs sm:text-sm font-semibold text-primary hover:underline inline-flex items-center gap-1 shrink-0"
                       >
-                        Learn more <ChevronRight className="h-3 w-3" />
+                        Explore Entity <ChevronRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
                       {entity.tiers.map((tier) => (
-                        <div key={tier.id} className="rounded-xl border border-border bg-muted/20 p-4">
-                          <div className="flex items-center gap-2 mb-2">
-                            <span className="text-lg">{TIER_ICONS[tier.type] ?? "💼"}</span>
-                            <span className={`rounded-full border px-2 py-0.5 text-[10px] font-semibold ${TIER_COLORS[tier.type] ?? "bg-muted text-muted-foreground"}`}>
+                        <div key={tier.id} className="rounded-2xl border border-border/70 bg-slate-50/70 dark:bg-slate-800/40 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md">
+                          <div className="flex items-center justify-between gap-2 mb-2.5">
+                            <span className="text-xl">{TIER_ICONS[tier.type] ?? "💼"}</span>
+                            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${TIER_COLORS[tier.type] ?? "bg-muted text-muted-foreground"}`}>
                               {tier.type.replace(/_/g, " ")}
                             </span>
                           </div>
-                          <p className="font-semibold text-sm">{tier.name}</p>
-                          <p className="mt-1 text-xs text-muted-foreground">
-                            From {fmtBdt(tier.minAmountBdt.toString())}
-                          </p>
+                          <p className="font-bold text-sm text-foreground">{tier.name}</p>
+                          <div className="mt-2 flex items-center justify-between text-xs">
+                            <span className="text-muted-foreground">Min. Entry</span>
+                            <span className="font-bold text-foreground">{fmtBdt(tier.minAmountBdt.toString())}</span>
+                          </div>
+                          {tier.expectedReturnPct && (
+                            <div className="mt-1 flex items-center justify-between text-xs">
+                              <span className="text-muted-foreground">Est. Return</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">{Number(tier.expectedReturnPct)}%</span>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -153,15 +165,20 @@ export default async function GroupsPage() {
               </div>
 
               {/* CTA footer */}
-              <div className="border-t border-border bg-muted/20 px-6 py-4 flex items-center justify-between gap-4">
-                <p className="text-sm text-muted-foreground">
-                  Ready to invest in {group.name}?
-                </p>
-                <div className="flex gap-2">
-                  <Link href={`/groups/${group.slug.toLowerCase()}`} className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-muted/40 transition-colors">
+              <div className="border-t border-border/60 bg-muted/20 px-6 sm:px-8 py-4 sm:py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">
+                    Ready to participate in {group.name}?
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Direct co-ownership, legal contracts, and verified quarterly distributions.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Link href={`/groups/${group.slug.toLowerCase()}`} className="rounded-full border border-border bg-card px-5 py-2 text-xs sm:text-sm font-semibold hover:border-primary hover:text-primary transition-all shadow-xs">
                     Explore Tiers
                   </Link>
-                  <Link href="/register" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors">
+                  <Link href="/register" className="rounded-full bg-primary px-5 py-2 text-xs sm:text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-all shadow-xs">
                     Get Started
                   </Link>
                 </div>

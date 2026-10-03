@@ -90,8 +90,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
       {/* Hero */}
       <section className="bg-gradient-to-br from-brand-900 to-brand-700 py-14 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h1 className="mb-2 text-3xl font-bold text-white sm:text-4xl">Investment Projects</h1>
-          <p className="text-brand-100/90">
+          <h1 className="mb-2 text-3xl font-light tracking-tight text-white sm:text-4xl">Investment Projects</h1>
+          <p className="text-brand-100/90 font-light">
             {total} verified project{total !== 1 ? "s" : ""} across Bangladesh
           </p>
         </div>
@@ -170,8 +170,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
           {/* Results */}
           {items.length > 0 ? (
             <>
-              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {items.map((p) => (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 items-stretch">
+                {items.map((p, i) => (
                   <ProjectCard
                     key={p.id}
                     slug={p.slug}
@@ -187,6 +187,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                     durationDays={p.durationDays}
                     fundingDeadline={p.fundingDeadline}
                     coverImageUrl={p.coverImageUrl}
+                    location={p.location}
+                    priority={i < 4}
                   />
                 ))}
               </div>

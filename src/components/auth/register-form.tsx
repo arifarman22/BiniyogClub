@@ -7,11 +7,13 @@ import { registerAction } from "@/server/actions/auth.actions";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -26,7 +28,9 @@ export function RegisterForm() {
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password", "");
 
-  useEffect(() => { setValue("role", "INVESTOR"); }, [setValue]);
+  useEffect(() => {
+    setValue("role", "INVESTOR");
+  }, [setValue]);
 
   async function onSubmit(data: RegisterInput) {
     setServerError(null);
@@ -35,7 +39,7 @@ export function RegisterForm() {
       setServerError(result.error);
       return;
     }
-    window.location.href = "/auth/login";
+    router.push("/auth/login");
   }
 
   const passwordStrength = getPasswordStrength(password);
@@ -43,7 +47,7 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       {serverError && (
-        <Alert variant="destructive" className="rounded-xl">
+        <Alert variant="destructive" className="rounded-2xl">
           <AlertTriangle className="size-4" />
           <AlertDescription>{serverError}</AlertDescription>
         </Alert>
@@ -53,8 +57,8 @@ export function RegisterForm() {
 
       {/* Full name */}
       <div className="space-y-1.5">
-        <label htmlFor="name" className="text-sm font-medium text-foreground">
-          Full name <span className="text-destructive">*</span>
+        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Full Name <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -62,19 +66,19 @@ export function RegisterForm() {
             id="name"
             type="text"
             autoComplete="name"
-            placeholder="Your full name"
-            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            placeholder="Mohammad Arif"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.name}
             {...register("name")}
           />
         </div>
-        {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
+        {errors.name && <p className="text-xs text-destructive font-medium">{errors.name.message}</p>}
       </div>
 
       {/* Email */}
       <div className="space-y-1.5">
-        <label htmlFor="email" className="text-sm font-medium text-foreground">
-          Email address <span className="text-destructive">*</span>
+        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Email Address <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -82,19 +86,19 @@ export function RegisterForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="you@example.com"
-            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            placeholder="investor@example.com"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
         </div>
-        {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+        {errors.email && <p className="text-xs text-destructive font-medium">{errors.email.message}</p>}
       </div>
 
       {/* Phone */}
       <div className="space-y-1.5">
-        <label htmlFor="phone" className="text-sm font-medium text-foreground">
-          Phone number <span className="text-destructive">*</span>
+        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Phone Number <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -103,19 +107,19 @@ export function RegisterForm() {
             type="tel"
             autoComplete="tel"
             placeholder="01712345678"
-            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.phone}
             {...register("phone")}
           />
         </div>
-        {errors.phone && <p className="text-xs text-destructive">{errors.phone.message}</p>}
-        <p className="text-xs text-muted-foreground">Bangladeshi number e.g. 01712345678</p>
+        {errors.phone && <p className="text-xs text-destructive font-medium">{errors.phone.message}</p>}
+        <p className="text-[11px] text-muted-foreground">Valid 11-digit Bangladeshi mobile number</p>
       </div>
 
       {/* Password */}
       <div className="space-y-1.5">
-        <label htmlFor="password" className="text-sm font-medium text-foreground">
-          Password <span className="text-destructive">*</span>
+        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Create Password <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -123,28 +127,28 @@ export function RegisterForm() {
             id="password"
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
-            placeholder="••••••••"
-            className="h-11 rounded-xl pl-10 pr-10 text-sm focus-visible:ring-primary"
+            placeholder="Min. 8 characters"
+            className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
             aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
-        {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
+        {errors.password && <p className="text-xs text-destructive font-medium">{errors.password.message}</p>}
         {password.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
       </div>
 
       {/* Confirm password */}
       <div className="space-y-1.5">
-        <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-          Confirm password <span className="text-destructive">*</span>
+        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Confirm Password <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -152,29 +156,43 @@ export function RegisterForm() {
             id="confirmPassword"
             type="password"
             autoComplete="new-password"
-            placeholder="••••••••"
-            className="h-11 rounded-xl pl-10 text-sm focus-visible:ring-primary"
+            placeholder="Repeat password"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.confirmPassword}
             {...register("confirmPassword")}
           />
         </div>
-        {errors.confirmPassword && <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>}
+        {errors.confirmPassword && (
+          <p className="text-xs text-destructive font-medium">{errors.confirmPassword.message}</p>
+        )}
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        By registering you agree to our{" "}
-        <Link href="/terms" className="font-medium text-primary hover:underline">Terms of Service</Link>
-        {" "}and{" "}
-        <Link href="/privacy" className="font-medium text-primary hover:underline">Privacy Policy</Link>.
+      <p className="text-xs text-muted-foreground pt-1">
+        By registering, you agree to Biniyog Club&apos;s{" "}
+        <Link href="/terms" className="font-semibold text-primary hover:underline">
+          Terms of Service
+        </Link>{" "}
+        and{" "}
+        <Link href="/privacy" className="font-semibold text-primary hover:underline">
+          Privacy Policy
+        </Link>
+        .
       </p>
 
+      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary/90 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+        className="group flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all duration-300 hover:bg-brand-400 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isSubmitting && <Spinner size="xs" />}
-        Create account
+        {isSubmitting ? (
+          <Spinner size="xs" />
+        ) : (
+          <>
+            <span>Create Free Investor Account</span>
+            <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </>
+        )}
       </button>
     </form>
   );
@@ -195,23 +213,25 @@ const strengthConfig = [
   { label: "Too short", color: "bg-destructive" },
   { label: "Weak", color: "bg-destructive" },
   { label: "Fair", color: "bg-warning" },
-  { label: "Good", color: "bg-harvest-500" },
-  { label: "Strong", color: "bg-success" },
+  { label: "Good", color: "bg-emerald-500" },
+  { label: "Strong", color: "bg-emerald-600" },
 ];
 
 function PasswordStrengthBar({ strength }: { strength: 0 | 1 | 2 | 3 | 4 }) {
   const config = strengthConfig[strength];
   return (
-    <div className="mt-1.5 space-y-1">
-      <div className="flex gap-1">
+    <div className="mt-2 space-y-1">
+      <div className="flex gap-1.5">
         {[1, 2, 3, 4].map((level) => (
           <div
             key={level}
-            className={`h-1 flex-1 rounded-full transition-colors ${level <= strength ? config.color : "bg-muted"}`}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              level <= strength ? config.color : "bg-muted"
+            }`}
           />
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">{config.label}</p>
+      <p className="text-[11px] font-medium text-muted-foreground">Strength: {config.label}</p>
     </div>
   );
 }
