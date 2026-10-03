@@ -13,52 +13,51 @@ import {
 import { logoutAction } from "@/server/actions/auth.actions";
 import type { LucideIcon } from "lucide-react";
 
-type NavItem = { href: string; label: string; icon: LucideIcon; roles: string[]; exact?: boolean };
+// permission: null means visible to all staff
+type NavItem = { href: string; label: string; icon: LucideIcon; permission: string | null; exact?: boolean };
 
 const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
     items: [
-      { href: "/admin",         label: "Dashboard", icon: LayoutDashboard, exact: true, roles: [] },
-      { href: "/admin/reports", label: "Reports",   icon: BarChart3,        roles: [] },
+      { href: "/admin",         label: "Dashboard", icon: LayoutDashboard, exact: true, permission: null },
+      { href: "/admin/reports", label: "Reports",   icon: BarChart3,        permission: "report.view" },
     ],
   },
   {
     label: "People",
     items: [
-      { href: "/admin/users",     label: "Users",       icon: Users,      roles: ["SUPER_ADMIN", "ADMIN"] },
-      { href: "/admin/investors", label: "Investors",   icon: UserCheck,  roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
-      { href: "/admin/kyc",       label: "KYC Reviews", icon: ShieldCheck, roles: ["SUPER_ADMIN", "ADMIN", "KYC_OFFICER"] },
+      { href: "/admin/users",     label: "Users",       icon: Users,      permission: "user.view" },
+      { href: "/admin/investors", label: "Investors",   icon: UserCheck,  permission: "investment.view" },
+      { href: "/admin/kyc",       label: "KYC Reviews", icon: ShieldCheck, permission: "kyc.view" },
     ],
   },
   {
     label: "Projects",
     items: [
-      { href: "/admin/projects", label: "Projects", icon: FolderKanban, roles: ["SUPER_ADMIN", "ADMIN", "PROJECT_MANAGER", "FINANCE_OFFICER"] },
+      { href: "/admin/projects", label: "Projects", icon: FolderKanban, permission: "project.view" },
     ],
   },
   {
     label: "Finance",
     items: [
-      { href: "/admin/investments",  label: "Investments",  icon: TrendingUp,      roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
-      { href: "/admin/groups",       label: "Group Invest", icon: Building2,       roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
-      { href: "/admin/payments",     label: "Payments",     icon: CreditCard,      roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
-      { href: "/admin/withdrawals",  label: "Withdrawals",  icon: ArrowDownToLine, roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
-      { href: "/admin/distributions",label: "Distributions",icon: PieChart,        roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER"] },
+      { href: "/admin/investments",   label: "Investments",  icon: TrendingUp,      permission: "investment.view" },
+      { href: "/admin/groups",        label: "Group Invest", icon: Building2,       permission: "investment.view" },
+      { href: "/admin/payments",      label: "Payments",     icon: CreditCard,      permission: "payment.view" },
+      { href: "/admin/withdrawals",   label: "Withdrawals",  icon: ArrowDownToLine, permission: "withdrawal.view" },
+      { href: "/admin/distributions", label: "Distributions",icon: PieChart,        permission: "distribution.view" },
     ],
   },
   {
     label: "System",
     items: [
-      { href: "/admin/notifications", label: "Notifications", icon: Bell,      roles: ["SUPER_ADMIN", "ADMIN"] },
-      { href: "/admin/documents",     label: "Documents",     icon: FileText,  roles: ["SUPER_ADMIN", "ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER"] },
-      { href: "/admin/audit-logs",    label: "Audit Logs",    icon: ScrollText, roles: ["SUPER_ADMIN", "ADMIN"] },
-      { href: "/admin/settings",      label: "Settings",      icon: Settings,  roles: ["SUPER_ADMIN", "ADMIN"] },
+      { href: "/admin/notifications", label: "Notifications", icon: Bell,       permission: null },
+      { href: "/admin/documents",     label: "Documents",     icon: FileText,   permission: "document.view" },
+      { href: "/admin/audit-logs",    label: "Audit Logs",    icon: ScrollText, permission: "audit.view" },
+      { href: "/admin/settings",      label: "Settings",      icon: Settings,   permission: "audit.view" },
     ],
   },
 ];
-
-// roles: [] means visible to all staff
 
 const ROLE_LABELS: Record<string, string> = {
   SUPER_ADMIN: "Super Admin",
@@ -90,9 +89,15 @@ type Props = {
   name: string;
   role: string;
   initials: string;
+  userPermissions: string[];
 };
 
-export function AdminShell({ children, name, role, initials }: Props) {
+export function AdminShell({ children, name, role, initials, userPermissions }: Props) {
+  const hasPermission = (permission: string | null) => {
+    if (permission === null) return true;
+    if (userPermissions.includes("*")) return true;
+    return userPermissions.includes(permission);
+  };
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -118,7 +123,7 @@ export function AdminShell({ children, name, role, initials }: Props) {
   const SidebarContent = ({ mini }: { mini: boolean }) => {
     const visibleGroups = NAV_GROUPS.map((group) => ({
       ...group,
-      items: group.items.filter((item) => item.roles.length === 0 || item.roles.includes(role)),
+      items: group.items.filter((item) => hasPermission(item.permission)),
     })).filter((group) => group.items.length > 0);
     return (
     <>

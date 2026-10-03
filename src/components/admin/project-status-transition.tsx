@@ -17,7 +17,7 @@ const TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   FUNDRAISING:      ["FUNDED", "CANCELLED"],
   FUNDED:           ["ACTIVE", "CANCELLED"],
   ACTIVE:           ["COMPLETED", "CANCELLED"],
-  COMPLETED:        [],
+  COMPLETED:        ["ACTIVE", "FUNDRAISING", "CANCELLED"],
   CANCELLED:        [],
 };
 
