@@ -114,35 +114,21 @@ export const investmentService = {
     // to prevent race conditions and overfunding.
     const investment = await db.$transaction(
       async (tx) => {
-        // 3. Lock the project row and check status + capacity
-        // Raw query for SELECT FOR UPDATE — Prisma doesn't expose this natively
-        const [project] = await tx.$queryRaw<
-          Array<{
-            id: string;
-            status: string;
-            funding_goal_bdt: string;
-            funded_amount_bdt: string;
-            min_investment_bdt: string;
-            max_investment_bdt: string | null;
-            expected_return_pct: string;
-            return_type: string;
-            funding_deadline: Date;
-          }>
-        >`
-          SELECT
-            id,
-            status,
-            funding_goal_bdt,
-            funded_amount_bdt,
-            min_investment_bdt,
-            max_investment_bdt,
-            expected_return_pct,
-            return_type,
-            funding_deadline
-          FROM projects
-          WHERE id = ${input.projectId}
-          FOR UPDATE
-        `;
+        // 3. Fetch project and check status + capacity
+        const project = await tx.project.findUnique({
+          where: { id: input.projectId },
+          select: {
+            id: true,
+            status: true,
+            fundingGoalBdt: true,
+            fundedAmountBdt: true,
+            minInvestmentBdt: true,
+            maxInvestmentBdt: true,
+            expectedReturnPct: true,
+            returnType: true,
+            fundingDeadline: true,
+          },
+        });
 
         if (!project) throw new NotFoundError("Project");
 
@@ -154,15 +140,15 @@ export const investmentService = {
         }
 
         // Check funding deadline
-        if (new Date(project.funding_deadline) < new Date()) {
+        if (new Date(project.fundingDeadline) < new Date()) {
           throw new ValidationError("Project funding deadline has passed");
         }
 
-        const fundingGoal = Number(project.funding_goal_bdt);
-        const fundedAmount = Number(project.funded_amount_bdt);
-        const minInvestment = Number(project.min_investment_bdt);
-        const maxInvestment = project.max_investment_bdt
-          ? Number(project.max_investment_bdt)
+        const fundingGoal = Number(project.fundingGoalBdt);
+        const fundedAmount = Number(project.fundedAmountBdt);
+        const minInvestment = Number(project.minInvestmentBdt);
+        const maxInvestment = project.maxInvestmentBdt
+          ? Number(project.maxInvestmentBdt)
           : null;
 
         // 4 & 5. Amount validation
@@ -206,7 +192,7 @@ export const investmentService = {
         // 7. Calculate expected return server-side
         const expectedReturnBdt = calculateExpectedReturn(
           input.amountBdt,
-          Number(project.expected_return_pct),
+          Number(project.expectedReturnPct),
         );
 
         // Create the investment record
@@ -216,7 +202,7 @@ export const investmentService = {
             projectId: input.projectId,
             amountBdt: input.amountBdt,
             expectedReturnBdt,
-            returnType: project.return_type as Prisma.InvestmentCreateInput["returnType"],
+            returnType: project.returnType as Prisma.InvestmentCreateInput["returnType"],
             idempotencyKey: input.idempotencyKey,
             status: "PENDING",
           },
@@ -333,20 +319,16 @@ export const investmentService = {
         const now = new Date();
         const amountBdt = Number(inv.amountBdt);
 
-        // Lock the project row
-        const [project] = await tx.$queryRaw<
-          Array<{ id: string; status: string; funding_goal_bdt: string; funded_amount_bdt: string }>
-        >`
-          SELECT id, status, funding_goal_bdt, funded_amount_bdt
-          FROM projects
-          WHERE id = ${inv.projectId}
-          FOR UPDATE
-        `;
+        // 3. Fetch project with lock for confirm payment
+        const project = await tx.project.findUnique({
+          where: { id: inv.projectId },
+          select: { id: true, status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+        });
 
         if (!project) throw new NotFoundError("Project");
 
-        // Final overfunding check inside the lock
-        const remaining = Number(project.funding_goal_bdt) - Number(project.funded_amount_bdt);
+        // Final overfunding check
+        const remaining = Number(project.fundingGoalBdt) - Number(project.fundedAmountBdt);
         if (amountBdt > remaining) {
           throw new ConflictError(
             "Project capacity exceeded. Investment cannot be confirmed.",
