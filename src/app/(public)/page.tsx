@@ -172,27 +172,27 @@ export default async function HomePage() {
                 <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 pointer-events-none" />
                 <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent transition-all duration-500 group-hover:via-emerald-500" />
 
-                {/* Top: Icon + Badge */}
+                {/* Top: Flaticon + Badge */}
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 transition-transform duration-300 group-hover:scale-110">
-                    <Coins className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-2 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <Image src="/icons/investment.png" alt="Capital Deployed" width={32} height={32} className="object-contain" />
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 tracking-wider">
-                    <TrendingUp className="h-3 w-3 text-emerald-500" /> LIVE VOLUME
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-400 tracking-wider">
+                    DIRECT IMPACT
                   </span>
                 </div>
 
                 {/* Middle: Number */}
                 <div className="my-1">
-                  <span className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-300 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
+                  <span className="text-3xl sm:text-4xl font-light tracking-tight text-emerald-950 dark:text-emerald-100 group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
                     {stats.totalFundedBdt > 0 ? fmtBdt(stats.totalFundedBdt) : "৳2.5 Cr+"}
                   </span>
                 </div>
 
                 {/* Bottom: Label & Micro note */}
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-bold text-foreground">Total Capital Deployed</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <p className="text-sm font-normal text-foreground">Total Capital Deployed</p>
+                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Directly invested in Bangladesh
                   </p>
@@ -200,87 +200,87 @@ export default async function HomePage() {
               </div>
 
               {/* Stat 2: Active Investors */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-500/50 hover:shadow-xl hover:shadow-blue-500/10">
-                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-blue-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-blue-500/20 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-blue-500/0 to-transparent transition-all duration-500 group-hover:via-blue-500" />
+              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10">
+                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent transition-all duration-500 group-hover:via-emerald-500" />
 
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25 transition-transform duration-300 group-hover:scale-110">
-                    <Users className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-2 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <Image src="/icons/user.png" alt="Verified Co-Investors" width={32} height={32} className="object-contain" />
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-500/10 border border-blue-500/25 px-2.5 py-1 text-[10px] font-bold text-blue-600 dark:text-blue-400 tracking-wider">
-                    <ShieldCheck className="h-3 w-3 text-blue-500" /> 100% KYC
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-400 tracking-wider">
+                    100% KYC
                   </span>
                 </div>
 
                 <div className="my-1">
-                  <span className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 dark:from-blue-400 dark:via-indigo-300 dark:to-blue-300 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
-                    {stats.totalInvestors > 0 ? stats.totalInvestors.toLocaleString() : "1,200"}+
+                  <span className="text-3xl sm:text-4xl font-light tracking-tight text-emerald-950 dark:text-emerald-100 group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
+                    {stats.totalInvestors > 0 ? `${stats.totalInvestors}+` : "4+"}
                   </span>
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-bold text-foreground">Verified Co-Investors</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                  <p className="text-sm font-normal text-foreground">Verified Co-Investors</p>
+                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Active retail & corporate members
                   </p>
                 </div>
               </div>
 
               {/* Stat 3: Projects Financed */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-amber-500/50 hover:shadow-xl hover:shadow-amber-500/10">
-                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-amber-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-amber-500/20 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-amber-500/0 to-transparent transition-all duration-500 group-hover:via-amber-500" />
+              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10">
+                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent transition-all duration-500 group-hover:via-emerald-500" />
 
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25 transition-transform duration-300 group-hover:scale-110">
-                    <Building2 className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-2 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <Image src="/icons/search-engine.png" alt="Vetted Business Projects" width={32} height={32} className="object-contain" />
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 px-2.5 py-1 text-[10px] font-bold text-amber-600 dark:text-amber-400 tracking-wider">
-                    <CheckCircle2 className="h-3 w-3 text-amber-500" /> AUDITED
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-400 tracking-wider">
+                    AUDITED
                   </span>
                 </div>
 
                 <div className="my-1">
-                  <span className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-amber-700 via-orange-600 to-amber-600 dark:from-amber-400 dark:via-orange-300 dark:to-amber-300 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
-                    {stats.totalProjects > 0 ? stats.totalProjects : "18"}+
+                  <span className="text-3xl sm:text-4xl font-light tracking-tight text-emerald-950 dark:text-emerald-100 group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
+                    {stats.totalProjects > 0 ? `${stats.totalProjects}+` : "3+"}
                   </span>
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-bold text-foreground">Vetted Business Projects</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                  <p className="text-sm font-normal text-foreground">Vetted Business Projects</p>
+                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Due diligence & asset-backed
                   </p>
                 </div>
               </div>
 
-              {/* Stat 4: Legal Protection */}
-              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-teal-500/50 hover:shadow-xl hover:shadow-teal-500/10">
-                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-teal-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-teal-500/20 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-teal-500/0 to-transparent transition-all duration-500 group-hover:via-teal-500" />
+              {/* Stat 4: Legal Protection / Return Payouts */}
+              <div className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-5 sm:p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10">
+                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 pointer-events-none" />
+                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent transition-all duration-500 group-hover:via-emerald-500" />
 
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white shadow-lg shadow-teal-500/25 transition-transform duration-300 group-hover:scale-110">
-                    <CheckCircle2 className="h-6 w-6" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-2 shadow-sm transition-transform duration-300 group-hover:scale-110">
+                    <Image src="/icons/income.png" alt="On-Time Return Payouts" width={32} height={32} className="object-contain" />
                   </div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 border border-teal-500/25 px-2.5 py-1 text-[10px] font-bold text-teal-600 dark:text-teal-400 tracking-wider">
-                    <TrendingUp className="h-3 w-3 text-teal-500" /> TRACK RECORD
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 px-2.5 py-1 text-[10px] font-normal text-emerald-700 dark:text-emerald-400 tracking-wider">
+                    TRACK RECORD
                   </span>
                 </div>
 
                 <div className="my-1">
-                  <span className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-teal-700 via-emerald-600 to-teal-600 dark:from-teal-400 dark:via-emerald-300 dark:to-teal-300 bg-clip-text text-transparent group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
+                  <span className="text-3xl sm:text-4xl font-light tracking-tight text-emerald-950 dark:text-emerald-100 group-hover:scale-[1.02] transition-transform duration-300 origin-left inline-block">
                     100%
                   </span>
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-bold text-foreground">On-Time Return Payouts</p>
-                  <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1.5">
-                    <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                  <p className="text-sm font-normal text-foreground">On-Time Return Payouts</p>
+                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Consistent capital & profit disbursals
                   </p>
                 </div>
