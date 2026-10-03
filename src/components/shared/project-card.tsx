@@ -140,19 +140,25 @@ export function ProjectCard({
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span>Open</span>
+              <span>Active</span>
             </span>
-          ) : status === "FUNDED" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-teal-950/80 backdrop-blur-md border border-teal-400/30 px-3 py-1 text-[11px] font-normal text-teal-300 shadow-sm">
-              Fully Funded
+          ) : status === "FUNDED" || status === "ACTIVE" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-950/80 backdrop-blur-md border border-blue-400/30 px-3 py-1 text-[11px] font-normal text-blue-300 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-blue-400 shrink-0" />
+              Running
             </span>
-          ) : status === "ACTIVE" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-blue-950/80 backdrop-blur-md border border-blue-400/30 px-3 py-1 text-[11px] font-normal text-blue-300 shadow-sm">
-              In Progress
+          ) : status === "COMPLETED" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 px-3 py-1 text-[11px] font-normal text-slate-300 shadow-sm">
+              <span className="h-2 w-2 rounded-full bg-slate-400 shrink-0" />
+              Completed
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 px-3 py-1 text-[11px] font-normal text-slate-300 shadow-sm">
-              {STATUS_LABELS[status] ?? status}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-red-950/80 backdrop-blur-md border border-red-400/30 px-3 py-1 text-[11px] font-normal text-red-300 shadow-sm">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+              </span>
+              Inactive
             </span>
           )}
         </div>

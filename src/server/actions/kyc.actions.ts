@@ -71,7 +71,7 @@ export async function uploadDocumentAction(formData: FormData): Promise<ActionRe
       return { success: false, error: "Invalid upload request", code: "VALIDATION_ERROR" };
     }
 
-    const allowedTypes = ["NATIONAL_ID", "PASSPORT", "DRIVING_LICENSE"];
+    const allowedTypes = ["NATIONAL_ID", "PASSPORT", "DRIVING_LICENSE", "NOMINEE_NID"];
     if (!allowedTypes.includes(documentType)) {
       return { success: false, error: "Invalid document type", code: "VALIDATION_ERROR" };
     }

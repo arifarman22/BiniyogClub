@@ -7,7 +7,7 @@ import { registerAction } from "@/server/actions/auth.actions";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight, CreditCard, Users } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -67,7 +67,7 @@ export function RegisterForm() {
             type="text"
             autoComplete="name"
             placeholder="Mohammad Arif"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
             aria-invalid={!!errors.name}
             {...register("name")}
           />
@@ -87,7 +87,7 @@ export function RegisterForm() {
             type="email"
             autoComplete="email"
             placeholder="investor@example.com"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
             aria-invalid={!!errors.email}
             {...register("email")}
           />
@@ -107,13 +107,72 @@ export function RegisterForm() {
             type="tel"
             autoComplete="tel"
             placeholder="01712345678"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
             aria-invalid={!!errors.phone}
             {...register("phone")}
           />
         </div>
         {errors.phone && <p className="text-xs text-destructive font-medium">{errors.phone.message}</p>}
         <p className="text-[11px] text-muted-foreground">Valid 11-digit Bangladeshi mobile number</p>
+      </div>
+
+      {/* NID Number */}
+      <div className="space-y-1.5">
+        <label htmlFor="nidNumber" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          NID Number <span className="text-destructive">*</span>
+        </label>
+        <div className="relative">
+          <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="nidNumber"
+            type="text"
+            inputMode="numeric"
+            placeholder="10 or 17 digit NID number"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+            aria-invalid={!!errors.nidNumber}
+            {...register("nidNumber")}
+          />
+        </div>
+        {errors.nidNumber && <p className="text-xs text-destructive font-medium">{errors.nidNumber.message}</p>}
+      </div>
+
+      {/* Nominee NID Number */}
+      <div className="space-y-1.5">
+        <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Nominee NID Number <span className="text-destructive">*</span>
+        </label>
+        <div className="relative">
+          <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="nomineeNidNumber"
+            type="text"
+            inputMode="numeric"
+            placeholder="Nominee's 10 or 17 digit NID number"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+            aria-invalid={!!errors.nomineeNidNumber}
+            {...register("nomineeNidNumber")}
+          />
+        </div>
+        {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
+      </div>
+
+      {/* Nominee Relation */}
+      <div className="space-y-1.5">
+        <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Relation with Nominee <span className="text-destructive">*</span>
+        </label>
+        <div className="relative">
+          <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="nomineeRelation"
+            type="text"
+            placeholder="e.g. Father, Mother, Spouse, Sibling"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+            aria-invalid={!!errors.nomineeRelation}
+            {...register("nomineeRelation")}
+          />
+        </div>
+        {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
       </div>
 
       {/* Password */}
@@ -128,7 +187,7 @@ export function RegisterForm() {
             type={showPassword ? "text" : "password"}
             autoComplete="new-password"
             placeholder="Min. 8 characters"
-            className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs"
+            className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
             aria-invalid={!!errors.password}
             {...register("password")}
           />
@@ -157,7 +216,7 @@ export function RegisterForm() {
             type="password"
             autoComplete="new-password"
             placeholder="Repeat password"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
             aria-invalid={!!errors.confirmPassword}
             {...register("confirmPassword")}
           />
@@ -179,7 +238,6 @@ export function RegisterForm() {
         .
       </p>
 
-      {/* Submit Button */}
       <button
         type="submit"
         disabled={isSubmitting}

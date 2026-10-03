@@ -136,14 +136,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-light transition-all duration-200",
+                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200",
                     active
                       ? transparent
-                        ? "text-emerald-300 bg-white/15 font-normal shadow-sm"
-                        : "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-normal shadow-sm"
+                        ? "text-emerald-300 bg-white/15 font-semibold shadow-sm"
+                        : "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 font-semibold shadow-sm"
                       : transparent
-                        ? "text-slate-200 hover:text-white hover:bg-white/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        ? "text-slate-100 hover:text-white hover:bg-white/10"
+                        : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
                   )}
                 >
                   {link.label}
@@ -158,7 +158,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <>
                 <Link
                   href="/dashboard"
-                  className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-normal text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 hover:-translate-y-0.5"
+                  className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-medium text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 hover:-translate-y-0.5"
                 >
                   Dashboard
                 </Link>
@@ -166,10 +166,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   <button
                     type="submit"
                     className={cn(
-                      "rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-light transition-all hover:-translate-y-0.5",
+                      "rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all hover:-translate-y-0.5",
                       transparent
-                        ? "border-white/20 text-slate-200 hover:text-white hover:bg-white/10"
-                        : "border-border text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                        ? "border-white/20 text-slate-100 hover:text-white hover:bg-white/10"
+                        : "border-slate-300 dark:border-white/15 text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
                     )}
                   >
                     Sign Out
@@ -181,17 +181,17 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/auth/login"
                   className={cn(
-                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-light transition-all hover:-translate-y-0.5",
+                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all hover:-translate-y-0.5",
                     transparent
-                      ? "text-slate-200 hover:text-white"
-                      : "text-muted-foreground hover:text-foreground"
+                      ? "text-slate-100 hover:text-white"
+                      : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
                   )}
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-normal text-white shadow-md shadow-emerald-600/25 transition-all duration-200 hover:bg-emerald-700 hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-medium text-white shadow-md shadow-emerald-600/25 transition-all duration-200 hover:bg-emerald-700 hover:-translate-y-0.5"
                 >
                   Start Investing <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
@@ -231,10 +231,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-light transition-colors",
+                    "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
                     active
-                      ? "text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 font-normal"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+                      ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 font-semibold"
+                      : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
                   )}
                 >
                   <span>{link.label}</span>
@@ -245,16 +245,16 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
           </nav>
 
           {/* Mobile Contact Quick Card */}
-          <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 text-xs text-muted-foreground">
-            <p className="font-normal text-foreground flex items-center gap-1.5 mb-1.5">
+          <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 text-xs text-slate-700 dark:text-slate-300">
+            <p className="font-medium text-foreground flex items-center gap-1.5 mb-1.5">
               <Phone className="h-3 w-3 text-emerald-500" />
               <span>Investor Support Line</span>
             </p>
             <div className="flex items-center justify-between">
-              <a href="tel:+8801335149033" className="font-medium text-emerald-600 dark:text-emerald-400">
+              <a href="tel:+8801335149033" className="font-semibold text-emerald-700 dark:text-emerald-400">
                 +880 1335-149033
               </a>
-              <a href="mailto:info@biniyog.club" className="text-[11px] underline">
+              <a href="mailto:info@biniyog.club" className="text-[11px] font-medium underline text-slate-600 dark:text-slate-400">
                 info@biniyog.club
               </a>
             </div>
@@ -267,14 +267,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-normal text-white text-center shadow-md shadow-emerald-600/20"
+                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white text-center shadow-md shadow-emerald-600/20"
                 >
                   Go to Dashboard
                 </Link>
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="w-full rounded-full border border-border px-4 py-2 text-sm font-light text-muted-foreground hover:text-foreground"
+                    className="w-full rounded-full border border-slate-300 dark:border-white/15 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
                   >
                     Sign Out
                   </button>
@@ -285,14 +285,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/auth/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-full border border-border px-4 py-2.5 text-sm font-light text-center text-foreground hover:bg-muted"
+                  className="rounded-full border border-slate-300 dark:border-white/15 px-4 py-2.5 text-sm font-medium text-center text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-normal text-white text-center shadow-md shadow-emerald-600/20"
+                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white text-center shadow-md shadow-emerald-600/20"
                 >
                   Start Investing
                 </Link>

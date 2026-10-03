@@ -105,6 +105,15 @@ export async function getProjectBySlug(slug: string) {
         take: 20,
       },
       _count: { select: { investments: true } },
+      bankAccounts: {
+        where: { isActive: true },
+        select: {
+          id: true, accountName: true, accountNumber: true, bankName: true,
+          branchName: true, routingNumber: true, swiftCode: true,
+          mobileNumber: true, email: true, branchAddress: true,
+        },
+        orderBy: { createdAt: "asc" as const },
+      },
     },
   });
 }

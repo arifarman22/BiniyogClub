@@ -9,6 +9,7 @@ import {
   Menu, X, ChevronLeft, Bell, LogOut, User, ExternalLink,
   LayoutDashboard, TrendingUp, FolderOpen, PieChart, Wallet,
   ArrowLeftRight, FileText, ShieldCheck, Building2, BarChart3,
+  ShieldAlert, ArrowRight, Clock, RefreshCw,
 } from "lucide-react";
 import { logoutAction } from "@/server/actions/auth.actions";
 
@@ -31,10 +32,11 @@ interface Props {
   initials: string;
   name: string;
   email: string;
+  kycStatus: string;
   children: React.ReactNode;
 }
 
-export function DashboardShell({ initials, name, email, children }: Props) {
+export function DashboardShell({ initials, name, email, kycStatus, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);       // mobile drawer
   const [collapsed, setCollapsed] = useState(false); // desktop collapse
@@ -251,8 +253,95 @@ export function DashboardShell({ initials, name, email, children }: Props) {
           </div>
         </header>
 
+        {/* ── KYC notification banner (all pages) ── */}
+        {kycStatus !== "VERIFIED" && (
+          <KycBanner kycStatus={kycStatus} />
+        )}
+
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </div>
     </div>
   );
+}
+
+function KycBanner({ kycStatus }: { kycStatus: string }) {
+  const [dismissed, setDismissed] = useState(false);
+  if (dismissed) return null;
+
+  if (kycStatus === "NOT_STARTED") {
+    return (
+      <div className="flex items-center justify-between gap-3 border-b border-destructive/20 bg-destructive/5 px-4 py-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <ShieldAlert className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">
+            <span className="font-semibold">You can&apos;t invest without doing the KYC verification.</span>
+            {" "}Complete your identity verification to unlock investing.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/dashboard/kyc"
+            className="flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-xs font-semibold text-white hover:bg-destructive/90 transition-colors"
+          >
+            Verify Now <ArrowRight className="h-3 w-3" />
+          </Link>
+          <button onClick={() => setDismissed(true)} className="flex h-6 w-6 items-center justify-center rounded text-destructive/60 hover:text-destructive transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kycStatus === "SUBMITTED" || kycStatus === "UNDER_REVIEW") {
+    return (
+      <div className="flex items-center justify-between gap-3 border-b border-warning/20 bg-warning/5 px-4 py-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <Clock className="h-4 w-4 shrink-0 text-warning" />
+          <p className="text-sm">
+            <span className="font-semibold">KYC under review.</span>
+            {" "}You can&apos;t invest until your verification is approved by our finance team.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/dashboard/kyc"
+            className="flex items-center gap-1 rounded-lg border border-warning/40 px-3 py-1.5 text-xs font-semibold text-warning hover:bg-warning/10 transition-colors"
+          >
+            View Status <ArrowRight className="h-3 w-3" />
+          </Link>
+          <button onClick={() => setDismissed(true)} className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (kycStatus === "REJECTED" || kycStatus === "RESUBMISSION_REQUIRED") {
+    return (
+      <div className="flex items-center justify-between gap-3 border-b border-destructive/20 bg-destructive/5 px-4 py-2.5">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <RefreshCw className="h-4 w-4 shrink-0 text-destructive" />
+          <p className="text-sm text-destructive">
+            <span className="font-semibold">KYC {kycStatus === "REJECTED" ? "rejected" : "needs update"}.</span>
+            {" "}You can&apos;t invest until your KYC is approved. Please resubmit your documents.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <Link
+            href="/dashboard/kyc"
+            className="flex items-center gap-1 rounded-lg bg-destructive px-3 py-1.5 text-xs font-semibold text-white hover:bg-destructive/90 transition-colors"
+          >
+            Resubmit <ArrowRight className="h-3 w-3" />
+          </Link>
+          <button onClick={() => setDismissed(true)} className="flex h-6 w-6 items-center justify-center rounded text-destructive/60 hover:text-destructive transition-colors">
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

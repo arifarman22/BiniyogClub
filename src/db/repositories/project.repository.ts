@@ -48,6 +48,15 @@ export const projectDetailSelect = {
     orderBy: { publishedAt: "desc" as const },
     take: 10,
   },
+  bankAccounts: {
+    where: { isActive: true },
+    select: {
+      id: true, accountName: true, accountNumber: true, bankName: true,
+      branchName: true, routingNumber: true, swiftCode: true,
+      mobileNumber: true, email: true, branchAddress: true, isActive: true,
+    },
+    orderBy: { createdAt: "asc" as const },
+  },
 } satisfies Prisma.ProjectSelect;
 
 // ─── Filter / sort types ──────────────────────────────────────────────────────

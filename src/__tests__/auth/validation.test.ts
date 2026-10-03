@@ -18,6 +18,9 @@ describe("registerSchema", () => {
     password: "SecurePass1",
     confirmPassword: "SecurePass1",
     role: "INVESTOR" as const,
+    nidNumber: "1234567890",
+    nomineeNidNumber: "0987654321",
+    nomineeRelation: "Spouse",
   };
 
   it("accepts valid input", () => {

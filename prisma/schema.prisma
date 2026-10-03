@@ -252,6 +252,8 @@ model InvestorProfile {
   id                   String       @id @default(uuid())
   userId               String       @unique
   nationalId           String?      @unique
+  nomineeNationalId    String?
+  nomineeRelation      String?
   dateOfBirth          DateTime?
   address              String?
   city                 String?
@@ -308,6 +310,7 @@ model Project {
   updates            ProjectUpdate[]
   distributionRule   DistributionRule?
   distributionBatches DistributionBatch[]
+  bankAccounts        ProjectBankAccount[]
   manager            User?                @relation("ProjectManager", fields: [managerId], references: [id])
 
   @@index([managerId])
@@ -508,6 +511,27 @@ model BankAccount {
 
   @@index([isActive])
   @@map("bank_accounts")
+}
+
+model ProjectBankAccount {
+  id             String   @id @default(uuid())
+  projectId      String
+  accountName    String
+  accountNumber  String
+  bankName       String
+  branchName     String?
+  routingNumber  String?
+  swiftCode      String?
+  mobileNumber   String?
+  email          String?
+  branchAddress  String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@map("project_bank_accounts")
 }
 
 model ManualPaymentSubmission {

@@ -2,18 +2,27 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { FormField, FormSection } from "@/components/ui/form-field";
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert } from "@/components/ui/alert";
 import { saveDraftAction, uploadDocumentAction, deleteDocumentAction, submitKycAction } from "@/server/actions/kyc.actions";
-import { Loader2, Trash2, CheckCircle2, ImageIcon, ShieldCheck, AlertCircle } from "lucide-react";
+import { Loader2, Trash2, CheckCircle2, ImageIcon, ShieldCheck, AlertCircle, Lock } from "lucide-react";
 import { cn } from "cn";
 import type { KycRecord, KycDocumentRecord } from "@/db/repositories/kyc.repository";
 
+interface Prefill {
+  name: string;
+  phone: string;
+  nationalId: string;
+  nomineeNationalId: string;
+  nomineeRelation: string;
+}
+
 interface Props {
   existing: (KycRecord & { documents: KycDocumentRecord[] }) | null;
+  prefill: Prefill;
 }
 
 const BD_DIVISIONS = ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"];
@@ -25,14 +34,16 @@ const DOC_LABELS: Record<string, string> = {
 };
 
 type Side = "FRONT" | "BACK";
+type DocGroup = "INVESTOR" | "NOMINEE";
 
 function getSideDoc(documents: KycDocumentRecord[], docType: string, side: Side) {
   return documents.find((d) => d.documentType === `${docType}_${side}`) ?? null;
 }
 
 function UploadSlot({
-  side, label, doc, canUpload, isUploading, onUpload, onDelete,
+  inputId, side, label, doc, canUpload, isUploading, onUpload, onDelete,
 }: {
+  inputId: string;
   side: Side;
   label: string;
   doc: KycDocumentRecord | null;
@@ -41,12 +52,9 @@ function UploadSlot({
   onUpload: (side: Side, file: File) => void;
   onDelete: (id: string) => void;
 }) {
-  const inputId = `doc-upload-${side.toLowerCase()}`;
-
   return (
     <div className="flex-1">
       <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</p>
-
       {doc ? (
         <div className="flex items-center justify-between rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-3 py-3">
           <div className="flex items-center gap-2 min-w-0">
@@ -87,7 +95,6 @@ function UploadSlot({
           </span>
         </button>
       )}
-
       <input
         id={inputId}
         type="file"
@@ -103,23 +110,18 @@ function UploadSlot({
   );
 }
 
-export function KycSubmitForm({ existing }: Props) {
+export function KycSubmitForm({ existing, prefill }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [isUploading, setIsUploading] = useState<Side | null>(null);
+  const [isUploading, setIsUploading] = useState<`${DocGroup}_${Side}` | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [kycId, setKycId] = useState<string | null>(existing?.id ?? null);
   const [documents, setDocuments] = useState<KycDocumentRecord[]>(existing?.documents ?? []);
   const [saved, setSaved] = useState(false);
 
-  const [form, setForm] = useState<{
-    fullName: string; dateOfBirth: string; nationality: string;
-    addressLine: string; city: string; district: string; division: string;
-    postalCode: string; documentType: string; documentNumber: string;
-    bankName: string; bankAccountNumber: string; mobileProvider: string; mobileNumber: string;
-  }>({
-    fullName: existing?.fullName ?? "",
+  const [form, setForm] = useState({
+    fullName: existing?.fullName ?? prefill.name,
     dateOfBirth: existing?.dateOfBirth
       ? new Date(existing.dateOfBirth).toISOString().split("T")[0]
       : "",
@@ -130,11 +132,11 @@ export function KycSubmitForm({ existing }: Props) {
     division: existing?.division ?? "",
     postalCode: existing?.postalCode ?? "",
     documentType: (existing?.documentType ?? "") as string,
-    documentNumber: existing?.documentNumber ?? "",
+    documentNumber: existing?.documentNumber ?? prefill.nationalId,
     bankName: existing?.bankName ?? "",
     bankAccountNumber: existing?.bankAccountNumber ?? "",
     mobileProvider: existing?.mobileProvider ?? "",
-    mobileNumber: existing?.mobileNumber ?? "",
+    mobileNumber: existing?.mobileNumber ?? prefill.phone,
   });
 
   function set(field: keyof typeof form, value: string) {
@@ -157,10 +159,11 @@ export function KycSubmitForm({ existing }: Props) {
     });
   }
 
-  async function handleFileUpload(side: Side, file: File) {
-    if (!form.documentType) return;
+  async function handleFileUpload(group: DocGroup, side: Side, file: File) {
+    const docType = group === "NOMINEE" ? "NOMINEE_NID" : form.documentType;
+    if (group === "INVESTOR" && !form.documentType) return;
 
-    setIsUploading(side);
+    setIsUploading(`${group}_${side}`);
     setError(null);
 
     let resolvedKycId = kycId;
@@ -178,8 +181,8 @@ export function KycSubmitForm({ existing }: Props) {
 
     const fd = new FormData();
     fd.append("kycId", resolvedKycId ?? "");
-    fd.append("documentType", form.documentType ?? "");
-    fd.append("side", side ?? "");
+    fd.append("documentType", docType);
+    fd.append("side", side);
     fd.append("file", file);
 
     const result = await uploadDocumentAction(fd);
@@ -189,11 +192,11 @@ export function KycSubmitForm({ existing }: Props) {
       setError(result.error);
     } else {
       setDocuments((d) => [
-        ...d.filter((doc) => doc.documentType !== `${form.documentType}_${side}`),
+        ...d.filter((doc) => doc.documentType !== `${docType}_${side}`),
         {
           id: result.data.documentId,
           kycId: resolvedKycId!,
-          documentType: `${form.documentType}_${side}` as KycDocumentRecord["documentType"],
+          documentType: `${docType}_${side}` as KycDocumentRecord["documentType"],
           storageKey: "",
           mimeType: file.type,
           sizeBytes: file.size,
@@ -232,16 +235,18 @@ export function KycSubmitForm({ existing }: Props) {
     });
   }
 
-  const canUpload = !!form.documentType;
-  const frontDoc = getSideDoc(documents, form.documentType, "FRONT");
-  const backDoc  = getSideDoc(documents, form.documentType, "BACK");
-  const canSubmit = !!kycId && !!frontDoc && !isPending;
-  const uploadedCount = [frontDoc, backDoc].filter(Boolean).length;
+  const canUploadInvestor = !!form.documentType;
+  const frontDoc     = getSideDoc(documents, form.documentType, "FRONT");
+  const backDoc      = getSideDoc(documents, form.documentType, "BACK");
+  const nomFrontDoc  = getSideDoc(documents, "NOMINEE_NID", "FRONT");
+  const nomBackDoc   = getSideDoc(documents, "NOMINEE_NID", "BACK");
+  const canSubmit    = !!kycId && !!frontDoc && !!nomFrontDoc && !isPending;
+  const uploadedCount = [frontDoc, backDoc, nomFrontDoc, nomBackDoc].filter(Boolean).length;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
-      {/* ── Left: form sections (2/3 width) ── */}
+      {/* ── Left: form sections ── */}
       <div className="lg:col-span-2 space-y-5">
 
         {error && (
@@ -258,21 +263,26 @@ export function KycSubmitForm({ existing }: Props) {
           </Alert>
         )}
 
-        {/* Personal */}
+        {/* Personal — pre-filled, read-only */}
         <div className="rounded-xl border border-border bg-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Personal Information</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Your legal name and date of birth as on your ID</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Pre-filled from your registration — edit if needed</p>
           </div>
           <div className="p-6">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField label="Full legal name" htmlFor="fullName" required error={fieldErrors.fullName}>
-                <Input
-                  id="fullName"
-                  value={form.fullName}
-                  onChange={(e) => set("fullName", e.target.value)}
-                  placeholder="As on your ID document"
-                />
+                <div className="relative">
+                  <Input
+                    id="fullName"
+                    value={form.fullName}
+                    onChange={(e) => set("fullName", e.target.value)}
+                    placeholder="As on your ID document"
+                  />
+                  {prefill.name && form.fullName === prefill.name && (
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                  )}
+                </div>
               </FormField>
               <FormField label="Date of birth" htmlFor="dateOfBirth" required error={fieldErrors.dateOfBirth}>
                 <Input
@@ -347,15 +357,60 @@ export function KycSubmitForm({ existing }: Props) {
                 </Select>
               </FormField>
               <FormField label="Document number" htmlFor="documentNumber" required error={fieldErrors.documentNumber}>
-                <Input
-                  id="documentNumber"
-                  value={form.documentNumber}
-                  onChange={(e) => set("documentNumber", e.target.value.toUpperCase())}
-                  placeholder="e.g. 1234567890"
-                  className="font-mono"
-                />
+                <div className="relative">
+                  <Input
+                    id="documentNumber"
+                    value={form.documentNumber}
+                    onChange={(e) => set("documentNumber", e.target.value.toUpperCase())}
+                    placeholder="e.g. 1234567890"
+                    className="font-mono"
+                  />
+                  {prefill.nationalId && form.documentNumber === prefill.nationalId && (
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                  )}
+                </div>
               </FormField>
             </div>
+          </div>
+        </div>
+
+        {/* Nominee info — read-only from registration */}
+        <div className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-6 py-4">
+            <p className="text-sm font-semibold">Nominee Information</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Pre-filled from your registration</p>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <FormField label="Nominee NID Number" htmlFor="nomineeNid">
+                <div className="relative">
+                  <Input
+                    id="nomineeNid"
+                    value={prefill.nomineeNationalId}
+                    readOnly
+                    className="font-mono bg-muted/40 cursor-not-allowed"
+                  />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                </div>
+              </FormField>
+              <FormField label="Relation with Nominee" htmlFor="nomineeRelation">
+                <div className="relative">
+                  <Input
+                    id="nomineeRelation"
+                    value={prefill.nomineeRelation}
+                    readOnly
+                    className="bg-muted/40 cursor-not-allowed"
+                  />
+                  <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                </div>
+              </FormField>
+            </div>
+            {(!prefill.nomineeNationalId || !prefill.nomineeRelation) && (
+              <p className="mt-3 text-xs text-warning flex items-center gap-1.5">
+                <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                Some nominee details are missing. Please update your profile first.
+              </p>
+            )}
           </div>
         </div>
 
@@ -393,13 +448,18 @@ export function KycSubmitForm({ existing }: Props) {
                 </Select>
               </FormField>
               <FormField label="Mobile number" htmlFor="mobileNumber" error={fieldErrors.mobileNumber}>
-                <Input
-                  id="mobileNumber"
-                  value={form.mobileNumber}
-                  onChange={(e) => set("mobileNumber", e.target.value)}
-                  placeholder="01XXXXXXXXX"
-                  className="font-mono"
-                />
+                <div className="relative">
+                  <Input
+                    id="mobileNumber"
+                    value={form.mobileNumber}
+                    onChange={(e) => set("mobileNumber", e.target.value)}
+                    placeholder="01XXXXXXXXX"
+                    className="font-mono"
+                  />
+                  {prefill.phone && form.mobileNumber === prefill.phone && (
+                    <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
+                  )}
+                </div>
               </FormField>
             </div>
           </div>
@@ -407,55 +467,89 @@ export function KycSubmitForm({ existing }: Props) {
 
       </div>
 
-      {/* ── Right: sticky upload + submit panel (1/3 width) ── */}
+      {/* ── Right: sticky upload + submit panel ── */}
       <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
 
-        {/* Document upload card */}
+        {/* Investor document upload */}
         <div className="rounded-xl border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
-            <p className="text-sm font-semibold">Document Photos</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              JPEG, PNG, WebP or PDF · max 5 MB each
-            </p>
+            <p className="text-sm font-semibold">Your ID Photos</p>
+            <p className="text-xs text-muted-foreground mt-0.5">JPEG, PNG, WebP or PDF · max 5 MB each</p>
           </div>
           <div className="p-5 space-y-4">
-            {!canUpload ? (
+            {!canUploadInvestor ? (
               <div className="flex items-start gap-2.5 rounded-lg bg-muted/50 p-3">
                 <AlertCircle className="h-4 w-4 shrink-0 text-muted-foreground mt-0.5" />
-                <p className="text-xs text-muted-foreground">
-                  Select a document type on the left to enable uploads.
-                </p>
+                <p className="text-xs text-muted-foreground">Select a document type on the left to enable uploads.</p>
               </div>
             ) : (
               <div className="flex gap-3">
                 <UploadSlot
+                  inputId="investor-front"
                   side="FRONT"
                   label="Front side"
                   doc={frontDoc}
-                  canUpload={canUpload}
-                  isUploading={isUploading === "FRONT"}
-                  onUpload={handleFileUpload}
+                  canUpload={canUploadInvestor}
+                  isUploading={isUploading === "INVESTOR_FRONT"}
+                  onUpload={(side, file) => handleFileUpload("INVESTOR", side, file)}
                   onDelete={handleDeleteDocument}
                 />
                 <UploadSlot
+                  inputId="investor-back"
                   side="BACK"
                   label="Back side"
                   doc={backDoc}
-                  canUpload={canUpload}
-                  isUploading={isUploading === "BACK"}
-                  onUpload={handleFileUpload}
+                  canUpload={canUploadInvestor}
+                  isUploading={isUploading === "INVESTOR_BACK"}
+                  onUpload={(side, file) => handleFileUpload("INVESTOR", side, file)}
                   onDelete={handleDeleteDocument}
                 />
               </div>
             )}
-
-            {canUpload && (
+            {canUploadInvestor && (
               <div className="flex items-center gap-1.5">
                 <div className={cn("h-1.5 flex-1 rounded-full", frontDoc ? "bg-emerald-500" : "bg-muted")} />
                 <div className={cn("h-1.5 flex-1 rounded-full", backDoc ? "bg-emerald-500" : "bg-muted")} />
-                <span className="text-[10px] text-muted-foreground ml-1">{uploadedCount}/2</span>
+                <span className="text-[10px] text-muted-foreground ml-1">{[frontDoc, backDoc].filter(Boolean).length}/2</span>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Nominee NID upload */}
+        <div className="rounded-xl border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <p className="text-sm font-semibold">Nominee&apos;s NID Photos</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Upload front &amp; back of nominee&apos;s National ID</p>
+          </div>
+          <div className="p-5 space-y-4">
+            <div className="flex gap-3">
+              <UploadSlot
+                inputId="nominee-front"
+                side="FRONT"
+                label="Front side"
+                doc={nomFrontDoc}
+                canUpload={true}
+                isUploading={isUploading === "NOMINEE_FRONT"}
+                onUpload={(side, file) => handleFileUpload("NOMINEE", side, file)}
+                onDelete={handleDeleteDocument}
+              />
+              <UploadSlot
+                inputId="nominee-back"
+                side="BACK"
+                label="Back side"
+                doc={nomBackDoc}
+                canUpload={true}
+                isUploading={isUploading === "NOMINEE_BACK"}
+                onUpload={(side, file) => handleFileUpload("NOMINEE", side, file)}
+                onDelete={handleDeleteDocument}
+              />
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className={cn("h-1.5 flex-1 rounded-full", nomFrontDoc ? "bg-emerald-500" : "bg-muted")} />
+              <div className={cn("h-1.5 flex-1 rounded-full", nomBackDoc ? "bg-emerald-500" : "bg-muted")} />
+              <span className="text-[10px] text-muted-foreground ml-1">{[nomFrontDoc, nomBackDoc].filter(Boolean).length}/2</span>
+            </div>
           </div>
         </div>
 
@@ -470,7 +564,8 @@ export function KycSubmitForm({ existing }: Props) {
                 { label: "Personal info", done: !!(form.fullName && form.dateOfBirth) },
                 { label: "Address", done: !!(form.addressLine && form.city && form.district && form.division) },
                 { label: "Identity document", done: !!(form.documentType && form.documentNumber) },
-                { label: "Front photo", done: !!frontDoc },
+                { label: "Your ID front photo", done: !!frontDoc },
+                { label: "Nominee NID front photo", done: !!nomFrontDoc },
                 { label: "Payment method", done: !!(form.bankAccountNumber || form.mobileNumber) },
               ].map(({ label, done }) => (
                 <li key={label} className="flex items-center gap-2 text-xs">
@@ -486,22 +581,11 @@ export function KycSubmitForm({ existing }: Props) {
             </ul>
 
             <div className="pt-1 space-y-2">
-              <Button
-                type="button"
-                className="w-full"
-                onClick={handleSubmit}
-                disabled={!canSubmit}
-              >
+              <Button type="button" className="w-full" onClick={handleSubmit} disabled={!canSubmit}>
                 {isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-1.5 h-4 w-4" />}
                 Submit for review
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={handleSaveDraft}
-                disabled={isPending}
-              >
+              <Button type="button" variant="outline" className="w-full" onClick={handleSaveDraft} disabled={isPending}>
                 {isPending ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null}
                 Save draft
               </Button>

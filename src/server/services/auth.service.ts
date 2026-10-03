@@ -31,6 +31,9 @@ export type RegisterInput = {
   phone: string;
   password: string;
   role: UserRole;
+  nidNumber: string;
+  nomineeNidNumber: string;
+  nomineeRelation: string;
 };
 
 export type LoginInput = {
@@ -49,7 +52,7 @@ export const authService = {
   // ── Registration ────────────────────────────────────────────────────────────
 
   async register(input: RegisterInput) {
-    const { name, email, phone, password, role } = input;
+    const { name, email, phone, password, role, nidNumber, nomineeNidNumber, nomineeRelation } = input;
 
     const [existingEmail, existingPhone] = await Promise.all([
       userRepository.findByEmail(email),
@@ -62,6 +65,21 @@ export const authService = {
     const passwordHash = await hashPassword(password);
     const user = await userRepository.create({ email, passwordHash, name, phone, role });
     await userRepository.verifyEmail(user.id);
+
+    if (role === "INVESTOR") {
+      await import("@/lib/db/prisma").then(({ db }) =>
+        db.investorProfile.create({
+          data: {
+            userId: user.id,
+            nationalId: nidNumber,
+            nomineeNationalId: nomineeNidNumber,
+            nomineeRelation,
+            country: "BD",
+          },
+        })
+      );
+    }
+
     return user;
   },
 

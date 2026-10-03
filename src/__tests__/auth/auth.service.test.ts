@@ -31,6 +31,14 @@ vi.mock("@/db/repositories", () => ({
   sessionRepository: mockSessionRepo,
 }));
 
+vi.mock("@/lib/db/prisma", () => ({
+  db: {
+    investorProfile: {
+      create: vi.fn().mockResolvedValue({}),
+    },
+  },
+}));
+
 vi.mock("@/lib/auth/cookies", () => ({
   setSessionCookie: vi.fn(),
   clearSessionCookie: vi.fn(),
@@ -93,6 +101,9 @@ describe("authService.register", () => {
       phone: "01712345678",
       password: "SecurePass1",
       role: "INVESTOR",
+      nidNumber: "1234567890",
+      nomineeNidNumber: "0987654321",
+      nomineeRelation: "Spouse",
     });
 
     expect(mockUserRepo.create).toHaveBeenCalledOnce();
@@ -104,7 +115,7 @@ describe("authService.register", () => {
     mockUserRepo.findByPhone.mockResolvedValue(null);
 
     await expect(
-      authService.register({ name: "X", email: "test@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR" }),
+      authService.register({ name: "X", email: "test@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", nomineeRelation: "Spouse" }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -113,7 +124,7 @@ describe("authService.register", () => {
     mockUserRepo.findByPhone.mockResolvedValue(baseUser);
 
     await expect(
-      authService.register({ name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR" }),
+      authService.register({ name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", nomineeRelation: "Spouse" }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -127,6 +138,7 @@ describe("authService.register", () => {
     const result = await authService.register({
       name: "Test User", email: "test@example.com", phone: "01712345678",
       password: "SecurePass1", role: "INVESTOR",
+      nidNumber: "1234567890", nomineeNidNumber: "0987654321", nomineeRelation: "Spouse",
     });
 
     expect(result).not.toHaveProperty("passwordHash");

@@ -14,6 +14,8 @@ import { getProjectBySlug, getAllProjectSlugs } from "@/server/data/public.data"
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
 import { ProjectInvestForm } from "@/components/shared/project-invest-form";
+import { ProjectBankDetails } from "@/components/shared/project-bank-details";
+import { ProjectStatusBadge } from "@/components/shared/project-status-badge";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -124,7 +126,9 @@ export default async function ProjectDetailPage({ params }: Props) {
   const remaining = Math.max(0, Number(project.fundingGoalBdt) - Number(project.fundedAmountBdt));
   const days = daysLeft(project.fundingDeadline);
   const isOpen = project.status === "FUNDRAISING";
+  const isRunning = project.status === "FUNDED" || project.status === "ACTIVE";
   const isClosed = ["COMPLETED", "CANCELLED"].includes(project.status);
+  const canInvestNow = isOpen || isRunning;
 
   return (
     <>
@@ -151,6 +155,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <Badge className="border-brand-400/40 bg-brand-700/60 text-brand-100">
                   {CATEGORY_LABELS[project.category] ?? project.category}
                 </Badge>
+                <ProjectStatusBadge status={project.status} size="md" />
               </div>
               <h1 className="text-3xl font-bold text-white sm:text-4xl">{project.title}</h1>
               <div className="mt-3 flex flex-wrap gap-4 text-sm text-brand-100/80">
@@ -365,7 +370,10 @@ export default async function ProjectDetailPage({ params }: Props) {
 
               <Card className="overflow-hidden">
                 <div className="bg-gradient-to-br from-brand-700 to-brand-600 px-5 py-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-100/70">{STATUS_LABELS[project.status] ?? project.status}</p>
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-100/70">{STATUS_LABELS[project.status] ?? project.status}</p>
+                    <ProjectStatusBadge status={project.status} />
+                  </div>
                   <p className="mt-1 text-2xl font-bold text-white">
                     {formatBdt(project.fundedAmountBdt.toString())}
                     <span className="ml-1 text-sm font-normal text-brand-100/80">raised</span>
@@ -395,7 +403,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                       <p className="text-xs font-medium text-harvest-600">{days > 0 ? `${days} days left to invest` : "Closing very soon"}</p>
                     </div>
                   )}
-                  {isOpen ? (
+                  {canInvestNow ? (
                     <ProjectInvestForm
                       project={{
                         id: project.id,
@@ -467,6 +475,11 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <p className="text-xs text-muted-foreground">Have questions about this project?</p>
                 <ButtonLink href="/contact" variant="outline" className="w-full justify-center text-xs">Contact Support</ButtonLink>
               </div>
+
+              {/* Bank details for investors */}
+              {project.bankAccounts && project.bankAccounts.length > 0 && (
+                <ProjectBankDetails bankAccounts={project.bankAccounts} />
+              )}
 
             </div>
 

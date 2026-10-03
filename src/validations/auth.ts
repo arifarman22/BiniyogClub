@@ -31,6 +31,20 @@ export const registerSchema = z
     role: z.enum(["INVESTOR", "FARMER"], {
       error: "Select a valid role",
     }),
+    nidNumber: z
+      .string()
+      .min(10, "NID number must be at least 10 digits")
+      .max(17, "NID number must be at most 17 digits")
+      .regex(/^\d+$/, "NID number must contain only digits"),
+    nomineeNidNumber: z
+      .string()
+      .min(10, "Nominee NID number must be at least 10 digits")
+      .max(17, "Nominee NID number must be at most 17 digits")
+      .regex(/^\d+$/, "Nominee NID number must contain only digits"),
+    nomineeRelation: z
+      .string()
+      .min(2, "Relation is required")
+      .max(50, "Relation must be at most 50 characters"),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
