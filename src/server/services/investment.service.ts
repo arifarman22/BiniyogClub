@@ -221,7 +221,6 @@ export const investmentService = {
 
         return inv;
       },
-      { isolationLevel: "Serializable" },
     );
 
     return { investment, idempotent: false };
@@ -319,7 +318,7 @@ export const investmentService = {
         const now = new Date();
         const amountBdt = Number(inv.amountBdt);
 
-        // 3. Fetch project with lock for confirm payment
+        // Fetch project for confirm payment
         const project = await tx.project.findUnique({
           where: { id: inv.projectId },
           select: { id: true, status: true, fundingGoalBdt: true, fundedAmountBdt: true },
@@ -500,7 +499,6 @@ export const investmentService = {
 
         return { investment: activated, ledgerTransactionId: ledgerTx.id, receiptNumber };
       },
-      { isolationLevel: "Serializable" },
     );
   },
 

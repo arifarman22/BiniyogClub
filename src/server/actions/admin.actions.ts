@@ -333,7 +333,7 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
           data: { investmentId, receiptNumber },
         },
       });
-    }, { isolationLevel: "Serializable" });
+    });
 
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
 

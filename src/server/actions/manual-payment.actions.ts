@@ -206,27 +206,35 @@ export async function approveManualPaymentAction(
       externalReference: submission.transactionRef,
     });
 
-    // Only mark approved after successful confirmation
-    await db.manualPaymentSubmission.update({
-      where: { id: submissionId },
-      data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: new Date() },
-    });
-
-    // Notify investor
-    const investment = await db.investment.findUnique({
-      where: { id: submission.investmentId },
-      select: { investorProfile: { select: { userId: true } } },
-    });
-    if (investment) {
-      await db.notification.create({
-        data: {
-          userId: investment.investorProfile.userId,
-          type: "INVESTMENT_CONFIRMED",
-          title: "Payment Verified — Investment Active",
-          body: `Your manual payment has been verified. Your investment is now active. Receipt: ${result.receiptNumber}`,
-          data: { investmentId: submission.investmentId, receiptNumber: result.receiptNumber },
-        },
+    // Mark submission approved — non-fatal if this fails (investment is already confirmed)
+    try {
+      await db.manualPaymentSubmission.update({
+        where: { id: submissionId },
+        data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: new Date() },
       });
+    } catch (updateErr) {
+      console.error("[approveManualPayment] Failed to mark submission APPROVED", updateErr);
+    }
+
+    // Notify investor — non-fatal
+    try {
+      const investment = await db.investment.findUnique({
+        where: { id: submission.investmentId },
+        select: { investorProfile: { select: { userId: true } } },
+      });
+      if (investment) {
+        await db.notification.create({
+          data: {
+            userId: investment.investorProfile.userId,
+            type: "INVESTMENT_CONFIRMED",
+            title: "Payment Verified — Investment Active",
+            body: `Your manual payment has been verified. Your investment is now active. Receipt: ${result.receiptNumber}`,
+            data: { investmentId: submission.investmentId, receiptNumber: result.receiptNumber },
+          },
+        });
+      }
+    } catch (notifyErr) {
+      console.error("[approveManualPayment] Failed to send investor notification", notifyErr);
     }
 
     revalidatePath("/admin/payments");
