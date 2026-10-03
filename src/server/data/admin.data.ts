@@ -19,7 +19,7 @@ export async function getAdminDashboardKpis(session: SessionUser) {
     activeInvestments, investmentSum, nearMaturity,
   ] = await Promise.all([
     db.user.count({ where: { deletedAt: null } }),
-    db.investorProfile.count(),
+    db.investorProfile.count({ where: { user: { status: "ACTIVE", deletedAt: null } } }),
     db.project.count({ where: { status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] }, deletedAt: null } }),
     db.kyc.count({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } } }),
     db.withdrawal.count({ where: { status: { in: ["PENDING", "APPROVED"] } } }),
@@ -559,7 +559,7 @@ export async function getAdminAnalytics(session: SessionUser) {
       select: { netAmountBdt: true, requestedAt: true },
     }),
     db.investorProfile.findMany({
-      where: { createdAt: { gte: twelveMonthsAgo } },
+      where: { createdAt: { gte: twelveMonthsAgo }, user: { status: "ACTIVE", deletedAt: null } },
       select: { createdAt: true },
     }),
     db.investment.aggregate({
@@ -596,7 +596,7 @@ export async function getAdminAnalytics(session: SessionUser) {
   // Batch 3: KPI counts (4 queries)
   const [distAgg, totalInvestors, activeProjects, completedProjects, totalProjects, withdrawalAgg] = await Promise.all([
     db.profitDistribution.aggregate({ _sum: { netAmountBdt: true, platformFeeBdt: true } }),
-    db.investorProfile.count(),
+    db.investorProfile.count({ where: { user: { status: "ACTIVE", deletedAt: null } } }),
     db.project.count({ where: { status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] }, deletedAt: null } }),
     db.project.count({ where: { status: "COMPLETED", deletedAt: null } }),
     db.project.count({ where: { deletedAt: null } }),
