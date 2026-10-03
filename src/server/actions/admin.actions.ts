@@ -93,13 +93,34 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
     const session = await requireSession();
     await requirePermission(session, PERMISSIONS.USER_DELETE);
 
-    const user = await db.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+    const user = await db.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, role: true,
+        investorProfile: { select: { id: true, investments: { select: { id: true } } } },
+      },
+    });
     if (!user) throw new NotFoundError("User");
     if (user.role === "SUPER_ADMIN") throw new ForbiddenError("Cannot delete a super admin");
 
-    await db.user.update({ where: { id: userId }, data: { deletedAt: new Date(), status: "DEACTIVATED" } });
-    await auditLog(session.id, "DELETE", "User", userId);
+    await db.$transaction(async (tx) => {
+      // Delete investment child records if investor
+      if (user.investorProfile) {
+        const investmentIds = user.investorProfile.investments.map((i) => i.id);
+        if (investmentIds.length > 0) {
+          await tx.manualPaymentSubmission.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          await tx.profitDistribution.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          await tx.distributionLineItem.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          await tx.gatewayPayment.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          await tx.ledgerTransaction.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          await tx.investment.deleteMany({ where: { id: { in: investmentIds } } });
+        }
+      }
+      // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
+      await tx.user.delete({ where: { id: userId } });
+    });
 
+    await auditLog(session.id, "DELETE", "User", userId);
     revalidatePath("/admin/users");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }

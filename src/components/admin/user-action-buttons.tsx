@@ -31,7 +31,7 @@ export function DeleteUserButton({ userId, userName }: { userId: string; userNam
     <AdminActionButton
       label="Delete"
       confirmTitle="Delete User"
-      confirmDescription={`Permanently delete ${userName}? This will soft-delete their account and deactivate it. This cannot be undone.`}
+      confirmDescription={`Permanently delete ${userName}? Their account, investments, and all associated data will be removed. This cannot be undone.`}
       onConfirm={() => deleteUserAction(userId)}
       variant="destructive"
     />
