@@ -200,16 +200,16 @@ export async function approveManualPaymentAction(
       throw new ValidationError(`Submission is already ${submission.status}`);
     }
 
-    // Mark submission approved
-    await db.manualPaymentSubmission.update({
-      where: { id: submissionId },
-      data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: new Date() },
-    });
-
-    // Confirm the investment via the existing service (handles ledger, activation, contract)
+    // Confirm the investment first — if this fails, submission stays reviewable
     const result = await investmentService.confirmPayment(session, {
       investmentId: submission.investmentId,
       externalReference: submission.transactionRef,
+    });
+
+    // Only mark approved after successful confirmation
+    await db.manualPaymentSubmission.update({
+      where: { id: submissionId },
+      data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: new Date() },
     });
 
     // Notify investor

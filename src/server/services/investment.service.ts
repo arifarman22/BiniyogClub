@@ -335,12 +335,22 @@ export const investmentService = {
           );
         }
 
-        // Get investor wallet
-        const wallet = await tx.wallet.findUnique({
+        // Get or create investor wallet
+        let wallet = await tx.wallet.findUnique({
           where: { userId: inv.investorProfile.user.id },
           select: { id: true, cachedBalance: true },
         });
-        if (!wallet) throw new NotFoundError("Investor wallet");
+        if (!wallet) {
+          wallet = await tx.wallet.create({
+            data: {
+              userId: inv.investorProfile.user.id,
+              type: "INVESTOR",
+              cachedBalance: 0,
+              currency: "BDT",
+            },
+            select: { id: true, cachedBalance: true },
+          });
+        }
 
         // Get or create platform escrow wallet
         let escrowWallet = await tx.wallet.findFirst({

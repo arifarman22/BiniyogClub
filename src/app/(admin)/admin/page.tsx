@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import {
-  Users, UserCheck, FolderKanban, TrendingUp,
+  Users, UserCheck, FolderKanban,
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
   BarChart3, Layers, ArrowUpRight, ArrowDownRight,
 } from "lucide-react";
@@ -36,11 +36,6 @@ export default async function AdminDashboardPage() {
         <StatCard title="Total Users" value={kpis.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" />} variant="brand" />
         <StatCard title="Investors" value={analytics.kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} />
         <StatCard title="Active Projects" value={analytics.kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Total Investment" value={fmtBdt(analytics.kpis.totalInvested)} icon={<TrendingUp className="h-5 w-5" />} variant="finance"
-          description={analytics.kpis.investmentGrowthPct
-            ? `${Number(analytics.kpis.investmentGrowthPct) >= 0 ? "+" : ""}${analytics.kpis.investmentGrowthPct}% vs last month`
-            : undefined}
-        />
         <StatCard title="Pending KYC" value={kpis.pendingKyc.toLocaleString()} icon={<ShieldCheck className="h-5 w-5" />} description={kpis.pendingKyc > 0 ? "Needs review" : "All clear"} />
         <StatCard title="Pending Withdrawals" value={kpis.pendingWithdrawals.toLocaleString()} icon={<ArrowDownToLine className="h-5 w-5" />} description={kpis.pendingWithdrawals > 0 ? "Awaiting approval" : "None pending"} />
         <StatCard title="Active Investments" value={kpis.activeInvestments.toLocaleString()} icon={<Clock className="h-5 w-5" />} />
