@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Trash2 } from "lucide-react";
 import { deleteProjectAction } from "@/server/actions/project.actions";
 
 export function DeleteProjectButton({ projectId, projectTitle }: { projectId: string; projectTitle: string }) {
+  const router = useRouter();
   const [confirm, setConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -16,6 +18,9 @@ export function DeleteProjectButton({ projectId, projectTitle }: { projectId: st
     if (!result.success) {
       setError(result.error ?? "Failed to delete.");
       setConfirm(false);
+    } else {
+      router.push("/admin/projects");
+      router.refresh();
     }
   }
 
