@@ -311,7 +311,7 @@ export default async function HomePage() {
                 href="/projects"
                 className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-card px-6 py-2.5 text-sm font-normal text-foreground shadow-sm transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-md shrink-0"
               >
-                <span>View All Projects</span>
+                <span>Be an Investor</span>
                 <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
               </Link>
             </AnimatedSection>
@@ -346,7 +346,7 @@ export default async function HomePage() {
                 href="/projects"
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-border/80 bg-card px-8 py-3 text-sm font-semibold shadow-sm transition-all hover:border-primary hover:text-primary w-full"
               >
-                View All Projects <ChevronRight className="h-4 w-4" />
+                Be an Investor <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </div>
