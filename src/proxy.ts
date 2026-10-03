@@ -80,5 +80,7 @@ export function proxy(request: NextRequest): NextResponse {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)" ],
+  matcher: [
+    "/((?!_next/static|_next/image|_next/webpack-hmr|favicon\\.ico|favicon\\.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|css|js|woff|woff2|ttf|otf)$).*)" ,
+  ],
 };
