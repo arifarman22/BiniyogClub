@@ -99,7 +99,7 @@ export function HeroSlider() {
             </span>
           </h1>
 
-          <p className="mb-8 mx-auto max-w-2xl text-base sm:text-lg lg:text-xl font-light text-slate-200/85 leading-relaxed">
+          <p className="mb-8 mx-auto max-w-2xl text-base sm:text-lg lg:text-xl font-normal text-slate-100 leading-relaxed">
             {slide.sub}
           </p>
 

@@ -182,7 +182,7 @@ export function ProjectCard({
           <h3 className="text-lg font-normal sm:font-medium tracking-tight text-foreground transition-colors duration-300 group-hover:text-primary leading-snug line-clamp-2">
             {title}
           </h3>
-          <p className="mt-1.5 text-xs sm:text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
+          <p className="mt-1.5 text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
             {description}
           </p>
         </div>

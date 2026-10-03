@@ -191,8 +191,8 @@ export default async function HomePage() {
 
                 {/* Bottom: Label & Micro note */}
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-normal text-foreground">Total Capital Deployed</p>
-                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-foreground">Total Capital Deployed</p>
+                  <p className="text-xs font-normal text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Directly invested in Bangladesh
                   </p>
@@ -220,8 +220,8 @@ export default async function HomePage() {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-normal text-foreground">Verified Co-Investors</p>
-                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-foreground">Verified Co-Investors</p>
+                  <p className="text-xs font-normal text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Active retail & corporate members
                   </p>
@@ -249,8 +249,8 @@ export default async function HomePage() {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-normal text-foreground">Vetted Business Projects</p>
-                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-foreground">Vetted Business Projects</p>
+                  <p className="text-xs font-normal text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Due diligence & asset-backed
                   </p>
@@ -278,8 +278,8 @@ export default async function HomePage() {
                 </div>
 
                 <div className="mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
-                  <p className="text-sm font-normal text-foreground">On-Time Return Payouts</p>
-                  <p className="text-xs font-light text-muted-foreground mt-0.5 flex items-center gap-1.5">
+                  <p className="text-sm font-medium text-foreground">On-Time Return Payouts</p>
+                  <p className="text-xs font-normal text-slate-600 dark:text-slate-300 mt-0.5 flex items-center gap-1.5">
                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Consistent capital & profit disbursals
                   </p>
@@ -303,7 +303,7 @@ export default async function HomePage() {
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
                   Institutional Business Groups
                 </h2>
-                <p className="mt-3.5 text-base sm:text-lg font-light text-muted-foreground max-w-2xl leading-relaxed">
+                <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
                   Join established conglomerates and commercial ventures as a verified Investor, Shareholder, or Strategic Partner.
                 </p>
               </div>
@@ -349,7 +349,7 @@ export default async function HomePage() {
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
                   Featured Investment Projects
                 </h2>
-                <p className="mt-3.5 text-base sm:text-lg font-light text-muted-foreground max-w-2xl leading-relaxed">
+                <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
                   Directly finance vetted initiatives across Real Estate, Agriculture, Export Trade, and High-Growth SMEs.
                 </p>
               </div>
@@ -409,7 +409,7 @@ export default async function HomePage() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
               How Biniyog Club Works
             </h2>
-            <p className="mt-4 text-base sm:text-lg font-light text-muted-foreground leading-relaxed">
+            <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 leading-relaxed">
               Start building wealth with institutional-grade investments through four straightforward steps.
             </p>
           </AnimatedSection>
@@ -434,7 +434,7 @@ export default async function HomePage() {
                   <h3 className="mb-2.5 text-lg font-normal sm:font-medium text-foreground leading-snug">
                     {title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed">
+                  <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 leading-relaxed">
                     {desc}
                   </p>
 
@@ -479,7 +479,7 @@ export default async function HomePage() {
                   Every Single Step
                 </span>
               </h2>
-              <p className="mb-8 text-base sm:text-lg font-light text-muted-foreground leading-relaxed">
+              <p className="mb-8 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 leading-relaxed">
                 We believe Bangladeshi investors deserve institutional rigor. Biniyog Club pairs mathematical
                 ledger immutability with verified legal contracts to safeguard your capital.
               </p>
@@ -499,7 +499,7 @@ export default async function HomePage() {
                         </div>
                         <h4 className="text-xs sm:text-sm font-bold text-foreground">{item.title}</h4>
                       </div>
-                      <p className="text-xs text-muted-foreground pl-9 leading-relaxed">{item.desc}</p>
+                      <p className="text-xs font-normal text-slate-600 dark:text-slate-300 pl-9 leading-relaxed">{item.desc}</p>
                     </div>
                   );
                 })}
@@ -555,28 +555,28 @@ export default async function HomePage() {
                       <Lock className="h-4 w-4" />
                     </div>
                     <p className="text-xs font-bold text-white">Zero Tampering</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Immutable ledger guarantees balance accuracy</p>
+                    <p className="text-[11px] text-slate-200 mt-1">Immutable ledger guarantees balance accuracy</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/20 text-blue-300 mb-2.5">
                       <FileCheck className="h-4 w-4" />
                     </div>
                     <p className="text-xs font-bold text-white">Enforceable Contracts</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Signed digital deeds binding under BD law</p>
+                    <p className="text-[11px] text-slate-200 mt-1">Signed digital deeds binding under BD law</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/20 text-amber-300 mb-2.5">
                       <BarChart3 className="h-4 w-4" />
                     </div>
                     <p className="text-xs font-bold text-white">Live Disclosures</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Direct project milestone and harvest reports</p>
+                    <p className="text-[11px] text-slate-200 mt-1">Direct project milestone and harvest reports</p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur-sm">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/20 text-purple-300 mb-2.5">
                       <Coins className="h-4 w-4" />
                     </div>
                     <p className="text-xs font-bold text-white">Direct Wallet Payouts</p>
-                    <p className="text-[11px] text-slate-400 mt-1">Withdraw to bank or mobile banking</p>
+                    <p className="text-[11px] text-slate-200 mt-1">Withdraw to bank or mobile banking</p>
                   </div>
                 </div>
 
@@ -609,7 +609,7 @@ export default async function HomePage() {
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
                   Live Project Disclosures
                 </h2>
-                <p className="mt-3.5 text-base sm:text-lg font-light text-muted-foreground leading-relaxed">
+                <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 leading-relaxed">
                   Real-time milestone completions, harvest results, and operational reports directly from active ventures.
                 </p>
               </div>
@@ -663,7 +663,7 @@ export default async function HomePage() {
                       <h3 className="mb-2 text-base font-normal sm:font-medium group-hover:text-primary line-clamp-2 transition-colors leading-snug">
                         {update.title}
                       </h3>
-                      <p className="mb-4 text-xs sm:text-sm font-light text-muted-foreground line-clamp-3 leading-relaxed">
+                      <p className="mb-4 text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
                         {update.content}
                       </p>
                       <div className="mt-auto pt-3 border-t border-border/60 flex items-center justify-between text-xs font-normal sm:font-medium text-primary">
@@ -690,7 +690,7 @@ export default async function HomePage() {
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
               Everything You Need to Know
             </h2>
-            <p className="mt-3.5 text-base sm:text-lg font-light text-muted-foreground">
+            <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200">
               Clear answers regarding security, compliance, minimum investments, and payout cycles.
             </p>
           </AnimatedSection>
@@ -701,7 +701,7 @@ export default async function HomePage() {
           <div className="mt-12 rounded-3xl border border-border/80 bg-slate-50 dark:bg-slate-900/50 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
             <div>
               <h4 className="text-base font-normal sm:font-medium text-foreground">Still have questions about investing?</h4>
-              <p className="text-xs sm:text-sm font-light text-muted-foreground mt-1">
+              <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 mt-1">
                 Our investor relations team is ready to guide you on contract security and returns.
               </p>
             </div>
@@ -746,7 +746,7 @@ export default async function HomePage() {
             </span>
           </h2>
 
-          <p className="mb-10 text-slate-300 font-light text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">
+          <p className="mb-10 text-slate-100 font-normal text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed">
             Create your account in 2 minutes. Gain direct access to admin-vetted business groups, institutional transparency, and legally protected contracts.
           </p>
 

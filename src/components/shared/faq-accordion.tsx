@@ -36,7 +36,7 @@ export function FaqAccordion() {
             className={`grid transition-all duration-300 ${open === i ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
           >
             <div className="overflow-hidden">
-              <p className="px-5 pb-5 pl-12 text-sm text-muted-foreground leading-relaxed">{a}</p>
+              <p className="px-5 pb-5 pl-12 text-sm font-normal text-slate-700 dark:text-slate-200 leading-relaxed">{a}</p>
             </div>
           </div>
         </div>

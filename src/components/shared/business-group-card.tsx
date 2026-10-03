@@ -208,7 +208,7 @@ export function BusinessGroupCard({ group, priority = false }: BusinessGroupCard
       {/* ── Card Body ── */}
       <div className="flex flex-1 flex-col p-6 gap-5">
         {/* Description */}
-        <p className="text-xs sm:text-sm font-light text-muted-foreground line-clamp-2 leading-relaxed">
+        <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 line-clamp-2 leading-relaxed">
           {group.description}
         </p>
 
