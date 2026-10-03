@@ -8,7 +8,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { SuspendUserButton, ActivateUserButton } from "@/components/admin/user-action-buttons";
+import { SuspendUserButton, ActivateUserButton, DeleteUserButton } from "@/components/admin/user-action-buttons";
 import { fmtDate } from "@/lib/admin/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
 import type { AsyncComponentProps } from "@/types";
@@ -114,6 +114,9 @@ export default async function AdminUsersPage({ searchParams }: AsyncComponentPro
                         ) : u.status === "SUSPENDED" ? (
                           <ActivateUserButton userId={u.id} userName={u.name} />
                         ) : null}
+                        {u.role !== "SUPER_ADMIN" && ["SUPER_ADMIN", "ADMIN"].includes(session.role) && (
+                          <DeleteUserButton userId={u.id} userName={u.name} />
+                        )}
                       </div>
                     </td>
                   </tr>
