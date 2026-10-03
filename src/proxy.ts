@@ -9,6 +9,15 @@ const PROTECTED_PREFIXES = [
   "/staff",
 ];
 
+// Login pages must never be protected — prevents infinite redirect loops
+const PUBLIC_EXCEPTIONS = [
+  "/admin/login",
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/reset-password",
+];
+
 // API routes that require authentication (block unauthenticated access at edge)
 const PROTECTED_API_PREFIXES = [
   "/api/reports",
@@ -34,7 +43,8 @@ export function proxy(request: NextRequest): NextResponse {
   const isAuthenticated = Boolean(token);
 
   // Enforce authentication on protected page routes
-  const isProtectedPage = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
+  const isPublicException = PUBLIC_EXCEPTIONS.some((p) => pathname.startsWith(p));
+  const isProtectedPage = !isPublicException && PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (isProtectedPage && !isAuthenticated) {
     const loginUrl = new URL(
       pathname.startsWith("/admin") ? "/admin/login" : "/auth/login",
