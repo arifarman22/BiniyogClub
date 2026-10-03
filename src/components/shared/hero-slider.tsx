@@ -56,7 +56,7 @@ export function HeroSlider() {
   const slide = SLIDES[current];
 
   return (
-    <section className="relative -mt-16 w-full overflow-hidden bg-slate-950 min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] h-[82vh] max-h-[820px] flex items-center justify-center">
+    <section className="relative -mt-24 sm:-mt-[100px] w-full overflow-hidden bg-slate-950 min-h-[580px] sm:min-h-[640px] lg:min-h-[700px] h-[82vh] max-h-[820px] flex items-center justify-center">
       {/* Slides Background Images */}
       {SLIDES.map((s, i) => (
         <div
@@ -80,7 +80,7 @@ export function HeroSlider() {
       <div className="absolute inset-0 bg-radial-gradient from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
 
       {/* Content Container */}
-      <div className="relative z-10 mx-auto max-w-5xl px-4 pt-16 pb-16 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 pt-20 sm:pt-28 pb-16 sm:px-6 lg:px-8 text-center flex flex-col items-center justify-center">
         {/* Dynamic Animated Text Block */}
         <div
           className={`transition-all duration-500 max-w-4xl ${
