@@ -267,7 +267,7 @@ export function ProjectCard({
           )}
 
           <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-normal sm:font-medium text-primary group-hover:underline">
-            <span>View Opportunity</span>
+            <span>Be an Investor</span>
             <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-primary transition-all duration-300 group-hover:bg-primary group-hover:text-white group-hover:translate-x-1 shadow-xs">
               <ChevronRight className="h-3.5 w-3.5" />
             </div>
