@@ -371,14 +371,6 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Analytics charts ── */}
-      <InvestorAnalyticsCharts
-        monthlyHistory={portfolio.monthlyHistory}
-        categoryData={categoryData}
-        distributionHistory={distributionHistory}
-        statusData={statusData}
-      />
-
       {/* ── Available projects ── */}
       {availableProjects.length > 0 && (
         <div>
@@ -467,6 +459,14 @@ export default async function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* ── Analytics charts ── */}
+      <InvestorAnalyticsCharts
+        monthlyHistory={portfolio.monthlyHistory}
+        categoryData={categoryData}
+        distributionHistory={distributionHistory}
+        statusData={statusData}
+      />
 
       {/* ── Bottom grid: investments + updates ── */}
       <div className="grid gap-6 lg:grid-cols-5">
