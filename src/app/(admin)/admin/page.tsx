@@ -10,7 +10,7 @@ import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import {
   Users, UserCheck, FolderKanban,
   ShieldCheck, ArrowDownToLine, Clock, AlertTriangle,
-  BarChart3, Layers, ArrowUpRight, ArrowDownRight, TrendingUp,
+  BarChart3, Layers, TrendingUp,
 } from "lucide-react";
 import { AdminAnalyticsCharts } from "./analytics-charts-lazy";
 
@@ -31,18 +31,37 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <PageHeader title="Dashboard" description="Platform overview" />
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-        <StatCard title="Total Users" value={kpis.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Investors" value={analytics.kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} />
-        <StatCard title="Total Investment" value={fmtBdt(analytics.kpis.totalInvested)} icon={<TrendingUp className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Active Projects" value={analytics.kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="brand" />
-        <StatCard title="Pending KYC" value={kpis.pendingKyc.toLocaleString()} icon={<ShieldCheck className="h-5 w-5" />} description={kpis.pendingKyc > 0 ? "Needs review" : "All clear"} />
-        <StatCard title="Pending Withdrawals" value={kpis.pendingWithdrawals.toLocaleString()} icon={<ArrowDownToLine className="h-5 w-5" />} description={kpis.pendingWithdrawals > 0 ? "Awaiting approval" : "None pending"} />
-        <StatCard title="Active Investments" value={kpis.activeInvestments.toLocaleString()} icon={<Clock className="h-5 w-5" />} />
-        <StatCard title="Distributions" value={fmtBdt(analytics.kpis.totalDistributed)} icon={<Layers className="h-5 w-5" />} />
-        <StatCard title="Funding Rate" value={`${analytics.kpis.fundingRate}%`} icon={<BarChart3 className="h-5 w-5" />} description={`${analytics.kpis.completedProjects}/${analytics.kpis.totalProjects} projects`} />
-        <StatCard title="Near Maturity" value={kpis.projectsNearMaturity.toLocaleString()} icon={<AlertTriangle className="h-5 w-5" />} description="Projects ending in 30 days" />
+      {/* KPI grid — categorized */}
+
+      {/* Users & Investors */}
+      <div>
+        <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-blue-500">👥 Users &amp; Investors</p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-3">
+          <StatCard title="Total Users" value={kpis.totalUsers.toLocaleString()} icon={<Users className="h-5 w-5" />} variant="brand" />
+          <StatCard title="Investors" value={analytics.kpis.totalInvestors.toLocaleString()} icon={<UserCheck className="h-5 w-5" />} variant="brand" />
+          <StatCard title="Pending KYC" value={kpis.pendingKyc.toLocaleString()} icon={<ShieldCheck className="h-5 w-5" />} description={kpis.pendingKyc > 0 ? "Needs review" : "All clear"} variant="brand" />
+        </div>
+      </div>
+
+      {/* Finance */}
+      <div>
+        <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-emerald-500">💰 Finance</p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <StatCard title="Total Investment" value={fmtBdt(analytics.kpis.totalInvested)} icon={<TrendingUp className="h-5 w-5" />} variant="finance" />
+          <StatCard title="Active Investments" value={kpis.activeInvestments.toLocaleString()} icon={<Clock className="h-5 w-5" />} variant="finance" />
+          <StatCard title="Distributions" value={fmtBdt(analytics.kpis.totalDistributed)} icon={<Layers className="h-5 w-5" />} variant="finance" />
+          <StatCard title="Pending Withdrawals" value={kpis.pendingWithdrawals.toLocaleString()} icon={<ArrowDownToLine className="h-5 w-5" />} description={kpis.pendingWithdrawals > 0 ? "Awaiting approval" : "None pending"} variant="finance" />
+        </div>
+      </div>
+
+      {/* Projects */}
+      <div>
+        <p className="mb-2.5 text-xs font-semibold uppercase tracking-widest text-amber-500">🌱 Projects</p>
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-3">
+          <StatCard title="Active Projects" value={analytics.kpis.activeProjects.toLocaleString()} icon={<FolderKanban className="h-5 w-5" />} variant="harvest" />
+          <StatCard title="Funding Rate" value={`${analytics.kpis.fundingRate}%`} icon={<BarChart3 className="h-5 w-5" />} description={`${analytics.kpis.completedProjects}/${analytics.kpis.totalProjects} projects`} variant="harvest" />
+          <StatCard title="Near Maturity" value={kpis.projectsNearMaturity.toLocaleString()} icon={<AlertTriangle className="h-5 w-5" />} description="Ending in 30 days" variant="harvest" />
+        </div>
       </div>
 
       {/* Alert banners */}
