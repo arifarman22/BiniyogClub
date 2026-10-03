@@ -64,8 +64,7 @@ function ProjectInvestFormInner({
     });
     setLoading(false);
     if (result.success) {
-      // Redirect directly to the investment to complete payment
-      router.push(`/dashboard/investments`);
+      router.push(`/dashboard/investments/${result.data.investmentId}/pay`);
     } else {
       setError(result.error ?? "Failed to create investment");
     }
