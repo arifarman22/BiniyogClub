@@ -23,11 +23,9 @@ const INV_STATUS_VARIANT: Record<string, string> = {
 
 export default async function AdminDashboardPage() {
   const session = await requireSession();
-  const [kpis, activity, analytics] = await Promise.all([
-    getAdminDashboardKpis(session),
-    getAdminRecentActivity(session),
-    getAdminAnalytics(session),
-  ]);
+  const kpis = await getAdminDashboardKpis(session);
+  const activity = await getAdminRecentActivity(session);
+  const analytics = await getAdminAnalytics(session);
 
   return (
     <div className="space-y-6">

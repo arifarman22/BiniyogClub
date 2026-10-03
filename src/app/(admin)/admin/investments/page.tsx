@@ -7,8 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
-import { AdminActionButton } from "@/components/admin/admin-action-button";
-import { approveInvestmentAdminAction, cancelInvestmentAdminAction } from "@/server/actions/admin.actions";
+import { InvestmentActionButtons } from "@/components/admin/investment-action-buttons";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import type { AsyncComponentProps } from "@/types";
 
@@ -89,28 +88,12 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
                       <span className="text-xs text-muted-foreground">{fmtDate(inv.createdAt)}</span>
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        {inv.status === "PENDING" && (
-                          <AdminActionButton
-                            label="Approve"
-                            confirmTitle="Approve Investment"
-                            confirmDescription={`Approve this investment of ${fmtBdt(inv.amountBdt)} by ${inv.investorProfile.user.name}? It will become ACTIVE and visible on their dashboard.`}
-                            onConfirm={() => approveInvestmentAdminAction(inv.id)}
-                            variant="default"
-                          />
-                        )}
-                        {["PENDING", "PAYMENT_PENDING", "ACTIVE"].includes(inv.status) && (
-                          <AdminActionButton
-                            label="Cancel"
-                            confirmTitle="Cancel Investment"
-                            confirmDescription={`Cancel this investment of ${fmtBdt(inv.amountBdt)} by ${inv.investorProfile.user.name}?`}
-                            onConfirm={(reason) => cancelInvestmentAdminAction(inv.id, reason ?? "")}
-                            requireReason
-                            reasonPlaceholder="Reason for cancellation..."
-                            variant="destructive"
-                          />
-                        )}
-                      </div>
+                      <InvestmentActionButtons
+                        investmentId={inv.id}
+                        status={inv.status}
+                        amountLabel={fmtBdt(inv.amountBdt)}
+                        investorName={inv.investorProfile.user.name}
+                      />
                     </td>
                   </tr>
                 ))}
