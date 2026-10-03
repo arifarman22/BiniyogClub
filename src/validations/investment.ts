@@ -17,12 +17,13 @@ export const createInvestmentSchema = z.object({
     .number()
     .positive("Amount must be greater than 0")
     .refine((v) => Math.round(v * 100) === v * 100, { message: "Amount must have at most 2 decimal places" }),
-  paymentMethod: PaymentMethodEnum,
+  paymentMethod: PaymentMethodEnum.default("BANK_TRANSFER"),
   // Client-supplied idempotency key — prevents duplicate submissions on retry
   idempotencyKey: z
     .string()
     .min(16, "Idempotency key too short")
-    .max(128, "Idempotency key too long"),
+    .max(128, "Idempotency key too long")
+    .default(() => `${Date.now()}-${Math.random().toString(36).slice(2)}`),
 });
 
 // ─── Confirm payment ──────────────────────────────────────────────────────────
