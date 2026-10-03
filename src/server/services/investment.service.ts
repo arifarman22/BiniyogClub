@@ -313,193 +313,125 @@ export const investmentService = {
       );
     }
 
-    return db.$transaction(
-      async (tx) => {
-        const now = new Date();
-        const amountBdt = Number(inv.amountBdt);
+    const amountBdt = Number(inv.amountBdt);
+    const investorUserId = inv.investorProfile.user.id;
 
-        // Fetch project for confirm payment
-        const project = await tx.project.findUnique({
-          where: { id: inv.projectId },
-          select: { id: true, status: true, fundingGoalBdt: true, fundedAmountBdt: true },
-        });
+    // ── Pre-fetch all reads outside the transaction to keep it short ──────────
+    const project = await db.project.findUnique({
+      where: { id: inv.projectId },
+      select: { id: true, status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+    });
+    if (!project) throw new NotFoundError("Project");
 
-        if (!project) throw new NotFoundError("Project");
+    const remaining = Number(project.fundingGoalBdt) - Number(project.fundedAmountBdt);
+    if (amountBdt > remaining) {
+      throw new ConflictError("Project capacity exceeded. Investment cannot be confirmed.");
+    }
 
-        // Final overfunding check
-        const remaining = Number(project.fundingGoalBdt) - Number(project.fundedAmountBdt);
-        if (amountBdt > remaining) {
-          throw new ConflictError(
-            "Project capacity exceeded. Investment cannot be confirmed.",
-          );
-        }
+    // Ensure investor wallet exists before the transaction
+    const wallet = await db.wallet.upsert({
+      where: { userId: investorUserId },
+      create: { userId: investorUserId, type: "INVESTOR", cachedBalance: 0, currency: "BDT" },
+      update: {},
+      select: { id: true, cachedBalance: true },
+    });
 
-        // Get or create investor wallet
-        let wallet = await tx.wallet.findUnique({
-          where: { userId: inv.investorProfile.user.id },
-          select: { id: true, cachedBalance: true },
-        });
-        if (!wallet) {
-          wallet = await tx.wallet.create({
-            data: {
-              userId: inv.investorProfile.user.id,
-              type: "INVESTOR",
-              cachedBalance: 0,
-              currency: "BDT",
-            },
-            select: { id: true, cachedBalance: true },
-          });
-        }
+    // Ensure escrow wallet exists before the transaction
+    let escrowWallet = await db.wallet.findFirst({
+      where: { type: "PLATFORM_ESCROW" },
+      select: { id: true, cachedBalance: true },
+    });
+    if (!escrowWallet) {
+      const platformUser = await db.user.findFirst({ where: { role: "SUPER_ADMIN" }, select: { id: true } });
+      if (!platformUser) throw new NotFoundError("Platform user for escrow wallet");
+      escrowWallet = await db.wallet.upsert({
+        where: { userId: platformUser.id },
+        create: { userId: platformUser.id, type: "PLATFORM_ESCROW", cachedBalance: 0, currency: "BDT" },
+        update: {},
+        select: { id: true, cachedBalance: true },
+      });
+    }
 
-        // Get or create platform escrow wallet
-        let escrowWallet = await tx.wallet.findFirst({
-          where: { type: "PLATFORM_ESCROW" },
-          select: { id: true, cachedBalance: true },
-        });
-        if (!escrowWallet) {
-          // Find the platform user (SUPER_ADMIN) to attach the wallet to
-          const platformUser = await tx.user.findFirst({
-            where: { role: "SUPER_ADMIN" },
-            select: { id: true },
-          });
-          if (!platformUser) throw new NotFoundError("Platform user for escrow wallet");
-          escrowWallet = await tx.wallet.create({
-            data: {
-              userId: platformUser.id,
-              type: "PLATFORM_ESCROW",
-              cachedBalance: 0,
-              currency: "BDT",
-            },
-            select: { id: true, cachedBalance: true },
-          });
-        }
+    const now = new Date();
+    const receiptNumber = generateReceiptNumber();
+    const investorNewBalance = Number(wallet.cachedBalance) + amountBdt;
+    const escrowNewBalance = Number(escrowWallet.cachedBalance) + amountBdt;
+    const walletId = wallet.id;
+    const escrowWalletId = escrowWallet.id;
 
-        // Update payment record to COMPLETED
-        await tx.payment.updateMany({
-          where: {
-            walletId: wallet.id,
-            status: "PENDING",
-            direction: "INBOUND",
-            amountBdt: inv.amountBdt,
+    // ── Transaction: only writes ──────────────────────────────────────────────
+    return db.$transaction(async (tx) => {
+      // Mark pending payment as completed
+      await tx.payment.updateMany({
+        where: { walletId, status: "PENDING", direction: "INBOUND", amountBdt: inv.amountBdt },
+        data: { status: "COMPLETED", externalReference: input.externalReference, processedAt: now },
+      });
+
+      // Double-entry ledger
+      const ledgerTx = await tx.ledgerTransaction.create({
+        data: {
+          type: "INVESTMENT_FUNDING",
+          investmentId: inv.id,
+          referenceId: inv.id,
+          referenceType: "Investment",
+          description: `Investment funding: ${inv.project.title}`,
+          amountBdt,
+          entries: {
+            create: [
+              { walletId, entryType: "DEBIT", amountBdt, balanceAfterBdt: investorNewBalance },
+              { walletId: escrowWalletId, entryType: "CREDIT", amountBdt, balanceAfterBdt: escrowNewBalance },
+            ],
           },
-          data: {
-            status: "COMPLETED",
-            externalReference: input.externalReference,
-            gatewayResponse: input.gatewayResponse ? JSON.parse(JSON.stringify(input.gatewayResponse)) : undefined,
-            processedAt: now,
-          },
-        });
+        },
+        select: { id: true },
+      });
 
-        // ── Double-entry ledger ───────────────────────────────────────────────
-        // Debit investor wallet, Credit platform escrow wallet
+      // Update wallet balances
+      await tx.wallet.update({ where: { id: walletId }, data: { cachedBalance: investorNewBalance } });
+      await tx.wallet.update({ where: { id: escrowWalletId }, data: { cachedBalance: escrowNewBalance } });
 
-        const investorNewBalance = Number(wallet.cachedBalance) + amountBdt;
-        const escrowNewBalance = Number(escrowWallet.cachedBalance) + amountBdt;
+      // Activate investment
+      const activated = await tx.investment.update({
+        where: { id: inv.id },
+        data: { status: "ACTIVE", confirmedAt: now, activatedAt: now, receiptNumber },
+        select: { id: true, status: true, amountBdt: true, expectedReturnBdt: true, receiptNumber: true, activatedAt: true },
+      });
 
-        const ledgerTx = await tx.ledgerTransaction.create({
-          data: {
-            type: "INVESTMENT_FUNDING",
-            investmentId: inv.id,
-            referenceId: inv.id,
-            referenceType: "Investment",
-            description: `Investment funding: ${inv.project.title}`,
+      // Increment project funded amount
+      const updatedProject = await tx.project.update({
+        where: { id: inv.projectId },
+        data: { fundedAmountBdt: { increment: amountBdt } },
+        select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+      });
+
+      // Auto-transition project to FUNDED if goal reached
+      if (
+        Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
+        updatedProject.status === "FUNDRAISING"
+      ) {
+        await tx.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
+      }
+
+      // Create investment contract
+      await tx.investmentContract.create({
+        data: {
+          investmentId: inv.id,
+          status: "DRAFT",
+          templateVersion: "v1.0",
+          terms: {
             amountBdt,
-            entries: {
-              create: [
-                {
-                  walletId: wallet.id,
-                  entryType: "DEBIT",
-                  amountBdt,
-                  balanceAfterBdt: investorNewBalance,
-                },
-                {
-                  walletId: escrowWallet.id,
-                  entryType: "CREDIT",
-                  amountBdt,
-                  balanceAfterBdt: escrowNewBalance,
-                },
-              ],
-            },
+            expectedReturnBdt: Number(inv.expectedReturnBdt),
+            returnType: inv.returnType,
+            projectId: inv.projectId,
+            projectTitle: inv.project.title,
+            investorId: investorUserId,
+            activatedAt: now.toISOString(),
           },
-          select: { id: true },
-        });
+        },
+      });
 
-        // Update wallet cached balances
-        await tx.wallet.update({
-          where: { id: wallet.id },
-          data: { cachedBalance: investorNewBalance },
-        });
-        await tx.wallet.update({
-          where: { id: escrowWallet.id },
-          data: { cachedBalance: escrowNewBalance },
-        });
-
-        // Generate receipt number
-        const receiptNumber = generateReceiptNumber();
-
-        // Activate investment
-        const activated = await tx.investment.update({
-          where: { id: inv.id },
-          data: {
-            status: "ACTIVE",
-            confirmedAt: now,
-            activatedAt: now,
-            receiptNumber,
-          },
-          select: {
-            id: true,
-            status: true,
-            amountBdt: true,
-            expectedReturnBdt: true,
-            receiptNumber: true,
-            activatedAt: true,
-          },
-        });
-
-        // Increment project funded amount
-        const updatedProject = await tx.project.update({
-          where: { id: inv.projectId },
-          data: { fundedAmountBdt: { increment: amountBdt } },
-          select: {
-            id: true,
-            status: true,
-            fundingGoalBdt: true,
-            fundedAmountBdt: true,
-          },
-        });
-
-        // Auto-transition project to FUNDED if goal reached
-        if (
-          Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
-          updatedProject.status === "FUNDRAISING"
-        ) {
-          await tx.project.update({
-            where: { id: inv.projectId },
-            data: { status: "FUNDED" },
-          });
-        }
-
-        // Create investment contract (DRAFT)
-        await tx.investmentContract.create({
-          data: {
-            investmentId: inv.id,
-            status: "DRAFT",
-            templateVersion: "v1.0",
-            terms: {
-              amountBdt,
-              expectedReturnBdt: Number(inv.expectedReturnBdt),
-              returnType: inv.returnType,
-              projectId: inv.projectId,
-              projectTitle: inv.project.title,
-              investorId: inv.investorProfile.user.id,
-              activatedAt: now.toISOString(),
-            },
-          },
-        });
-
-        return { investment: activated, ledgerTransactionId: ledgerTx.id, receiptNumber };
-      },
-    );
+      return { investment: activated, ledgerTransactionId: ledgerTx.id, receiptNumber };
+    });
   },
 
   /**
