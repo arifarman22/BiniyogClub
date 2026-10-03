@@ -73,8 +73,8 @@ export default async function InvestmentPayPage({ params }: Props) {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[
             { label: "Project", value: investment.project.title },
-            { label: "Amount", value: fmt(investment.amountBdt) },
-            { label: "Expected Return", value: fmt(investment.expectedReturnBdt) },
+            { label: "Amount", value: fmt(investment.amountBdt.toString()) },
+            { label: "Expected Return", value: fmt(investment.expectedReturnBdt.toString()) },
             { label: "Duration", value: `${investment.project.durationDays} days` },
           ].map(({ label, value }) => (
             <div key={label} className="rounded-xl bg-muted/40 p-3">
