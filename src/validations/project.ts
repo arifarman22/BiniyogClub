@@ -28,6 +28,7 @@ export const projectSchema = z
     riskInfo: z.string().max(2000).optional().nullable(),
     coverImageUrl: z.string().url("Invalid URL").optional().nullable(),
     imageUrls: z.array(z.string().url()).max(10).optional().default([]),
+    groupId: z.string().uuid("Invalid group").optional().nullable(),
   })
   .refine((d) => d.fundingMinBdt <= d.fundingGoalBdt, {
     message: "Minimum funding cannot exceed goal",
@@ -65,6 +66,7 @@ export const projectUpdateSchema = z.object({
   riskInfo: z.string().max(2000).optional().nullable(),
   coverImageUrl: z.string().url().optional().nullable(),
   imageUrls: z.array(z.string().url()).max(10).optional(),
+  groupId: z.string().uuid().optional().nullable(),
 });
 
 export const statusTransitionSchema = z.object({

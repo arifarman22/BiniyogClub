@@ -58,6 +58,7 @@ export async function getFeaturedProjects(limit = 6) {
       durationDays: true,
       fundingDeadline: true,
       coverImageUrl: true,
+      group: { select: { id: true, name: true, slug: true, logoUrl: true } },
     },
     orderBy: { publishedAt: "desc" },
     take: limit,
@@ -114,6 +115,7 @@ export async function getProjectBySlug(slug: string) {
         },
         orderBy: { createdAt: "asc" as const },
       },
+      group: { select: { id: true, name: true, slug: true, logoUrl: true } },
     },
   });
 }

@@ -30,6 +30,7 @@ export type ProjectCardProps = {
   fundingDeadline: Date | string;
   coverImageUrl?: string | null;
   location?: string | null;
+  group?: { name: string; slug: string } | null;
   priority?: boolean;
 };
 
@@ -89,6 +90,7 @@ export function ProjectCard({
   fundingDeadline,
   coverImageUrl,
   location,
+  group,
   priority = false,
 }: ProjectCardProps) {
   const pct = fundingPercent(fundedAmountBdt, fundingGoalBdt);
@@ -165,7 +167,11 @@ export function ProjectCard({
 
         {/* Bottom Overlay inside Media Header */}
         <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between gap-2 z-10">
-          {location ? (
+          {group ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[11px] font-light text-white/90">
+              <span className="truncate max-w-[140px]">{group.name}</span>
+            </span>
+          ) : location ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[11px] font-light text-white/90">
               <MapPin className="h-3 w-3 text-emerald-400 shrink-0" />
               <span className="truncate max-w-[140px]">{location}</span>

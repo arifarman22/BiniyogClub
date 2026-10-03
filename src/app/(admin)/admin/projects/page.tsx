@@ -151,7 +151,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
             <thead className="border-b border-border bg-muted/30">
               <tr>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Project</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">Category</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden md:table-cell">Group / Category</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden lg:table-cell">Funding</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground hidden xl:table-cell">Deadline</th>
@@ -168,7 +168,11 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
                       <p className="text-xs text-muted-foreground">{p.location ?? p.category}</p>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
-                      <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[p.category] ?? p.category}</span>
+                      {p.group ? (
+                        <span className="text-xs font-medium text-primary">{p.group.name}</span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">{CATEGORY_LABELS[p.category] ?? p.category}</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 hidden lg:table-cell">
                       <p className="text-xs font-medium">{formatBdt(p.fundingGoalBdt.toString())}</p>

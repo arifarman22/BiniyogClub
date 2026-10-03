@@ -188,6 +188,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                     fundingDeadline={p.fundingDeadline}
                     coverImageUrl={p.coverImageUrl}
                     location={p.location}
+                    group={p.group}
                     priority={i < 4}
                   />
                 ))}

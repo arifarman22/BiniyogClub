@@ -1,15 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
-import { createProjectAction, updateProjectAction } from "@/server/actions/project.actions";
+import { Upload, X, ImageIcon } from "lucide-react";
+import { createProjectAction, updateProjectAction, uploadProjectCoverImageAction } from "@/server/actions/project.actions";
 
 type Manager = { id: string; name: string; role: string };
+type Group = { id: string; name: string; slug: string };
 
 type DefaultValues = Partial<{
   title: string;
@@ -17,6 +20,7 @@ type DefaultValues = Partial<{
   description: string;
   location: string;
   managerId: string | null;
+  groupId: string | null;
   fundingGoalBdt: number | string;
   fundingMinBdt: number | string;
   minInvestmentBdt: number | string;
@@ -35,6 +39,7 @@ type Props = {
   mode: "create" | "edit";
   projectId?: string;
   managers: Manager[];
+  groups: Group[];
   defaultValues?: DefaultValues;
 };
 
@@ -67,11 +72,28 @@ function SectionCard({ title, children }: { title: string; children: React.React
   );
 }
 
-export function ProjectForm({ mode, projectId, managers, defaultValues = {} }: Props) {
+export function ProjectForm({ mode, projectId, managers, groups, defaultValues = {} }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [coverImageUrl, setCoverImageUrl] = useState<string>(defaultValues.coverImageUrl ?? "");
+  const [imageUploading, setImageUploading] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageError(null);
+    setImageUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadProjectCoverImageAction(fd);
+    setImageUploading(false);
+    if (!result.success) { setImageError(result.error); return; }
+    setCoverImageUrl(result.data.url);
+  }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -98,8 +120,9 @@ export function ProjectForm({ mode, projectId, managers, defaultValues = {} }: P
       startDate: raw.startDate ? new Date(raw.startDate as string) : null,
       endDate: raw.endDate ? new Date(raw.endDate as string) : null,
       riskInfo: (raw.riskInfo as string) || null,
-      coverImageUrl: (raw.coverImageUrl as string) || null,
+      coverImageUrl: coverImageUrl || null,
       imageUrls: [],
+      groupId: (raw.groupId as string) || null,
     };
 
     startTransition(async () => {
@@ -157,12 +180,21 @@ export function ProjectForm({ mode, projectId, managers, defaultValues = {} }: P
       </SectionCard>
 
       <SectionCard title="Management">
-        <div>
-          <Label htmlFor="managerId">Project Manager</Label>
-          <select name="managerId" id="managerId" defaultValue={defaultValues.managerId ?? ""} className={`mt-1.5 ${sel}`}>
-            <option value="">Unassigned</option>
-            {managers.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.role.replace(/_/g, " ")})</option>)}
-          </select>
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <Label htmlFor="managerId">Project Manager</Label>
+            <select name="managerId" id="managerId" defaultValue={defaultValues.managerId ?? ""} className={`mt-1.5 ${sel}`}>
+              <option value="">Unassigned</option>
+              {managers.map((m) => <option key={m.id} value={m.id}>{m.name} ({m.role.replace(/_/g, " ")})</option>)}
+            </select>
+          </div>
+          <div>
+            <Label htmlFor="groupId">Business Group</Label>
+            <select name="groupId" id="groupId" defaultValue={defaultValues.groupId ?? ""} className={`mt-1.5 ${sel}`}>
+              <option value="">No group</option>
+              {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
+            </select>
+          </div>
         </div>
       </SectionCard>
 
@@ -227,9 +259,56 @@ export function ProjectForm({ mode, projectId, managers, defaultValues = {} }: P
       </SectionCard>
 
       <SectionCard title="Media">
-        <div>
-          <Label htmlFor="coverImageUrl">Cover Image URL</Label>
-          <Input id="coverImageUrl" name="coverImageUrl" type="url" defaultValue={defaultValues.coverImageUrl ?? ""} placeholder="https://..." className="mt-1.5" />
+        <div className="space-y-3">
+          <Label>Cover Image</Label>
+          {coverImageUrl ? (
+            <div className="relative w-full max-w-sm">
+              <Image
+                src={coverImageUrl}
+                alt="Cover preview"
+                width={400}
+                height={225}
+                className="rounded-lg border border-border object-cover w-full h-auto"
+              />
+              <button
+                type="button"
+                onClick={() => { setCoverImageUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background border border-border"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={imageUploading}
+              className="flex w-full max-w-sm flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-10 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/50 transition-colors disabled:opacity-50"
+            >
+              {imageUploading ? (
+                <span className="animate-pulse">Uploading…</span>
+              ) : (
+                <>
+                  <ImageIcon className="h-8 w-8 opacity-40" />
+                  <span>Click to upload cover image</span>
+                  <span className="text-xs opacity-60">JPEG, PNG, WebP · max 5 MB</span>
+                </>
+              )}
+            </button>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleImageChange}
+          />
+          {!coverImageUrl && (
+            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}>
+              <Upload className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Upload Image"}
+            </Button>
+          )}
+          {imageError && <p className="text-xs text-destructive">{imageError}</p>}
           <FieldError msg={fieldErrors.coverImageUrl} />
         </div>
       </SectionCard>

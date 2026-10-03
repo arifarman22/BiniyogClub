@@ -290,53 +290,7 @@ export default async function HomePage() {
         </AnimatedSection>
       </section>
 
-      {/* ── 3. Business Groups ── */}
-      {groups.length > 0 && (
-        <section className="relative py-20 lg:py-24 bg-gradient-to-b from-slate-50/80 via-emerald-50/25 to-slate-50/50 dark:from-slate-950 dark:via-emerald-950/15 dark:to-slate-900/30 fintech-grid-pattern border-b border-border/50">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <AnimatedSection animation="fade-down" className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-              <div>
-                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-light tracking-widest text-primary mb-3">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  <span>PREMIER CORPORATE ENTITIES</span>
-                </div>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
-                  Institutional Business Groups
-                </h2>
-                <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
-                  Join established conglomerates and commercial ventures as a verified Investor, Shareholder, or Strategic Partner.
-                </p>
-              </div>
-              <Link
-                href="/groups"
-                className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-card px-6 py-2.5 text-sm font-normal text-foreground shadow-sm transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-md shrink-0"
-              >
-                <span>View All Groups</span>
-                <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-              </Link>
-            </AnimatedSection>
-
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
-              {groups.map((group, i) => (
-                <AnimatedSection key={group.id} delay={i * 120} animation="zoom-in" className="h-full">
-                  <BusinessGroupCard group={group} priority={i === 0} />
-                </AnimatedSection>
-              ))}
-            </div>
-
-            <div className="mt-10 text-center sm:hidden">
-              <Link
-                href="/groups"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border/80 bg-card px-8 py-3 text-sm font-normal shadow-sm transition-all hover:border-primary hover:text-primary w-full"
-              >
-                View All Groups <ChevronRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* ── 4. Featured Projects ── */}
+      {/* ── 3. Featured Projects ── */}
       {featuredProjects.length > 0 && (
         <section className="relative py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 via-background to-emerald-50/20 dark:from-slate-900/30 dark:via-background dark:to-emerald-950/10 border-b border-border/50">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -380,6 +334,7 @@ export default async function HomePage() {
                     fundingDeadline={project.fundingDeadline}
                     coverImageUrl={project.coverImageUrl}
                     location={project.location}
+                    group={project.group}
                     priority={i < 2}
                   />
                 </AnimatedSection>
@@ -392,6 +347,52 @@ export default async function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-full border border-border/80 bg-card px-8 py-3 text-sm font-semibold shadow-sm transition-all hover:border-primary hover:text-primary w-full"
               >
                 View All Projects <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── 4. Business Groups ── */}
+      {groups.length > 0 && (
+        <section className="relative py-20 lg:py-24 bg-gradient-to-b from-slate-50/80 via-emerald-50/25 to-slate-50/50 dark:from-slate-950 dark:via-emerald-950/15 dark:to-slate-900/30 fintech-grid-pattern border-b border-border/50">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <AnimatedSection animation="fade-down" className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3.5 py-1 text-xs font-light tracking-widest text-primary mb-3">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>PREMIER CORPORATE ENTITIES</span>
+                </div>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground">
+                  Institutional Business Groups
+                </h2>
+                <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-200 max-w-2xl leading-relaxed">
+                  Join established conglomerates and commercial ventures as a verified Investor, Shareholder, or Strategic Partner.
+                </p>
+              </div>
+              <Link
+                href="/groups"
+                className="group inline-flex items-center gap-2 rounded-full border border-border/80 bg-card px-6 py-2.5 text-sm font-normal text-foreground shadow-sm transition-all duration-300 hover:border-primary hover:text-primary hover:shadow-md shrink-0"
+              >
+                <span>View All Groups</span>
+                <ChevronRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
+              </Link>
+            </AnimatedSection>
+
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+              {groups.map((group, i) => (
+                <AnimatedSection key={group.id} delay={i * 120} animation="zoom-in" className="h-full">
+                  <BusinessGroupCard group={group} priority={i === 0} />
+                </AnimatedSection>
+              ))}
+            </div>
+
+            <div className="mt-10 text-center sm:hidden">
+              <Link
+                href="/groups"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border/80 bg-card px-8 py-3 text-sm font-normal shadow-sm transition-all hover:border-primary hover:text-primary w-full"
+              >
+                View All Groups <ChevronRight className="h-4 w-4" />
               </Link>
             </div>
           </div>

@@ -458,6 +458,12 @@ export default async function ProjectDetailPage({ params }: Props) {
                   <CardContent className="p-5">
                     <h3 className="mb-3 text-sm font-semibold">Project Info</h3>
                     <div className="space-y-2 text-sm">
+                      {project.group && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Group</span>
+                          <span className="font-medium text-right text-primary">{project.group.name}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Location</span>
                         <span className="font-medium text-right">{project.location}</span>

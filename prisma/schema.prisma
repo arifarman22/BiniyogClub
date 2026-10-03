@@ -20,6 +20,7 @@ model BusinessGroup {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   entities    GroupEntity[]
+  projects    Project[]
 
   @@map("business_groups")
 }
@@ -304,6 +305,7 @@ model Project {
   location           String?
   imageUrls          String[]             @default([])
   rejectionReason    String?
+  groupId            String?
   documents          Document[]
   investments        Investment[]
   distributions      ProfitDistribution[]
@@ -312,8 +314,10 @@ model Project {
   distributionBatches DistributionBatch[]
   bankAccounts        ProjectBankAccount[]
   manager            User?                @relation("ProjectManager", fields: [managerId], references: [id])
+  group              BusinessGroup?       @relation(fields: [groupId], references: [id])
 
   @@index([managerId])
+  @@index([groupId])
   @@index([status])
   @@index([category])
   @@index([slug])

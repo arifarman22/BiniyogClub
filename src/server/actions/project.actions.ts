@@ -7,6 +7,9 @@ import { requireSession } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 import type { ProjectStatus } from "@/types/prisma";
 import type { ActionResult } from "./auth.actions";
+import { v2 as cloudinary } from "cloudinary";
+import { PERMISSIONS } from "@/lib/authz/permissions";
+import { requirePermission } from "@/lib/authz";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -33,6 +36,49 @@ function serviceError<T>(error: unknown): ActionResult<T> {
 }
 
 // ─── Actions ──────────────────────────────────────────────────────────────────
+
+export async function uploadProjectCoverImageAction(
+  formData: FormData,
+): Promise<ActionResult<{ url: string }>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.PROJECT_UPDATE);
+
+    const file = formData.get("file");
+    if (!(file instanceof File)) return { success: false, error: "No file provided" };
+
+    const allowed = ["image/jpeg", "image/png", "image/webp"];
+    if (!allowed.includes(file.type)) return { success: false, error: "File must be JPEG, PNG, or WebP" };
+    if (file.size > 5 * 1024 * 1024) return { success: false, error: "File must be smaller than 5 MB" };
+
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure:     true,
+    });
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const key = `projects/covers/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, "_").slice(0, 60)}`;
+
+    const url = await new Promise<string>((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { public_id: key, resource_type: "image", type: "upload", overwrite: true },
+        (err, result) => {
+          if (err || !result) return reject(err ?? new Error("Upload failed"));
+          resolve(result.secure_url);
+        },
+      );
+      stream.end(buffer);
+    });
+
+    return { success: true, data: { url } };
+  } catch (error) {
+    if (error instanceof AppError) return { success: false, error: error.message, code: error.code };
+    console.error("[uploadProjectCoverImage]", error);
+    return { success: false, error: "Upload failed" };
+  }
+}
 
 export async function createProjectAction(
   formData: unknown,

@@ -26,6 +26,7 @@ export const projectListSelect = {
   createdAt: true,
   updatedAt: true,
   manager: { select: { id: true, name: true } },
+  group: { select: { id: true, name: true, slug: true, logoUrl: true } },
   _count: { select: { investments: true } },
 } satisfies Prisma.ProjectSelect;
 
@@ -34,6 +35,7 @@ export const projectDetailSelect = {
   riskInfo: true,
   imageUrls: true,
   managerId: true,
+  groupId: true,
   reviewedBy: true,
   reviewedAt: true,
   approvedAt: true,

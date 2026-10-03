@@ -2,12 +2,15 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ProjectForm } from "@/components/admin/project-form";
-import { getManagersForSelect } from "@/server/data/admin.data";
+import { getManagersForSelect, getGroupsForSelect } from "@/server/data/admin.data";
 
 export const metadata: Metadata = { title: "New Project — Admin" };
 
 export default async function NewProjectPage() {
-  const managers = await getManagersForSelect();
+  const [managers, groups] = await Promise.all([
+    getManagersForSelect(),
+    getGroupsForSelect(),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -18,7 +21,7 @@ export default async function NewProjectPage() {
         <h1 className="text-xl font-bold">Create New Project</h1>
         <p className="text-sm text-muted-foreground">New projects start in DRAFT status.</p>
       </div>
-      <ProjectForm mode="create" managers={managers} />
+      <ProjectForm mode="create" managers={managers} groups={groups} />
     </div>
   );
 }

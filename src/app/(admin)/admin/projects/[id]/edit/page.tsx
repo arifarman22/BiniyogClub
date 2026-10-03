@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ProjectForm } from "@/components/admin/project-form";
 import { ProjectBankAccountManager } from "@/components/admin/project-bank-account-manager";
-import { getAdminProjectById, getManagersForSelect } from "@/server/data/admin.data";
+import { getAdminProjectById, getManagersForSelect, getGroupsForSelect } from "@/server/data/admin.data";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -16,9 +16,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function EditProjectPage({ params }: Props) {
   const { id } = await params;
-  const [project, managers] = await Promise.all([
+  const [project, managers, groups] = await Promise.all([
     getAdminProjectById(id),
     getManagersForSelect(),
+    getGroupsForSelect(),
   ]);
 
   if (!project) notFound();
@@ -36,12 +37,14 @@ export default async function EditProjectPage({ params }: Props) {
         mode="edit"
         projectId={project.id}
         managers={managers}
+        groups={groups}
         defaultValues={{
           title: project.title,
           category: project.category,
           description: project.description,
           location: project.location ?? "",
           managerId: project.managerId,
+          groupId: project.groupId ?? null,
           fundingGoalBdt: Number(project.fundingGoalBdt),
           fundingMinBdt: Number(project.fundingMinBdt),
           minInvestmentBdt: Number(project.minInvestmentBdt),

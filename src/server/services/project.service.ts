@@ -90,6 +90,7 @@ export const projectService = {
       coverImageUrl: input.coverImageUrl ?? null,
       imageUrls: input.imageUrls ?? [],
       manager: input.managerId ? { connect: { id: input.managerId } } : undefined,
+      group: input.groupId ? { connect: { id: input.groupId } } : undefined,
     });
   },
 
@@ -126,6 +127,9 @@ export const projectService = {
       ...(input.imageUrls !== undefined && { imageUrls: input.imageUrls }),
       ...(input.managerId !== undefined && {
         manager: input.managerId ? { connect: { id: input.managerId } } : { disconnect: true },
+      }),
+      ...(input.groupId !== undefined && {
+        group: input.groupId ? { connect: { id: input.groupId } } : { disconnect: true },
       }),
     });
   },

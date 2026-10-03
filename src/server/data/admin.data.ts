@@ -515,6 +515,14 @@ export async function getManagersForSelect() {
   });
 }
 
+export async function getGroupsForSelect() {
+  return db.businessGroup.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, slug: true },
+    orderBy: { name: "asc" },
+  });
+}
+
 // ─── Admin Analytics ──────────────────────────────────────────────────────────
 
 export async function getAdminAnalytics(session: SessionUser) {
