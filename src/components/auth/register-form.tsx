@@ -113,7 +113,7 @@ export function RegisterForm() {
           />
         </div>
         {errors.phone && <p className="text-xs text-destructive font-medium">{errors.phone.message}</p>}
-        <p className="text-[11px] text-muted-foreground">Valid 11-digit Bangladeshi mobile number</p>
+
       </div>
 
       {/* NID Number */}
@@ -136,43 +136,52 @@ export function RegisterForm() {
         {errors.nidNumber && <p className="text-xs text-destructive font-medium">{errors.nidNumber.message}</p>}
       </div>
 
-      {/* Nominee NID Number */}
-      <div className="space-y-1.5">
-        <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Nominee NID Number <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="nomineeNidNumber"
-            type="text"
-            inputMode="numeric"
-            placeholder="Nominee's 10 or 17 digit NID number"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.nomineeNidNumber}
-            {...register("nomineeNidNumber")}
-          />
+      {/* Nominee Section */}
+      <div className="rounded-xl border border-amber-400/40 bg-amber-50/60 dark:bg-amber-950/20 p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <Users className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Nominee Details</p>
         </div>
-        {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
-      </div>
+        <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 -mt-2">Your nominee will receive your investment in case of an emergency.</p>
 
-      {/* Nominee Relation */}
-      <div className="space-y-1.5">
-        <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Relation with Nominee <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="nomineeRelation"
-            type="text"
-            placeholder="e.g. Father, Mother, Spouse, Sibling"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.nomineeRelation}
-            {...register("nomineeRelation")}
-          />
+        {/* Nominee NID Number */}
+        <div className="space-y-1.5">
+          <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Nominee NID Number <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
+            <Input
+              id="nomineeNidNumber"
+              type="text"
+              inputMode="numeric"
+              placeholder="Nominee's 10 or 17 digit NID number"
+              className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.nomineeNidNumber}
+              {...register("nomineeNidNumber")}
+            />
+          </div>
+          {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
         </div>
-        {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
+
+        {/* Nominee Relation */}
+        <div className="space-y-1.5">
+          <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Relation with Nominee <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
+            <Input
+              id="nomineeRelation"
+              type="text"
+              placeholder="e.g. Father, Mother, Spouse, Sibling"
+              className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.nomineeRelation}
+              {...register("nomineeRelation")}
+            />
+          </div>
+          {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
+        </div>
       </div>
 
       {/* Password */}
