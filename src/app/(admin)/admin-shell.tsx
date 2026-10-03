@@ -14,7 +14,7 @@ import { logoutAction } from "@/server/actions/auth.actions";
 import type { LucideIcon } from "lucide-react";
 
 // permission: null means visible to all staff
-type NavItem = { href: string; label: string; icon: LucideIcon; permission: string | null; exact?: boolean };
+type NavItem = { href: string; label: string; icon: LucideIcon; permission: string | null; exact?: boolean; badgeHref?: string };
 
 const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
@@ -27,9 +27,9 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "People",
     items: [
-      { href: "/admin/users",     label: "Users",       icon: Users,      permission: "user.view" },
-      { href: "/admin/investors", label: "Investors",   icon: UserCheck,  permission: "investment.view" },
-      { href: "/admin/kyc",       label: "KYC Reviews", icon: ShieldCheck, permission: "kyc.view" },
+      { href: "/admin/users",     label: "Users",       icon: Users,       permission: "user.view" },
+      { href: "/admin/investors", label: "Investors",   icon: UserCheck,   permission: "investment.view" },
+      { href: "/admin/kyc",       label: "KYC Reviews", icon: ShieldCheck, permission: "kyc.view", badgeHref: "/admin/kyc" },
     ],
   },
   {
@@ -43,7 +43,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     items: [
       { href: "/admin/investments",   label: "Investments",  icon: TrendingUp,      permission: "investment.view" },
       { href: "/admin/groups",        label: "Group Invest", icon: Building2,       permission: "investment.view" },
-      { href: "/admin/payments",      label: "Payments",     icon: CreditCard,      permission: "payment.view" },
+      { href: "/admin/payments",      label: "Payments",     icon: CreditCard,      permission: "payment.view",   badgeHref: "/admin/payments/manual" },
       { href: "/admin/withdrawals",   label: "Withdrawals",  icon: ArrowDownToLine, permission: "withdrawal.view" },
       { href: "/admin/distributions", label: "Distributions",icon: PieChart,        permission: "distribution.view" },
     ],
@@ -90,9 +90,10 @@ type Props = {
   role: string;
   initials: string;
   userPermissions: string[];
+  badges?: Record<string, number>;
 };
 
-export function AdminShell({ children, name, role, initials, userPermissions }: Props) {
+export function AdminShell({ children, name, role, initials, userPermissions, badges = {} }: Props) {
   const hasPermission = (permission: string | null) => {
     if (permission === null) return true;
     if (userPermissions.includes("*")) return true;
@@ -153,21 +154,34 @@ export function AdminShell({ children, name, role, initials, userPermissions }: 
               </p>
             )}
             <div className="space-y-0.5">
-              {group.items.map(({ href, label, icon: Icon, exact }) => {
+              {group.items.map(({ href, label, icon: Icon, exact, badgeHref }) => {
                 const active = isActive(href, exact);
+                const badgeCount = badgeHref ? (badges[badgeHref] ?? 0) : 0;
                 return (
                   <Link
                     key={href}
                     href={href}
                     title={mini ? label : undefined}
-                    className={`flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                    className={`relative flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                       active
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
                         : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                     } ${mini ? "justify-center px-0" : ""}`}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
-                    {!mini && label}
+                    {!mini && (
+                      <>
+                        <span className="flex-1">{label}</span>
+                        {badgeCount > 0 && (
+                          <span className="ml-auto flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                            {badgeCount > 99 ? "99+" : badgeCount}
+                          </span>
+                        )}
+                      </>
+                    )}
+                    {mini && badgeCount > 0 && (
+                      <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-destructive" />
+                    )}
                   </Link>
                 );
               })}
