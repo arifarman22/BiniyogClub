@@ -20,7 +20,7 @@ const TRANSITIONS: Record<ProjectStatus, ProjectStatus[]> = {
   FUNDRAISING:      ["FUNDED", "CANCELLED"],
   FUNDED:           ["ACTIVE", "CANCELLED"],
   ACTIVE:           ["COMPLETED", "CANCELLED"],
-  COMPLETED:        [],
+  COMPLETED:        ["ACTIVE", "FUNDRAISING", "CANCELLED"],
   CANCELLED:        [],
 };
 
@@ -131,6 +131,7 @@ export const projectService = {
       ...(input.groupId !== undefined && {
         group: input.groupId ? { connect: { id: input.groupId } } : { disconnect: true },
       }),
+      ...(input.status !== undefined && { status: input.status }),
     });
   },
 

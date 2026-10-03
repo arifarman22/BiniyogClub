@@ -32,6 +32,7 @@ type DefaultValues = Partial<{
   startDate: string | null;
   endDate: string | null;
   riskInfo: string | null;
+  status?: string;
   coverImageUrl: string | null;
 }>;
 
@@ -50,6 +51,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   TECHNOLOGY:     "Technology",
   INFRASTRUCTURE: "Infrastructure",
   OTHER:          "Other",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  DRAFT:            "Draft",
+  PENDING_APPROVAL: "Pending Approval",
+  APPROVED:         "Approved",
+  FUNDRAISING:      "Fundraising",
+  FUNDED:           "Funded",
+  ACTIVE:           "Active",
+  COMPLETED:        "Completed",
+  CANCELLED:        "Cancelled",
 };
 
 const RETURN_LABELS: Record<string, string> = {
@@ -123,6 +135,7 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       coverImageUrl: coverImageUrl || null,
       imageUrls: [],
       groupId: (raw.groupId as string) || null,
+      status: (raw.status as string) || undefined,
     };
 
     startTransition(async () => {
@@ -195,6 +208,15 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
               {groups.map((g) => <option key={g.id} value={g.id}>{g.name}</option>)}
             </select>
           </div>
+          {mode === "edit" && (
+            <div>
+              <Label htmlFor="status">Lifecycle Status</Label>
+              <select name="status" id="status" defaultValue={defaultValues.status ?? ""} className={`mt-1.5 ${sel}`}>
+                <option value="">— No change —</option>
+                {Object.entries(STATUS_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+              </select>
+            </div>
+          )}
         </div>
       </SectionCard>
 

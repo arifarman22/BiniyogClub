@@ -57,6 +57,7 @@ export default async function EditProjectPage({ params }: Props) {
           endDate: project.endDate ? project.endDate.toISOString().split("T")[0] : null,
           riskInfo: project.riskInfo,
           coverImageUrl: project.coverImageUrl,
+          status: project.status,
         }}
       />
 

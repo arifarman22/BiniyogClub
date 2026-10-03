@@ -67,6 +67,7 @@ export const projectUpdateSchema = z.object({
   coverImageUrl: z.string().url().optional().nullable(),
   imageUrls: z.array(z.string().url()).max(10).optional(),
   groupId: z.string().uuid().optional().nullable(),
+  status: z.enum(["DRAFT", "PENDING_APPROVAL", "APPROVED", "FUNDRAISING", "FUNDED", "ACTIVE", "COMPLETED", "CANCELLED"]).optional(),
 });
 
 export const statusTransitionSchema = z.object({
