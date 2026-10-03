@@ -104,7 +104,7 @@ export function ProjectCard({
   return (
     <Link
       href={`/projects/${slug}`}
-      className="group relative flex flex-col h-full overflow-hidden rounded-3xl border border-border/70 dark:border-white/10 bg-card/95 backdrop-blur-sm shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] dark:shadow-[0_4px_20px_-4px_rgba(0,0,0,0.5)] transition-all duration-500 hover:-translate-y-2 hover:border-primary/50 hover:shadow-[0_20px_45px_-12px_rgba(0,140,100,0.18)] dark:hover:shadow-[0_20px_45px_-12px_rgba(0,140,100,0.25)] before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-transparent before:via-primary/80 before:to-transparent before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500 before:z-20"
+      className="group relative flex flex-col h-full overflow-hidden rounded-3xl border border-border/70 dark:border-white/10 bg-card/95 backdrop-blur-sm transition-all duration-500 hover:-translate-y-2 hover:border-primary/50 before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-transparent before:via-primary/80 before:to-transparent before:opacity-0 group-hover:before:opacity-100 before:transition-opacity before:duration-500 before:z-20"
     >
       {/* ── Visual Media Container ── */}
       <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-slate-950">
