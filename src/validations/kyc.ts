@@ -23,11 +23,11 @@ export const kycPersonalSchema = z.object({
 });
 
 export const kycAddressSchema = z.object({
-  addressLine: z.string().min(5, "Enter your full address").max(200),
-  city: z.string().min(2).max(100),
-  district: z.string().min(2).max(100),
-  division: z.string().min(2).max(100),
-  postalCode: z.string().max(10).optional(),
+  addressLine: z.string().max(200).optional().or(z.literal("")),
+  city:        z.string().max(100).optional().or(z.literal("")),
+  district:    z.string().max(100).optional().or(z.literal("")),
+  division:    z.string().max(100).optional().or(z.literal("")),
+  postalCode:  z.string().max(10).optional().or(z.literal("")),
 });
 
 const addressBlockSchema = z.object({

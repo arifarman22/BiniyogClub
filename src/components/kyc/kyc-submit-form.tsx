@@ -168,12 +168,19 @@ export function KycSubmitForm({ existing, prefill }: Props) {
     setSaved(false);
   }
 
+  // Strip empty strings so partial draft schema doesn't fail enum/min checks
+  function draftPayload(extra: Record<string, unknown> = {}) {
+    const base = { ...form, ...extra };
+    return Object.fromEntries(
+      Object.entries(base).filter(([, v]) => v !== "" && v !== null && v !== undefined)
+    );
+  }
+
   async function handleSaveDraft() {
     setError(null);
     const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
     startTransition(async () => {
-      const result = await saveDraftAction({
-        ...form,
+      const result = await saveDraftAction(draftPayload({
         addressLine:        presentAddr.address,
         division:           presentAddr.division,
         district:           presentAddr.district,
@@ -190,7 +197,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         permanentUpazila:   effPermanent.upazila,
         permanentPostOffice: effPermanent.postOffice,
         permanentPostalCode: effPermanent.postalCode,
-      });
+      }));
       if (!result.success) {
         setError(result.error);
         setFieldErrors(result.fieldErrors ?? {});
@@ -211,8 +218,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
     let resolvedKycId = kycId;
     if (!resolvedKycId) {
       const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
-      const draft = await saveDraftAction({
-        ...form,
+      const draft = await saveDraftAction(draftPayload({
         addressLine: presentAddr.address,
         division: presentAddr.division,
         district: presentAddr.district,
@@ -229,7 +235,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         permanentUpazila: effPermanent.upazila,
         permanentPostOffice: effPermanent.postOffice,
         permanentPostalCode: effPermanent.postalCode,
-      });
+      }));
       if (!draft.success) {
         setError(draft.error);
         setFieldErrors(draft.fieldErrors ?? {});
@@ -281,8 +287,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
   async function handleSubmit() {
     setError(null);
     const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
-    const draftResult = await saveDraftAction({
-      ...form,
+    const draftResult = await saveDraftAction(draftPayload({
       addressLine: presentAddr.address,
       division: presentAddr.division,
       district: presentAddr.district,
@@ -299,7 +304,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
       permanentUpazila: effPermanent.upazila,
       permanentPostOffice: effPermanent.postOffice,
       permanentPostalCode: effPermanent.postalCode,
-    });
+    }));
     if (!draftResult.success) {
       setError(draftResult.error);
       setFieldErrors(draftResult.fieldErrors ?? {});
