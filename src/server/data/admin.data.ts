@@ -565,7 +565,7 @@ export async function getAdminAnalytics(session: SessionUser) {
     db.investment.aggregate({
       _sum: { amountBdt: true },
       _count: { _all: true },
-      where: { status: { notIn: ["CANCELLED", "REFUNDED"] } },
+      where: { status: { in: ["ACTIVE", "MATURED", "COMPLETED"] } },
     }),
   ]);
 
