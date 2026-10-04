@@ -30,6 +30,20 @@ export const kycAddressSchema = z.object({
   postalCode: z.string().max(10).optional(),
 });
 
+const addressBlockSchema = z.object({
+  address:    z.string().min(3, "Enter address / house / road").max(200),
+  division:   z.string().min(1, "Select a division"),
+  district:   z.string().min(1, "Select a district"),
+  upazila:    z.string().min(1, "Select an upazila"),
+  postOffice: z.string().max(100).optional(),
+  postalCode: z.string().max(10).optional(),
+});
+
+export const kycPresentAddressSchema  = addressBlockSchema;
+export const kycPermanentAddressSchema = addressBlockSchema;
+
+export type AddressBlock = z.infer<typeof addressBlockSchema>;
+
 export const kycIdentitySchema = z.object({
   documentType: z.enum(
     ["NATIONAL_ID", "PASSPORT", "DRIVING_LICENSE"],
@@ -57,7 +71,21 @@ export const kycBankSchema = z.object({
 const kycSubmitBase = kycPersonalSchema
   .merge(kycAddressSchema)
   .merge(kycIdentitySchema)
-  .merge(kycBankSchema);
+  .merge(kycBankSchema)
+  .merge(z.object({
+    presentAddress:    z.string().min(3).max(200).optional(),
+    presentDivision:   z.string().optional(),
+    presentDistrict:   z.string().optional(),
+    presentUpazila:    z.string().optional(),
+    presentPostOffice: z.string().max(100).optional(),
+    presentPostalCode: z.string().max(10).optional(),
+    permanentAddress:    z.string().min(3).max(200).optional(),
+    permanentDivision:   z.string().optional(),
+    permanentDistrict:   z.string().optional(),
+    permanentUpazila:    z.string().optional(),
+    permanentPostOffice: z.string().max(100).optional(),
+    permanentPostalCode: z.string().max(10).optional(),
+  }));
 
 export const kycSubmitSchema = kycSubmitBase.refine(
     (d) => d.bankAccountNumber || d.mobileNumber,

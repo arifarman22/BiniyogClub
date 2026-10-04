@@ -11,6 +11,7 @@ import { saveDraftAction, uploadDocumentAction, deleteDocumentAction, submitKycA
 import { Loader2, Trash2, CheckCircle2, ImageIcon, ShieldCheck, AlertCircle, Lock } from "lucide-react";
 import { cn } from "cn";
 import type { KycRecord, KycDocumentRecord } from "@/db/repositories/kyc.repository";
+import { BdAddressSelector } from "@/components/kyc/bd-address-selector";
 
 interface Prefill {
   name: string;
@@ -25,7 +26,6 @@ interface Props {
   prefill: Prefill;
 }
 
-const BD_DIVISIONS = ["Dhaka", "Chittagong", "Rajshahi", "Khulna", "Barisal", "Sylhet", "Rangpur", "Mymensingh"];
 const MOBILE_PROVIDERS = ["bKash", "Nagad", "Rocket", "Upay", "SureCash"];
 const DOC_LABELS: Record<string, string> = {
   NATIONAL_ID: "National ID (NID)",
@@ -120,6 +120,29 @@ export function KycSubmitForm({ existing, prefill }: Props) {
   const [documents, setDocuments] = useState<KycDocumentRecord[]>(existing?.documents ?? []);
   const [saved, setSaved] = useState(false);
 
+  type AddrBlock = { address: string; division: string; district: string; upazila: string; postOffice: string; postalCode: string; };
+  const emptyAddr: AddrBlock = { address: "", division: "", district: "", upazila: "", postOffice: "", postalCode: "" };
+
+  const [presentAddr, setPresentAddr] = useState<AddrBlock>({
+    address:    existing?.presentAddress    ?? existing?.addressLine ?? "",
+    division:   existing?.presentDivision   ?? "",
+    district:   existing?.presentDistrict   ?? "",
+    upazila:    existing?.presentUpazila    ?? "",
+    postOffice: existing?.presentPostOffice ?? "",
+    postalCode: existing?.presentPostalCode ?? existing?.postalCode ?? "",
+  });
+  const [permanentAddr, setPermanentAddr] = useState<AddrBlock>({
+    address:    existing?.permanentAddress    ?? "",
+    division:   existing?.permanentDivision   ?? "",
+    district:   existing?.permanentDistrict   ?? "",
+    upazila:    existing?.permanentUpazila    ?? "",
+    postOffice: existing?.permanentPostOffice ?? "",
+    postalCode: existing?.permanentPostalCode ?? "",
+  });
+  const [sameAsPresent, setSameAsPresent] = useState(
+    !!(existing?.permanentAddress && existing.permanentAddress === existing.presentAddress)
+  );
+
   const [form, setForm] = useState({
     fullName: existing?.fullName ?? prefill.name,
     dateOfBirth: existing?.dateOfBirth
@@ -147,8 +170,27 @@ export function KycSubmitForm({ existing, prefill }: Props) {
 
   async function handleSaveDraft() {
     setError(null);
+    const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
     startTransition(async () => {
-      const result = await saveDraftAction(form);
+      const result = await saveDraftAction({
+        ...form,
+        addressLine:        presentAddr.address,
+        division:           presentAddr.division,
+        district:           presentAddr.district,
+        postalCode:         presentAddr.postalCode,
+        presentAddress:     presentAddr.address,
+        presentDivision:    presentAddr.division,
+        presentDistrict:    presentAddr.district,
+        presentUpazila:     presentAddr.upazila,
+        presentPostOffice:  presentAddr.postOffice,
+        presentPostalCode:  presentAddr.postalCode,
+        permanentAddress:   effPermanent.address,
+        permanentDivision:  effPermanent.division,
+        permanentDistrict:  effPermanent.district,
+        permanentUpazila:   effPermanent.upazila,
+        permanentPostOffice: effPermanent.postOffice,
+        permanentPostalCode: effPermanent.postalCode,
+      });
       if (!result.success) {
         setError(result.error);
         setFieldErrors(result.fieldErrors ?? {});
@@ -168,7 +210,26 @@ export function KycSubmitForm({ existing, prefill }: Props) {
 
     let resolvedKycId = kycId;
     if (!resolvedKycId) {
-      const draft = await saveDraftAction(form);
+      const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
+      const draft = await saveDraftAction({
+        ...form,
+        addressLine: presentAddr.address,
+        division: presentAddr.division,
+        district: presentAddr.district,
+        postalCode: presentAddr.postalCode,
+        presentAddress: presentAddr.address,
+        presentDivision: presentAddr.division,
+        presentDistrict: presentAddr.district,
+        presentUpazila: presentAddr.upazila,
+        presentPostOffice: presentAddr.postOffice,
+        presentPostalCode: presentAddr.postalCode,
+        permanentAddress: effPermanent.address,
+        permanentDivision: effPermanent.division,
+        permanentDistrict: effPermanent.district,
+        permanentUpazila: effPermanent.upazila,
+        permanentPostOffice: effPermanent.postOffice,
+        permanentPostalCode: effPermanent.postalCode,
+      });
       if (!draft.success) {
         setError(draft.error);
         setFieldErrors(draft.fieldErrors ?? {});
@@ -219,7 +280,26 @@ export function KycSubmitForm({ existing, prefill }: Props) {
 
   async function handleSubmit() {
     setError(null);
-    const draftResult = await saveDraftAction(form);
+    const effPermanent = sameAsPresent ? presentAddr : permanentAddr;
+    const draftResult = await saveDraftAction({
+      ...form,
+      addressLine: presentAddr.address,
+      division: presentAddr.division,
+      district: presentAddr.district,
+      postalCode: presentAddr.postalCode,
+      presentAddress: presentAddr.address,
+      presentDivision: presentAddr.division,
+      presentDistrict: presentAddr.district,
+      presentUpazila: presentAddr.upazila,
+      presentPostOffice: presentAddr.postOffice,
+      presentPostalCode: presentAddr.postalCode,
+      permanentAddress: effPermanent.address,
+      permanentDivision: effPermanent.division,
+      permanentDistrict: effPermanent.district,
+      permanentUpazila: effPermanent.upazila,
+      permanentPostOffice: effPermanent.postOffice,
+      permanentPostalCode: effPermanent.postalCode,
+    });
     if (!draftResult.success) {
       setError(draftResult.error);
       setFieldErrors(draftResult.fieldErrors ?? {});
@@ -299,41 +379,40 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         {/* Address */}
         <div className="rounded-xl border border-border bg-card">
           <div className="border-b border-border px-6 py-4">
-            <p className="text-sm font-semibold">Residential Address</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Your current home address in Bangladesh</p>
+            <p className="text-sm font-semibold">Address</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Your present and permanent address in Bangladesh</p>
           </div>
-          <div className="p-6 space-y-4">
-            <FormField label="Address" htmlFor="addressLine" required error={fieldErrors.addressLine}>
-              <Input
-                id="addressLine"
-                value={form.addressLine}
-                onChange={(e) => set("addressLine", e.target.value)}
-                placeholder="House/flat, road, area"
-              />
-            </FormField>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <FormField label="City" htmlFor="city" required error={fieldErrors.city}>
-                <Input id="city" value={form.city} onChange={(e) => set("city", e.target.value)} />
-              </FormField>
-              <FormField label="District" htmlFor="district" required error={fieldErrors.district}>
-                <Input id="district" value={form.district} onChange={(e) => set("district", e.target.value)} />
-              </FormField>
-              <FormField label="Division" htmlFor="division" required error={fieldErrors.division}>
-                <Select value={form.division || ""} onValueChange={(v) => set("division", v ?? "")}>
-                  <SelectTrigger id="division"><SelectValue placeholder="Select division" /></SelectTrigger>
-                  <SelectContent>
-                    {BD_DIVISIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </FormField>
-              <FormField label="Postal code" htmlFor="postalCode" error={fieldErrors.postalCode}>
-                <Input
-                  id="postalCode"
-                  value={form.postalCode}
-                  onChange={(e) => set("postalCode", e.target.value)}
-                  placeholder="Optional"
+          <div className="p-6 space-y-8">
+            <BdAddressSelector
+              prefix="present"
+              label="Present Address"
+              value={presentAddr}
+              onChange={setPresentAddr}
+              fieldErrors={fieldErrors}
+            />
+
+            <div className="border-t border-border pt-6 space-y-4">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={sameAsPresent}
+                  onChange={(e) => {
+                    setSameAsPresent(e.target.checked);
+                    if (e.target.checked) setPermanentAddr(presentAddr);
+                  }}
+                  className="h-4 w-4 rounded border-input accent-primary"
                 />
-              </FormField>
+                <span className="text-sm font-medium">Permanent address is same as present address</span>
+              </label>
+
+              <BdAddressSelector
+                prefix="permanent"
+                label="Permanent Address"
+                value={sameAsPresent ? presentAddr : permanentAddr}
+                onChange={setPermanentAddr}
+                fieldErrors={fieldErrors}
+                disabled={sameAsPresent}
+              />
             </div>
           </div>
         </div>

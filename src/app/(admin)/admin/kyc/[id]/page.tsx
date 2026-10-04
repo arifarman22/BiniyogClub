@@ -126,14 +126,30 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
           <div className="rounded-xl border border-border bg-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold">Address</h2>
+              <h2 className="font-semibold">Present Address</h2>
             </div>
-            <InfoRow label="Address" value={kyc.addressLine} />
-            <InfoRow label="City" value={kyc.city} />
-            <InfoRow label="District" value={kyc.district} />
-            <InfoRow label="Division" value={kyc.division} />
-            <InfoRow label="Postal code" value={kyc.postalCode} />
+            <InfoRow label="Address" value={kyc.presentAddress ?? kyc.addressLine} />
+            <InfoRow label="Division" value={kyc.presentDivision ?? kyc.division} />
+            <InfoRow label="District" value={kyc.presentDistrict ?? kyc.district} />
+            <InfoRow label="Upazila / Thana" value={kyc.presentUpazila ?? undefined} />
+            <InfoRow label="Post Office" value={kyc.presentPostOffice ?? undefined} />
+            <InfoRow label="Postal Code" value={kyc.presentPostalCode ?? kyc.postalCode} />
           </div>
+
+          {(kyc.permanentAddress || kyc.permanentDivision) && (
+            <div className="rounded-xl border border-border bg-card p-6">
+              <div className="mb-4 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-muted-foreground" />
+                <h2 className="font-semibold">Permanent Address</h2>
+              </div>
+              <InfoRow label="Address" value={kyc.permanentAddress ?? undefined} />
+              <InfoRow label="Division" value={kyc.permanentDivision ?? undefined} />
+              <InfoRow label="District" value={kyc.permanentDistrict ?? undefined} />
+              <InfoRow label="Upazila / Thana" value={kyc.permanentUpazila ?? undefined} />
+              <InfoRow label="Post Office" value={kyc.permanentPostOffice ?? undefined} />
+              <InfoRow label="Postal Code" value={kyc.permanentPostalCode ?? undefined} />
+            </div>
+          )}
         </div>
 
         {/* Right column */}

@@ -220,6 +220,18 @@ model Kyc {
   district          String?
   division          String?
   postalCode        String?
+  presentAddress    String?
+  presentDivision   String?
+  presentDistrict   String?
+  presentUpazila    String?
+  presentPostOffice String?
+  presentPostalCode String?
+  permanentAddress    String?
+  permanentDivision   String?
+  permanentDistrict   String?
+  permanentUpazila    String?
+  permanentPostOffice String?
+  permanentPostalCode String?
   documentType      KycDocumentType?
   documentNumber    String?
   bankName          String?

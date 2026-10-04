@@ -36,6 +36,18 @@ export const kycService = {
       bankAccountNumber: input.bankAccountNumber ?? null,
       mobileProvider: input.mobileProvider ?? null,
       mobileNumber: input.mobileNumber ?? null,
+      presentAddress:    input.presentAddress    ?? undefined,
+      presentDivision:   input.presentDivision   ?? undefined,
+      presentDistrict:   input.presentDistrict   ?? undefined,
+      presentUpazila:    input.presentUpazila    ?? undefined,
+      presentPostOffice: input.presentPostOffice ?? undefined,
+      presentPostalCode: input.presentPostalCode ?? undefined,
+      permanentAddress:    input.permanentAddress    ?? undefined,
+      permanentDivision:   input.permanentDivision   ?? undefined,
+      permanentDistrict:   input.permanentDistrict   ?? undefined,
+      permanentUpazila:    input.permanentUpazila    ?? undefined,
+      permanentPostOffice: input.permanentPostOffice ?? undefined,
+      permanentPostalCode: input.permanentPostalCode ?? undefined,
     });
   },
 
