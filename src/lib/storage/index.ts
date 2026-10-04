@@ -68,12 +68,13 @@ class CloudinaryProvider implements StorageProvider {
     configureCloudinary();
     const resourceType = getResourceType(mimeType);
     const expiresAt = Math.floor(Date.now() / 1000) + expiresInSeconds;
-    return cloudinary.url(key, {
-      type:          "authenticated",
+    // Use private_download_url — works correctly regardless of whether the
+    // public_id was stored with or without a file extension.
+    const ext = mimeType === "application/pdf" ? "pdf" : mimeType.split("/")[1] ?? "png";
+    return cloudinary.utils.private_download_url(key, ext, {
       resource_type: resourceType,
-      sign_url:      true,
+      type:          "authenticated",
       expires_at:    expiresAt,
-      secure:        true,
     });
   }
 }
