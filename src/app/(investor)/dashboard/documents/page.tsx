@@ -148,7 +148,7 @@ export default async function DocumentsPage() {
         return (
           <section key={cat}>
             <h2 className="mb-4 flex items-center gap-2 font-semibold">
-              {CATEGORY_ICONS[cat]} {CATEGORY_LABELS[cat]}s
+              {CATEGORY_ICONS[cat]} {CATEGORY_LABELS[cat] ?? cat}s
             </h2>
             {docs.length > 0 ? (
               <div className="space-y-2">
@@ -165,7 +165,7 @@ export default async function DocumentsPage() {
                 ))}
               </div>
             ) : (
-              <EmptyState message={`No ${CATEGORY_LABELS[cat].toLowerCase()}s found.`} />
+              <EmptyState message={`No ${(CATEGORY_LABELS[cat] ?? cat).toLowerCase()}s found.`} />
             )}
           </section>
         );
