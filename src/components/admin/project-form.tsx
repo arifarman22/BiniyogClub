@@ -28,6 +28,8 @@ type DefaultValues = Partial<{
   maxInvestmentBdt: number | string | null;
   returnType: string;
   expectedReturnPct: number | string;
+  returnPctMin?: number | string | null;
+  returnPctMax?: number | string | null;
   durationDays: number | string;
   fundingDeadline: string;
   startDate: string | null;
@@ -101,6 +103,9 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [coverImageUrl, setCoverImageUrl] = useState<string>(defaultValues.coverImageUrl ?? "");
+  const [returnMode, setReturnMode] = useState<"fixed" | "range">(
+    defaultValues.returnPctMin ? "range" : "fixed"
+  );
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -146,7 +151,9 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       minInvestmentBdt: Number(raw.minInvestmentBdt),
       maxInvestmentBdt: raw.maxInvestmentBdt ? Number(raw.maxInvestmentBdt) : null,
       returnType: raw.returnType as string,
-      expectedReturnPct: Number(raw.expectedReturnPct),
+      expectedReturnPct: returnMode === "fixed" ? Number(raw.expectedReturnPct) : Number(raw.returnPctMin),
+      returnPctMin: returnMode === "range" ? Number(raw.returnPctMin) : null,
+      returnPctMax: returnMode === "range" ? Number(raw.returnPctMax) : null,
       durationDays: Number(raw.durationDays),
       fundingDeadline: new Date(raw.fundingDeadline as string),
       startDate: raw.startDate ? new Date(raw.startDate as string) : null,
@@ -270,10 +277,43 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
             </select>
             <FieldError msg={fieldErrors.returnType} />
           </div>
-          <div>
-            <Label htmlFor="expectedReturnPct">Expected Return (%) *</Label>
-            <Input id="expectedReturnPct" name="expectedReturnPct" type="number" min="0.01" max="100" step="0.01" defaultValue={String(defaultValues.expectedReturnPct ?? "")} placeholder="18.5" className="mt-1.5" />
-            <FieldError msg={fieldErrors.expectedReturnPct} />
+          <div className="sm:col-span-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <Label>Expected Return (%) *</Label>
+              <div className="flex rounded-lg border border-input overflow-hidden text-xs">
+                <button type="button" onClick={() => setReturnMode("fixed")}
+                  className={`px-3 py-1 transition-colors ${returnMode === "fixed" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}>
+                  Fixed
+                </button>
+                <button type="button" onClick={() => setReturnMode("range")}
+                  className={`px-3 py-1 transition-colors ${returnMode === "range" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}>
+                  Range
+                </button>
+              </div>
+            </div>
+            {returnMode === "fixed" ? (
+              <div>
+                <Input name="expectedReturnPct" type="number" min="0.01" max="100" step="0.01"
+                  defaultValue={String(defaultValues.expectedReturnPct ?? "")} placeholder="18.5" />
+                <FieldError msg={fieldErrors.expectedReturnPct} />
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <Input name="returnPctMin" type="number" min="0.01" max="100" step="0.01"
+                    defaultValue={String(defaultValues.returnPctMin ?? "")} placeholder="10" />
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Min %</p>
+                  <FieldError msg={fieldErrors.returnPctMin} />
+                </div>
+                <span className="text-muted-foreground text-sm mt-[-14px]">–</span>
+                <div className="flex-1">
+                  <Input name="returnPctMax" type="number" min="0.01" max="100" step="0.01"
+                    defaultValue={String(defaultValues.returnPctMax ?? "")} placeholder="15" />
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Max %</p>
+                  <FieldError msg={fieldErrors.returnPctMax} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </SectionCard>

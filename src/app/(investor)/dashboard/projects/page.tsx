@@ -160,7 +160,7 @@ export default async function MyProjectsPage() {
                   {/* Stats row */}
                   <div className="mt-4 grid grid-cols-3 gap-3 sm:grid-cols-4">
                     {[
-                      { label: "Return", value: `${Number(p.expectedReturnPct.toString()).toFixed(1)}%` },
+                      { label: "Return", value: p.returnPctMin && p.returnPctMax ? `${Number(p.returnPctMin).toFixed(0)}–${Number(p.returnPctMax).toFixed(0)}%` : `${Number(p.expectedReturnPct.toString()).toFixed(1)}%` },
                       { label: "Duration", value: `${p.durationDays}d` },
                       { label: "Investors", value: p._count.investments.toString() },
                       ...(p.startDate ? [{ label: "Started", value: new Date(p.startDate).toLocaleDateString("en-BD", { day: "numeric", month: "short" }) }] : []),

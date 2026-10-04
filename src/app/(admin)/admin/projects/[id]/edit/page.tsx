@@ -51,6 +51,8 @@ export default async function EditProjectPage({ params }: Props) {
           maxInvestmentBdt: project.maxInvestmentBdt ? Number(project.maxInvestmentBdt) : null,
           returnType: project.returnType,
           expectedReturnPct: Number(project.expectedReturnPct),
+          returnPctMin: project.returnPctMin ? Number(project.returnPctMin) : null,
+          returnPctMax: project.returnPctMax ? Number(project.returnPctMax) : null,
           durationDays: project.durationDays,
           fundingDeadline: project.fundingDeadline.toISOString().split("T")[0],
           startDate: project.startDate ? project.startDate.toISOString().split("T")[0] : null,

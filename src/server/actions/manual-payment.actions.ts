@@ -24,7 +24,14 @@ export async function createBankAccountAction(data: {
   accountNumber: string;
   routingNumber?: string;
   branchName?: string;
+  swiftCode?: string;
+  iban?: string;
+  mobileNumber?: string;
+  email?: string;
+  branchAddress?: string;
   instructions?: string;
+  isDefault?: boolean;
+  displayOrder?: number;
 }): Promise<ActionResult<{ id: string }>> {
   try {
     const session = await requireSession();
@@ -32,6 +39,11 @@ export async function createBankAccountAction(data: {
 
     if (!data.bankName?.trim() || !data.accountName?.trim() || !data.accountNumber?.trim()) {
       return { success: false, error: "Bank name, account name, and account number are required" };
+    }
+
+    // If setting as default, unset all others first
+    if (data.isDefault) {
+      await db.bankAccount.updateMany({ data: { isDefault: false } });
     }
 
     const account = await db.bankAccount.create({
@@ -52,8 +64,15 @@ export async function updateBankAccountAction(
     accountNumber?: string;
     routingNumber?: string;
     branchName?: string;
+    swiftCode?: string;
+    iban?: string;
+    mobileNumber?: string;
+    email?: string;
+    branchAddress?: string;
     instructions?: string;
     isActive?: boolean;
+    isDefault?: boolean;
+    displayOrder?: number;
   },
 ): Promise<ActionResult<void>> {
   try {
@@ -62,6 +81,11 @@ export async function updateBankAccountAction(
 
     const account = await db.bankAccount.findUnique({ where: { id }, select: { id: true } });
     if (!account) throw new NotFoundError("Bank account");
+
+    // If setting as default, unset all others first
+    if (data.isDefault) {
+      await db.bankAccount.updateMany({ where: { id: { not: id } }, data: { isDefault: false } });
+    }
 
     await db.bankAccount.update({ where: { id }, data });
     revalidatePath("/admin/payments");
@@ -84,7 +108,8 @@ export async function deleteBankAccountAction(id: string): Promise<ActionResult<
 
 export async function submitManualPaymentAction(data: {
   investmentId: string;
-  bankAccountId: string;
+  bankAccountId?: string | null;  // projectBankAccount id — optional for non-bank-transfer
+  paymentMethod: string;
   transactionRef: string;
   proofFileUrl: string;
   proofMimeType: string;
@@ -93,7 +118,6 @@ export async function submitManualPaymentAction(data: {
   try {
     const session = await requireSession();
 
-    // Verify investment belongs to this investor and is in PAYMENT_PENDING
     const investment = await db.investment.findUnique({
       where: { id: data.investmentId },
       select: {
@@ -114,39 +138,34 @@ export async function submitManualPaymentAction(data: {
       );
     }
 
-    // Check no pending submission already exists
     const existing = await db.manualPaymentSubmission.findFirst({
-      where: {
-        investmentId: data.investmentId,
-        status: { in: ["SUBMITTED", "UNDER_REVIEW"] },
-      },
+      where: { investmentId: data.investmentId, status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
       select: { id: true },
     });
     if (existing) {
       throw new ValidationError("A payment proof submission is already pending review for this investment");
     }
 
-    const bankAccount = await db.bankAccount.findUnique({
-      where: { id: data.bankAccountId },
-      select: { id: true, isActive: true },
-    });
-    if (!bankAccount || !bankAccount.isActive) {
-      throw new ValidationError("Invalid bank account selected");
+    // For bank transfer, validate the selected project bank account
+    if (data.paymentMethod === "BANK_TRANSFER") {
+      if (!data.bankAccountId) throw new ValidationError("Please select a bank account for bank transfer");
+      const bankAccount = await db.projectBankAccount.findUnique({
+        where: { id: data.bankAccountId },
+        select: { id: true, isActive: true },
+      });
+      if (!bankAccount || !bankAccount.isActive) throw new ValidationError("Invalid bank account selected");
     }
 
-    if (!data.transactionRef?.trim()) {
-      throw new ValidationError("Transaction reference is required");
-    }
-    if (!data.proofFileUrl?.trim()) {
-      throw new ValidationError("Payment proof file is required");
-    }
+    if (!data.transactionRef?.trim()) throw new ValidationError("Transaction reference is required");
+    if (!data.proofFileUrl?.trim()) throw new ValidationError("Payment proof file is required");
 
     const submission = await db.manualPaymentSubmission.create({
       data: {
         investmentId: data.investmentId,
         submittedBy: session.id,
         amountBdt: Number(investment.amountBdt),
-        bankAccountId: data.bankAccountId,
+        bankAccountId: data.bankAccountId ?? null,
+        paymentMethod: data.paymentMethod,
         transactionRef: data.transactionRef.trim(),
         proofFileUrl: data.proofFileUrl,
         proofMimeType: data.proofMimeType,
@@ -155,7 +174,6 @@ export async function submitManualPaymentAction(data: {
       select: { id: true },
     });
 
-    // Notify finance officers
     const financeUsers = await db.user.findMany({
       where: { role: { in: ["FINANCE_OFFICER", "ADMIN", "SUPER_ADMIN"] }, status: "ACTIVE" },
       select: { id: true },

@@ -6,6 +6,27 @@ import type { SessionUser } from "@/lib/auth/session";
 const PAGE_SIZE = 20;
 const skip = (page: number) => (page - 1) * PAGE_SIZE;
 
+// ─── Project Bank Accounts (for investor payment page) ──────────────────────
+
+export async function getProjectBankAccounts(projectId: string) {
+  return db.projectBankAccount.findMany({
+    where: { projectId, isActive: true },
+    select: {
+      id: true,
+      bankName: true,
+      accountName: true,
+      accountNumber: true,
+      routingNumber: true,
+      branchName: true,
+      swiftCode: true,
+      mobileNumber: true,
+      email: true,
+      branchAddress: true,
+    },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
 // ─── Bank Accounts (public read — investors need to see these) ────────────────
 
 export async function getActiveBankAccounts() {
@@ -18,9 +39,16 @@ export async function getActiveBankAccounts() {
       accountNumber: true,
       routingNumber: true,
       branchName: true,
+      swiftCode: true,
+      iban: true,
+      mobileNumber: true,
+      email: true,
+      branchAddress: true,
       instructions: true,
+      isDefault: true,
+      displayOrder: true,
     },
-    orderBy: { createdAt: "asc" },
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
   });
 }
 
@@ -34,11 +62,18 @@ export async function getAllBankAccounts(session: SessionUser) {
       accountNumber: true,
       routingNumber: true,
       branchName: true,
+      swiftCode: true,
+      iban: true,
+      mobileNumber: true,
+      email: true,
+      branchAddress: true,
       instructions: true,
       isActive: true,
+      isDefault: true,
+      displayOrder: true,
       createdAt: true,
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
   });
 }
 

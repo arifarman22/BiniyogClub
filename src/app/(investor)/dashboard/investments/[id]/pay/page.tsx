@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import { requireSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
-import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
+import { getProjectBankAccounts } from "@/server/data/manual-payment.data";
 import { PaymentProofForm } from "@/components/investments/payment-proof-form";
-import { Building2, ArrowLeft, CheckCircle2, Clock } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -24,7 +24,7 @@ export default async function InvestmentPayPage({ params }: Props) {
       expectedReturnBdt: true,
       returnType: true,
       createdAt: true,
-      project: { select: { title: true, slug: true, durationDays: true } },
+      project: { select: { title: true, slug: true, durationDays: true, id: true } },
       investorProfile: { select: { userId: true } },
       manualPayments: {
         select: { id: true, status: true, transactionRef: true, createdAt: true, rejectionReason: true },
@@ -45,7 +45,7 @@ export default async function InvestmentPayPage({ params }: Props) {
     redirect("/dashboard/investments");
   }
 
-  const bankAccounts = await getActiveBankAccounts();
+  const bankAccounts = await getProjectBankAccounts(investment.project.id);
   const lastSubmission = investment.manualPayments[0] ?? null;
   const hasPendingSubmission = lastSubmission?.status === "SUBMITTED" || lastSubmission?.status === "UNDER_REVIEW";
 
@@ -110,48 +110,10 @@ export default async function InvestmentPayPage({ params }: Props) {
         </div>
       )}
 
-      {/* Bank accounts */}
-      {bankAccounts.length > 0 && (
-        <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-            <h2 className="font-semibold text-sm">Transfer to one of these accounts</h2>
-          </div>
-          <div className="space-y-3">
-            {bankAccounts.map((acc) => (
-              <div key={acc.id} className="rounded-xl border border-border bg-card p-4 space-y-2">
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-sm">{acc.bankName}</p>
-                  <span className="rounded-full bg-success/10 px-2 py-0.5 text-[10px] font-medium text-success">Active</span>
-                </div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Account Name</span>
-                    <p className="font-medium mt-0.5">{acc.accountName}</p>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">Account Number</span>
-                    <p className="font-mono font-medium mt-0.5">{acc.accountNumber}</p>
-                  </div>
-                  {acc.routingNumber && (
-                    <div>
-                      <span className="text-muted-foreground">Routing Number</span>
-                      <p className="font-mono font-medium mt-0.5">{acc.routingNumber}</p>
-                    </div>
-                  )}
-                  {acc.branchName && (
-                    <div>
-                      <span className="text-muted-foreground">Branch</span>
-                      <p className="font-medium mt-0.5">{acc.branchName}</p>
-                    </div>
-                  )}
-                </div>
-                {acc.instructions && (
-                  <p className="rounded-lg bg-muted/40 px-3 py-2 text-xs text-muted-foreground">{acc.instructions}</p>
-                )}
-              </div>
-            ))}
-          </div>
+      {/* No bank accounts warning — only relevant for bank transfer */}
+      {bankAccounts.length === 0 && (
+        <div className="rounded-xl border border-warning/40 bg-warning/5 p-4 text-sm text-warning-foreground">
+          No bank accounts have been configured for this project. You can still submit payment via Cash, Check, or Mobile Banking.
         </div>
       )}
 

@@ -297,6 +297,16 @@
     @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
   }
 
+  /* ── Placeholder ── */
+  ::placeholder {
+    color: oklch(0.620 0.010 250);
+    opacity: 1;
+  }
+  .dark ::placeholder {
+    color: oklch(0.480 0.010 250);
+    opacity: 1;
+  }
+
   /* ── Selection ── */
   ::selection {
     background-color: oklch(from var(--primary) l c h / 0.20);

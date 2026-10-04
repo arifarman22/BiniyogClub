@@ -25,6 +25,8 @@ export type ProjectCardProps = {
   fundedAmountBdt: number | string;
   minInvestmentBdt: number | string;
   expectedReturnPct: number | string;
+  returnPctMin?: number | string | null;
+  returnPctMax?: number | string | null;
   returnType: ReturnType;
   durationDays: number;
   fundingDeadline: Date | string;
@@ -85,6 +87,8 @@ export function ProjectCard({
   fundedAmountBdt,
   minInvestmentBdt,
   expectedReturnPct,
+  returnPctMin,
+  returnPctMax,
   returnType,
   durationDays,
   fundingDeadline,
@@ -100,6 +104,10 @@ export function ProjectCard({
     icon: Sparkles,
   };
   const CategoryIcon = catMeta.icon;
+
+  const returnLabel = returnPctMin && returnPctMax
+    ? `${Number(returnPctMin).toFixed(0)}–${Number(returnPctMax).toFixed(0)}%`
+    : `${Number(expectedReturnPct).toFixed(0)}%`;
 
   return (
     <Link
@@ -182,7 +190,7 @@ export function ProjectCard({
 
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/85 backdrop-blur-md border border-emerald-400/40 px-2.5 py-0.5 text-[11px] font-normal text-emerald-300 shadow-sm ml-auto">
             <TrendingUp className="h-3 w-3 text-emerald-400 shrink-0" />
-            <span>{Number(expectedReturnPct).toFixed(0)}% ROI</span>
+            <span>{returnLabel} ROI</span>
           </span>
         </div>
       </div>
@@ -225,7 +233,7 @@ export function ProjectCard({
           <div className="flex flex-col items-center justify-center rounded-xl bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/50 dark:border-emerald-800/40 py-2 px-1 text-center">
             <span className="text-xs sm:text-sm font-normal sm:font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-0.5">
               <TrendingUp className="h-3 w-3 shrink-0" />
-              {Number(expectedReturnPct).toFixed(0)}%
+              {returnLabel}
             </span>
             <span className="text-[10px] font-light uppercase tracking-widest text-emerald-700/80 dark:text-emerald-400/80 mt-0.5">
               {returnType === "FIXED_RETURN" ? "Fixed Return" : "Est. Return"}

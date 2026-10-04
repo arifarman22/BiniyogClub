@@ -192,6 +192,8 @@ export async function getInvestorProjects(session: SessionUser) {
           fundingGoalBdt: true,
           fundedAmountBdt: true,
           expectedReturnPct: true,
+          returnPctMin: true,
+          returnPctMax: true,
           returnType: true,
           durationDays: true,
           startDate: true,

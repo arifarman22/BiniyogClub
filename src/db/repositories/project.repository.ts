@@ -17,6 +17,8 @@ export const projectListSelect = {
   minInvestmentBdt: true,
   maxInvestmentBdt: true,
   expectedReturnPct: true,
+  returnPctMin: true,
+  returnPctMax: true,
   returnType: true,
   durationDays: true,
   fundingDeadline: true,

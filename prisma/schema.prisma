@@ -285,6 +285,8 @@ model Project {
   maxInvestmentBdt   Decimal?             @db.Decimal(14, 2)
   returnType         ReturnType
   expectedReturnPct  Decimal              @db.Decimal(6, 4)
+  returnPctMin       Decimal?             @db.Decimal(6, 4)
+  returnPctMax       Decimal?             @db.Decimal(6, 4)
   durationDays       Int
   fundingDeadline    DateTime
   startDate          DateTime?
@@ -507,13 +509,21 @@ model BankAccount {
   accountNumber String
   routingNumber String?
   branchName    String?
+  swiftCode     String?
+  iban          String?
+  mobileNumber  String?
+  email         String?
+  branchAddress String?
   instructions  String?
   isActive      Boolean  @default(true)
+  isDefault     Boolean  @default(false)
+  displayOrder  Int      @default(0)
   createdBy     String
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([isActive])
+  @@index([displayOrder])
   @@map("bank_accounts")
 }
 
@@ -544,7 +554,8 @@ model ManualPaymentSubmission {
   submittedBy     String
   status          ManualPaymentStatus @default(SUBMITTED)
   amountBdt       Decimal             @db.Decimal(14, 2)
-  bankAccountId   String
+  bankAccountId   String?
+  paymentMethod   String              @default("BANK_TRANSFER")
   transactionRef  String
   proofFileUrl    String
   proofMimeType   String

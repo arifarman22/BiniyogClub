@@ -329,6 +329,8 @@ export default async function HomePage() {
                     fundedAmountBdt={Number(project.fundedAmountBdt)}
                     minInvestmentBdt={Number(project.minInvestmentBdt)}
                     expectedReturnPct={Number(project.expectedReturnPct)}
+                    returnPctMin={project.returnPctMin ? Number(project.returnPctMin) : undefined}
+                    returnPctMax={project.returnPctMax ? Number(project.returnPctMax) : undefined}
                     returnType={project.returnType}
                     durationDays={project.durationDays}
                     fundingDeadline={project.fundingDeadline}

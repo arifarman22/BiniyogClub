@@ -49,7 +49,8 @@ export function SubmitPaymentProofDialog({ investmentId, amountBdt, bankAccounts
 
       const result = await submitManualPaymentAction({
         investmentId,
-        bankAccountId: selectedBank,
+        bankAccountId: selectedBank || null,
+        paymentMethod: "BANK_TRANSFER",
         transactionRef: transactionRef.trim(),
         proofFileUrl,
         proofMimeType: file.type,

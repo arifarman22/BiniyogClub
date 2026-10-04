@@ -54,6 +54,8 @@ export async function getFeaturedProjects(limit = 6) {
       fundedAmountBdt: true,
       minInvestmentBdt: true,
       expectedReturnPct: true,
+      returnPctMin: true,
+      returnPctMax: true,
       returnType: true,
       durationDays: true,
       fundingDeadline: true,

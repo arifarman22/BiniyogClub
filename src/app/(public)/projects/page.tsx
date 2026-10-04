@@ -183,6 +183,8 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                     fundedAmountBdt={p.fundedAmountBdt.toString()}
                     minInvestmentBdt={p.minInvestmentBdt.toString()}
                     expectedReturnPct={p.expectedReturnPct.toString()}
+                    returnPctMin={p.returnPctMin?.toString()}
+                    returnPctMax={p.returnPctMax?.toString()}
                     returnType={p.returnType}
                     durationDays={p.durationDays}
                     fundingDeadline={p.fundingDeadline}

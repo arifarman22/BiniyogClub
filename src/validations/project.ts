@@ -21,6 +21,8 @@ export const projectSchema = z
     maxInvestmentBdt: z.coerce.number().positive().optional().nullable(),
     returnType: ReturnTypeEnum,
     expectedReturnPct: z.coerce.number().min(0.01, "Return must be > 0").max(100, "Return cannot exceed 100%"),
+    returnPctMin: z.coerce.number().min(0.01).max(100).optional().nullable(),
+    returnPctMax: z.coerce.number().min(0.01).max(100).optional().nullable(),
     durationDays: z.coerce.number().int().min(1).max(3650),
     fundingDeadline: z.coerce.date({ error: "Invalid date" }),
     startDate: z.coerce.date().optional().nullable(),
@@ -45,6 +47,10 @@ export const projectSchema = z
   .refine((d) => d.fundingDeadline > new Date(), {
     message: "Funding deadline must be in the future",
     path: ["fundingDeadline"],
+  })
+  .refine((d) => !d.returnPctMin || !d.returnPctMax || d.returnPctMin < d.returnPctMax, {
+    message: "Min return must be less than max return",
+    path: ["returnPctMin"],
   });
 
 export const projectUpdateSchema = z.object({
@@ -59,6 +65,8 @@ export const projectUpdateSchema = z.object({
   maxInvestmentBdt: z.coerce.number().positive().optional().nullable(),
   returnType: ReturnTypeEnum.optional(),
   expectedReturnPct: z.coerce.number().min(0.01).max(100).optional(),
+  returnPctMin: z.coerce.number().min(0.01).max(100).optional().nullable(),
+  returnPctMax: z.coerce.number().min(0.01).max(100).optional().nullable(),
   durationDays: z.coerce.number().int().min(1).max(3650).optional(),
   fundingDeadline: z.coerce.date().optional(),
   startDate: z.coerce.date().optional().nullable(),
