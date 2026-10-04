@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import {
   Clock,
   MapPin,
@@ -31,10 +34,53 @@ export type ProjectCardProps = {
   durationDays: number;
   fundingDeadline: Date | string;
   coverImageUrl?: string | null;
+  imageUrls?: string[];
   location?: string | null;
   group?: { name: string; slug: string } | null;
   priority?: boolean;
 };
+
+function ImageSlider({ images, title, priority }: { images: string[]; title: string; priority: boolean }) {
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (images.length <= 1) return;
+    const t = setInterval(() => setIdx((i) => (i + 1) % images.length), 3500);
+    return () => clearInterval(t);
+  }, [images.length]);
+
+  return (
+    <>
+      {images.map((src, i) => (
+        <Image
+          key={src}
+          src={src}
+          alt={title}
+          fill
+          priority={priority && i === 0}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className={cn(
+            "object-cover object-center transition-opacity duration-700",
+            i === idx ? "opacity-100" : "opacity-0",
+          )}
+        />
+      ))}
+      {images.length > 1 && (
+        <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+          {images.map((_, i) => (
+            <span
+              key={i}
+              className={cn(
+                "h-1 rounded-full transition-all duration-300",
+                i === idx ? "w-4 bg-white" : "w-1 bg-white/50",
+              )}
+            />
+          ))}
+        </div>
+      )}
+    </>
+  );
+}
 
 const CATEGORY_META: Record<
   string,
@@ -93,10 +139,15 @@ export function ProjectCard({
   durationDays,
   fundingDeadline,
   coverImageUrl,
+  imageUrls,
   location,
   group,
   priority = false,
 }: ProjectCardProps) {
+  const allImages = [
+    ...(coverImageUrl ? [coverImageUrl] : []),
+    ...(imageUrls ?? []).filter((u) => u !== coverImageUrl),
+  ];
   const pct = fundingPercent(fundedAmountBdt, fundingGoalBdt);
   const days = daysLeft(fundingDeadline);
   const catMeta = CATEGORY_META[category] ?? {
@@ -116,15 +167,8 @@ export function ProjectCard({
     >
       {/* ── Visual Media Container ── */}
       <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-slate-950">
-        {coverImageUrl ? (
-          <Image
-            src={coverImageUrl}
-            alt={title}
-            fill
-            priority={priority}
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
-          />
+        {allImages.length > 0 ? (
+          <ImageSlider images={allImages} title={title} priority={priority} />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-emerald-900/60 to-slate-950">
             <TrendingUp className="h-14 w-14 text-emerald-400/40" />

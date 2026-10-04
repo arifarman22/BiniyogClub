@@ -335,6 +335,7 @@ export default async function HomePage() {
                     durationDays={project.durationDays}
                     fundingDeadline={project.fundingDeadline}
                     coverImageUrl={project.coverImageUrl}
+                    imageUrls={project.imageUrls}
                     location={project.location}
                     group={project.group}
                     priority={i < 2}

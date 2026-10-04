@@ -188,6 +188,7 @@ export async function getInvestorProjects(session: SessionUser) {
           category: true,
           status: true,
           coverImageUrl: true,
+          imageUrls: true,
           location: true,
           fundingGoalBdt: true,
           fundedAmountBdt: true,

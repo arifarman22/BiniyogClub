@@ -25,6 +25,7 @@ export const projectListSelect = {
   startDate: true,
   endDate: true,
   coverImageUrl: true,
+  imageUrls: true,
   createdAt: true,
   updatedAt: true,
   manager: { select: { id: true, name: true } },

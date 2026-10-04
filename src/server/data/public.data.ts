@@ -60,6 +60,7 @@ export async function getFeaturedProjects(limit = 6) {
       durationDays: true,
       fundingDeadline: true,
       coverImageUrl: true,
+      imageUrls: true,
       group: { select: { id: true, name: true, slug: true, logoUrl: true } },
     },
     orderBy: { publishedAt: "desc" },

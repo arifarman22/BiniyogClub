@@ -103,12 +103,14 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [coverImageUrl, setCoverImageUrl] = useState<string>(defaultValues.coverImageUrl ?? "");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [returnMode, setReturnMode] = useState<"fixed" | "range">(
     defaultValues.returnPctMin ? "range" : "fixed"
   );
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const extraFileInputRef = useRef<HTMLInputElement>(null);
 
   // Bank accounts — local for create, saved for edit
   const [savedBanks, setSavedBanks] = useState<BankAccount[]>(initialBankAccounts);
@@ -130,6 +132,26 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
     setImageUploading(false);
     if (!result.success) { setImageError(result.error); return; }
     setCoverImageUrl(result.data.url);
+  }
+
+  async function handleExtraImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (!files.length) return;
+    setImageError(null);
+    setImageUploading(true);
+    const results = await Promise.all(
+      files.map(async (file) => {
+        const fd = new FormData();
+        fd.append("file", file);
+        return uploadProjectCoverImageAction(fd);
+      })
+    );
+    setImageUploading(false);
+    const failed = results.find((r) => !r.success);
+    if (failed && !failed.success) { setImageError(failed.error); return; }
+    const urls = results.filter((r) => r.success).map((r) => (r as { success: true; data: { url: string } }).data.url);
+    setImageUrls((prev) => [...prev, ...urls]);
+    if (extraFileInputRef.current) extraFileInputRef.current.value = "";
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -160,7 +182,7 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       endDate: raw.endDate ? new Date(raw.endDate as string) : null,
       riskInfo: (raw.riskInfo as string) || null,
       coverImageUrl: coverImageUrl || null,
-      imageUrls: [],
+      imageUrls: [coverImageUrl, ...imageUrls].filter(Boolean),
       groupId: (raw.groupId as string) || null,
       status: (raw.status as string) || undefined,
     };
@@ -342,57 +364,62 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       </SectionCard>
 
       <SectionCard title="Media">
-        <div className="space-y-3">
-          <Label>Cover Image</Label>
-          {coverImageUrl ? (
-            <div className="relative w-full max-w-sm">
-              <Image
-                src={coverImageUrl}
-                alt="Cover preview"
-                width={400}
-                height={225}
-                className="rounded-lg border border-border object-cover w-full h-auto"
-              />
-              <button
-                type="button"
-                onClick={() => { setCoverImageUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background border border-border"
-              >
-                <X className="h-4 w-4" />
+        <div className="space-y-5">
+          {/* Cover image */}
+          <div className="space-y-2">
+            <Label>Cover Image <span className="font-normal text-muted-foreground">(primary)</span></Label>
+            {coverImageUrl ? (
+              <div className="relative w-full max-w-sm">
+                <Image src={coverImageUrl} alt="Cover preview" width={400} height={225}
+                  className="rounded-lg border border-border object-cover w-full h-auto" />
+                <button type="button"
+                  onClick={() => { setCoverImageUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
+                  className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background border border-border">
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}
+                className="flex w-full max-w-sm flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-10 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/50 transition-colors disabled:opacity-50">
+                {imageUploading ? <span className="animate-pulse">Uploading…</span> : (
+                  <><ImageIcon className="h-8 w-8 opacity-40" /><span>Click to upload cover image</span><span className="text-xs opacity-60">JPEG, PNG, WebP · max 5 MB</span></>
+                )}
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={imageUploading}
-              className="flex w-full max-w-sm flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-10 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/50 transition-colors disabled:opacity-50"
-            >
-              {imageUploading ? (
-                <span className="animate-pulse">Uploading…</span>
-              ) : (
-                <>
-                  <ImageIcon className="h-8 w-8 opacity-40" />
-                  <span>Click to upload cover image</span>
-                  <span className="text-xs opacity-60">JPEG, PNG, WebP · max 5 MB</span>
-                </>
-              )}
-            </button>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={handleImageChange}
-          />
-          {!coverImageUrl && (
-            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}>
-              <Upload className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Upload Image"}
+            )}
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageChange} />
+            {!coverImageUrl && (
+              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}>
+                <Upload className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Upload Image"}
+              </Button>
+            )}
+            <FieldError msg={fieldErrors.coverImageUrl} />
+          </div>
+
+          {/* Additional images */}
+          <div className="space-y-2">
+            <Label>Additional Images <span className="font-normal text-muted-foreground">(shown as slider on cards)</span></Label>
+            {imageUrls.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {imageUrls.map((url, i) => (
+                  <div key={url} className="relative">
+                    <Image src={url} alt={`Image ${i + 1}`} width={120} height={80}
+                      className="rounded-lg border border-border object-cover h-20 w-[120px]" />
+                    <button type="button"
+                      onClick={() => setImageUrls((prev) => prev.filter((_, j) => j !== i))}
+                      className="absolute -top-1.5 -right-1.5 rounded-full bg-background border border-border p-0.5 hover:bg-destructive hover:text-white hover:border-destructive transition-colors">
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <Button type="button" variant="outline" size="sm" onClick={() => extraFileInputRef.current?.click()} disabled={imageUploading}>
+              <Plus className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Add Images"}
             </Button>
-          )}
+            <input ref={extraFileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleExtraImagesChange} />
+          </div>
+
           {imageError && <p className="text-xs text-destructive">{imageError}</p>}
-          <FieldError msg={fieldErrors.coverImageUrl} />
         </div>
       </SectionCard>
 
