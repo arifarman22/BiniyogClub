@@ -103,6 +103,9 @@ export function AdminShell({ children, name, role, initials, userPermissions, ba
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [greeting, setGreeting] = useState("morning");
+
+  useEffect(() => { setGreeting(getGreeting()); }, []);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 1023px)");
@@ -287,7 +290,7 @@ export function AdminShell({ children, name, role, initials, userPermissions, ba
               </button>
             )}
             <span className="text-sm font-semibold text-muted-foreground lg:block hidden">
-              Good {getGreeting()},{" "}
+              Good {greeting},{" "}
               <span className="font-bold text-foreground">{name.split(" ")[0]}</span> 👋
             </span>
             <span className="text-sm font-semibold lg:hidden">Biniyog Admin</span>
