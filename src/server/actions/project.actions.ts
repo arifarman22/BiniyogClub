@@ -82,6 +82,7 @@ export async function uploadProjectCoverImageAction(
 
 export async function createProjectAction(
   formData: unknown,
+  bankAccounts?: { accountName: string; accountNumber: string; bankName: string; branchName?: string | null; routingNumber?: string | null; swiftCode?: string | null; mobileNumber?: string | null; email?: string | null; branchAddress?: string | null }[],
 ): Promise<ActionResult<{ id: string; slug: string }>> {
   const parsed = projectSchema.safeParse(formData);
   if (!parsed.success) return validationError(parsed.error.issues);
@@ -89,6 +90,12 @@ export async function createProjectAction(
   try {
     const session = await requireSession();
     const project = await projectService.create(session, parsed.data);
+    if (bankAccounts && bankAccounts.length > 0) {
+      const { db } = await import("@/lib/db/prisma");
+      await db.projectBankAccount.createMany({
+        data: bankAccounts.map((b) => ({ ...b, projectId: project.id, email: b.email || null })),
+      });
+    }
     revalidatePath("/admin/projects");
     revalidatePath("/projects");
     return { success: true, data: { id: project.id, slug: project.slug } };

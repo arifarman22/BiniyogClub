@@ -44,7 +44,9 @@ export async function GET(_req: Request, { params }: RouteContext) {
 
     // Redirect to signed URL — client never sees the storage key
     return NextResponse.redirect(signedUrl, { status: 302 });
-  } catch {
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  } catch (err) {
+    console.error("[kyc/documents] error:", err);
+    const message = err instanceof Error ? err.message : "Internal error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

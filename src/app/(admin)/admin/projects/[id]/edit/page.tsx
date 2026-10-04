@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ProjectForm } from "@/components/admin/project-form";
-import { ProjectBankAccountManager } from "@/components/admin/project-bank-account-manager";
 import { getAdminProjectById, getManagersForSelect, getGroupsForSelect } from "@/server/data/admin.data";
 
 type Props = { params: Promise<{ id: string }> };
@@ -38,6 +37,7 @@ export default async function EditProjectPage({ params }: Props) {
         projectId={project.id}
         managers={managers}
         groups={groups}
+        initialBankAccounts={project.bankAccounts ?? []}
         defaultValues={{
           title: project.title,
           category: project.category,
@@ -61,17 +61,6 @@ export default async function EditProjectPage({ params }: Props) {
         }}
       />
 
-      {/* Bank accounts section */}
-      <div className="rounded-xl border border-border bg-card p-6 space-y-4">
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Project Bank Accounts</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Investors will see these details when making payments</p>
-        </div>
-        <ProjectBankAccountManager
-          projectId={project.id}
-          bankAccounts={project.bankAccounts ?? []}
-        />
-      </div>
     </div>
   );
 }
