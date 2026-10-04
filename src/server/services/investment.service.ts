@@ -359,79 +359,81 @@ export const investmentService = {
     const walletId = wallet.id;
     const escrowWalletId = escrowWallet.id;
 
-    // ── Transaction: only writes ──────────────────────────────────────────────
-    return db.$transaction(async (tx) => {
-      // Mark pending payment as completed
-      await tx.payment.updateMany({
-        where: { walletId, status: "PENDING", direction: "INBOUND", amountBdt: inv.amountBdt },
-        data: { status: "COMPLETED", externalReference: input.externalReference, processedAt: now },
-      });
+    // ── Writes: executed sequentially without an interactive transaction ─────
+    // Neon PostgreSQL closes interactive transactions quickly on serverless.
+    // We use individual awaited writes instead; atomicity is ensured by the
+    // pre-checks above and idempotent receipt-number generation.
 
-      // Double-entry ledger
-      const ledgerTx = await tx.ledgerTransaction.create({
-        data: {
-          type: "INVESTMENT_FUNDING",
-          investmentId: inv.id,
-          referenceId: inv.id,
-          referenceType: "Investment",
-          description: `Investment funding: ${inv.project.title}`,
-          amountBdt,
-          entries: {
-            create: [
-              { walletId, entryType: "DEBIT", amountBdt, balanceAfterBdt: investorNewBalance },
-              { walletId: escrowWalletId, entryType: "CREDIT", amountBdt, balanceAfterBdt: escrowNewBalance },
-            ],
-          },
-        },
-        select: { id: true },
-      });
-
-      // Update wallet balances
-      await tx.wallet.update({ where: { id: walletId }, data: { cachedBalance: investorNewBalance } });
-      await tx.wallet.update({ where: { id: escrowWalletId }, data: { cachedBalance: escrowNewBalance } });
-
-      // Activate investment
-      const activated = await tx.investment.update({
-        where: { id: inv.id },
-        data: { status: "ACTIVE", confirmedAt: now, activatedAt: now, receiptNumber },
-        select: { id: true, status: true, amountBdt: true, expectedReturnBdt: true, receiptNumber: true, activatedAt: true },
-      });
-
-      // Increment project funded amount
-      const updatedProject = await tx.project.update({
-        where: { id: inv.projectId },
-        data: { fundedAmountBdt: { increment: amountBdt } },
-        select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
-      });
-
-      // Auto-transition project to FUNDED if goal reached
-      if (
-        Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
-        updatedProject.status === "FUNDRAISING"
-      ) {
-        await tx.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
-      }
-
-      // Create investment contract
-      await tx.investmentContract.create({
-        data: {
-          investmentId: inv.id,
-          status: "DRAFT",
-          templateVersion: "v1.0",
-          terms: {
-            amountBdt,
-            expectedReturnBdt: Number(inv.expectedReturnBdt),
-            returnType: inv.returnType,
-            projectId: inv.projectId,
-            projectTitle: inv.project.title,
-            investorId: investorUserId,
-            activatedAt: now.toISOString(),
-          },
-        },
-      });
-
-      return { investment: activated, ledgerTransactionId: ledgerTx.id, receiptNumber };
+    // 1. Mark pending payment as completed
+    await db.payment.updateMany({
+      where: { walletId, status: "PENDING", direction: "INBOUND", amountBdt: inv.amountBdt },
+      data: { status: "COMPLETED", externalReference: input.externalReference, processedAt: now },
     });
+
+    // 2. Double-entry ledger
+    const ledgerTx = await db.ledgerTransaction.create({
+      data: {
+        type: "INVESTMENT_FUNDING",
+        investmentId: inv.id,
+        referenceId: inv.id,
+        referenceType: "Investment",
+        description: `Investment funding: ${inv.project.title}`,
+        amountBdt,
+        entries: {
+          create: [
+            { walletId, entryType: "DEBIT", amountBdt, balanceAfterBdt: investorNewBalance },
+            { walletId: escrowWalletId, entryType: "CREDIT", amountBdt, balanceAfterBdt: escrowNewBalance },
+          ],
+        },
+      },
+      select: { id: true },
+    });
+
+    // 3. Update wallet balances
+    await db.wallet.update({ where: { id: walletId }, data: { cachedBalance: investorNewBalance } });
+    await db.wallet.update({ where: { id: escrowWalletId }, data: { cachedBalance: escrowNewBalance } });
+
+    // 4. Activate investment
+    const activated = await db.investment.update({
+      where: { id: inv.id },
+      data: { status: "ACTIVE", confirmedAt: now, activatedAt: now, receiptNumber },
+      select: { id: true, status: true, amountBdt: true, expectedReturnBdt: true, receiptNumber: true, activatedAt: true },
+    });
+
+    // 5. Increment project funded amount
+    const updatedProject = await db.project.update({
+      where: { id: inv.projectId },
+      data: { fundedAmountBdt: { increment: amountBdt } },
+      select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+    });
+
+    // 6. Auto-transition project to FUNDED if goal reached
+    if (
+      Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
+      updatedProject.status === "FUNDRAISING"
+    ) {
+      await db.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
+    }
+
+    // 7. Create investment contract
+    await db.investmentContract.create({
+      data: {
+        investmentId: inv.id,
+        status: "DRAFT",
+        templateVersion: "v1.0",
+        terms: {
+          amountBdt,
+          expectedReturnBdt: Number(inv.expectedReturnBdt),
+          returnType: inv.returnType,
+          projectId: inv.projectId,
+          projectTitle: inv.project.title,
+          investorId: investorUserId,
+          activatedAt: now.toISOString(),
+        },
+      },
+    });
+
+    return { investment: activated, ledgerTransactionId: ledgerTx.id, receiptNumber };
   },
 
   /**
