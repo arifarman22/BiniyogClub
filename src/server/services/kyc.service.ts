@@ -139,7 +139,8 @@ export const kycService = {
 
     // Require all personal + address + identity fields
     const required: (keyof typeof kyc)[] = [
-      "fullName", "dateOfBirth", "addressLine", "city", "district", "division",
+      "fullName", "dateOfBirth",
+      "presentAddress", "presentDivision", "presentDistrict", "presentUpazila",
       "documentType", "documentNumber",
     ];
     const missing = required.filter((f) => !kyc[f]);

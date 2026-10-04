@@ -646,7 +646,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
             <ul className="space-y-2">
               {[
                 { label: "Personal info", done: !!(form.fullName && form.dateOfBirth) },
-                { label: "Address", done: !!(form.addressLine && form.city && form.district && form.division) },
+                { label: "Address", done: !!(presentAddr.address && presentAddr.division && presentAddr.district && presentAddr.upazila) },
                 { label: "Identity document", done: !!(form.documentType && form.documentNumber) },
                 { label: "Your ID front photo", done: !!frontDoc },
                 { label: "Nominee NID front photo", done: !!nomFrontDoc },
