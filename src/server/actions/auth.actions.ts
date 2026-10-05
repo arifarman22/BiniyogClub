@@ -11,6 +11,7 @@ import {
 } from "@/validations/auth";
 import { AppError } from "@/lib/errors";
 import { requireSession } from "@/lib/auth/session";
+import { db } from "@/lib/db/prisma";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -170,6 +171,57 @@ export async function changePasswordAction(formData: unknown): Promise<ActionRes
       parsed.data.currentPassword,
       parsed.data.newPassword,
     );
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function updateAvatarAction(formData: FormData): Promise<ActionResult<{ avatarUrl: string }>> {
+  try {
+    const session = await requireSession();
+    const file = formData.get("avatar") as File | null;
+    if (!file || file.size === 0) return { success: false, error: "No file provided" };
+    if (file.size > 2 * 1024 * 1024) return { success: false, error: "Image must be under 2 MB" };
+    if (!file.type.startsWith("image/")) return { success: false, error: "File must be an image" };
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const { v2: cloudinary } = await import("cloudinary");
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure:     true,
+    });
+
+    const result = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        { folder: "avatars", public_id: `avatar_${session.id}`, overwrite: true, resource_type: "image", transformation: [{ width: 256, height: 256, crop: "fill", gravity: "face" }] },
+        (err, res) => err || !res ? reject(err) : resolve(res),
+      ).end(buffer);
+    });
+
+    await db.user.update({ where: { id: session.id }, data: { avatarUrl: result.secure_url } });
+    return { success: true, data: { avatarUrl: result.secure_url } };
+  } catch (error) {
+    return serviceError(error) as ActionResult<{ avatarUrl: string }>;
+  }
+}
+
+export async function deleteAvatarAction(): Promise<ActionResult> {
+  try {
+    const session = await requireSession();
+    const { v2: cloudinary } = await import("cloudinary");
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key:    process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET,
+      secure:     true,
+    });
+    await cloudinary.uploader.destroy(`avatars/avatar_${session.id}`, { resource_type: "image" }).catch(() => {});
+    await db.user.update({ where: { id: session.id }, data: { avatarUrl: null } });
     return { success: true, data: undefined };
   } catch (error) {
     return serviceError(error);

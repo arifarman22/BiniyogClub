@@ -1,24 +1,160 @@
-export const dynamic = "force-dynamic";
-import type { Metadata } from "next";
-import { requireSession } from "@/lib/auth/session";
-import { getInvestorProfile } from "@/server/data/investor.data";
-import { User, Mail, Phone, MapPin, ShieldCheck, CheckCircle2, XCircle } from "lucide-react";
-import { cn } from "cn";
+"use client";
 
-export const metadata: Metadata = { title: "Profile — Dashboard" };
+export const dynamic = "force-dynamic";
+
+import { useEffect, useRef, useState, useTransition } from "react";
+import Image from "next/image";
+import { User, Mail, Phone, MapPin, ShieldCheck, CheckCircle2, XCircle, Camera, Trash2 } from "lucide-react";
+import { cn } from "cn";
+import { updateAvatarAction, deleteAvatarAction } from "@/server/actions/auth.actions";
+
+interface ProfileData {
+  id: string;
+  name: string;
+  email: string;
+  phone: string | null;
+  avatarUrl: string | null;
+  emailVerified: boolean;
+  phoneVerified: boolean;
+  createdAt: Date;
+  investorProfile: {
+    city: string | null;
+    country: string;
+    occupation: string | null;
+    annualIncomeRange: string | null;
+    investmentExperience: string | null;
+    riskTolerance: string | null;
+    address: string | null;
+  } | null;
+  kyc: { status: string } | null;
+}
 
 const KYC_STATUS_COLORS: Record<string, string> = {
-  NOT_SUBMITTED: "bg-muted text-muted-foreground",
-  PENDING:       "bg-warning-muted text-warning-foreground",
-  UNDER_REVIEW:  "bg-info-muted text-info-foreground",
-  APPROVED:      "bg-success-muted text-success",
-  REJECTED:      "bg-destructive/10 text-destructive",
-  EXPIRED:       "bg-warning-muted text-warning-foreground",
+  NOT_STARTED:           "bg-muted text-muted-foreground",
+  SUBMITTED:             "bg-yellow-100 text-yellow-700",
+  UNDER_REVIEW:          "bg-blue-100 text-blue-700",
+  VERIFIED:              "bg-green-100 text-green-700",
+  REJECTED:              "bg-red-100 text-red-700",
+  RESUBMISSION_REQUIRED: "bg-orange-100 text-orange-700",
 };
 
-export default async function ProfilePage() {
-  const session = await requireSession();
-  const user = await getInvestorProfile(session);
+function AvatarEditor({ user }: { user: ProfileData }) {
+  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl);
+  const [uploading, startUpload] = useTransition();
+  const [deleting, startDelete] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const initials = user.name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
+
+  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError(null);
+    const fd = new FormData();
+    fd.append("avatar", file);
+    startUpload(async () => {
+      const res = await updateAvatarAction(fd);
+      if (res.success) {
+        setAvatarUrl(res.data.avatarUrl);
+      } else {
+        setError(res.error);
+      }
+    });
+  }
+
+  function handleDelete() {
+    setError(null);
+    startDelete(async () => {
+      const res = await deleteAvatarAction();
+      if (res.success) {
+        setAvatarUrl(null);
+      } else {
+        setError(res.error);
+      }
+    });
+  }
+
+  return (
+    <div className="flex items-center gap-5">
+      {/* Avatar circle */}
+      <div className="relative group">
+        <div className="h-20 w-20 rounded-full overflow-hidden ring-2 ring-border">
+          {avatarUrl ? (
+            <Image src={avatarUrl} alt={user.name} width={80} height={80} className="h-full w-full object-cover" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-primary text-primary-foreground text-2xl font-bold">
+              {initials}
+            </div>
+          )}
+        </div>
+        {/* Camera overlay */}
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={uploading}
+          className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity disabled:cursor-not-allowed"
+          aria-label="Change photo"
+        >
+          <Camera className="h-5 w-5 text-white" />
+        </button>
+        <input ref={inputRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+      </div>
+
+      {/* Actions */}
+      <div className="space-y-1.5">
+        <p className="text-sm font-semibold">{user.name}</p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            disabled={uploading}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            <Camera className="h-3 w-3" />
+            {uploading ? "Uploading…" : "Change Photo"}
+          </button>
+          {avatarUrl && (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+            >
+              <Trash2 className="h-3 w-3" />
+              {deleting ? "Removing…" : "Remove"}
+            </button>
+          )}
+        </div>
+        {error && <p className="text-xs text-destructive">{error}</p>}
+        <p className="text-xs text-muted-foreground">JPG, PNG or WebP · max 2 MB</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Page (client component wrapping server data fetch) ────────────────────────
+
+import { useRouter } from "next/navigation";
+
+export default function ProfilePage() {
+  const [user, setUser] = useState<ProfileData | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    fetch("/api/me").then(r => r.json()).then(setUser).catch(() => router.push("/auth/login"));
+  }, [router]);
+
+  if (!user) {
+    return (
+      <div className="space-y-4 max-w-2xl animate-pulse">
+        <div className="h-6 w-32 rounded bg-muted" />
+        <div className="h-40 rounded-xl bg-muted" />
+        <div className="h-24 rounded-xl bg-muted" />
+      </div>
+    );
+  }
+
   const profile = user.investorProfile;
 
   return (
@@ -30,15 +166,7 @@ export default async function ProfilePage() {
 
       {/* Account info */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-5">
-        <div className="flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand-100 text-brand-700 text-2xl font-bold">
-            {user.name.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <p className="text-lg font-semibold">{user.name}</p>
-            <p className="text-sm text-muted-foreground">Investor · Member since {new Date(user.createdAt).toLocaleDateString("en-BD", { month: "long", year: "numeric" })}</p>
-          </div>
-        </div>
+        <AvatarEditor user={user} />
 
         <div className="grid gap-3 sm:grid-cols-2 border-t border-border pt-5">
           {[
@@ -52,11 +180,15 @@ export default async function ProfilePage() {
                 <p className="text-sm font-medium truncate">{value}</p>
               </div>
               {verified
-                ? <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                ? <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
                 : <XCircle className="h-4 w-4 shrink-0 text-muted-foreground/40" />}
             </div>
           ))}
         </div>
+
+        <p className="text-xs text-muted-foreground border-t border-border pt-3">
+          Member since {new Date(user.createdAt).toLocaleDateString("en-BD", { month: "long", year: "numeric" })}
+        </p>
       </div>
 
       {/* KYC status */}
@@ -68,16 +200,14 @@ export default async function ProfilePage() {
           </div>
           {user.kyc && (
             <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", KYC_STATUS_COLORS[user.kyc.status] ?? "bg-muted text-muted-foreground")}>
-              {user.kyc.status.replace("_", " ")}
+              {user.kyc.status.replace(/_/g, " ")}
             </span>
           )}
         </div>
         {!user.kyc && (
           <div className="mt-3">
             <p className="text-sm text-muted-foreground">KYC not submitted. Complete verification to unlock investing.</p>
-            <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">
-              Start KYC →
-            </a>
+            <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">Start KYC →</a>
           </div>
         )}
       </div>

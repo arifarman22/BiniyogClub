@@ -16,14 +16,15 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     .join("")
     .toUpperCase();
 
-  const kyc = await db.kyc.findUnique({
-    where: { userId: session.id },
-    select: { status: true },
-  }).catch(() => null);
+  const [kyc, userRow] = await Promise.all([
+    db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } }).catch(() => null),
+    db.user.findUnique({ where: { id: session.id }, select: { avatarUrl: true } }).catch(() => null),
+  ]);
   const kycStatus = kyc?.status ?? "NOT_STARTED";
+  const avatarUrl = userRow?.avatarUrl ?? null;
 
   return (
-    <DashboardShell initials={initials} name={session.name} email={session.email} kycStatus={kycStatus}>
+    <DashboardShell initials={initials} name={session.name} email={session.email} kycStatus={kycStatus} avatarUrl={avatarUrl}>
       {children}
     </DashboardShell>
   );

@@ -33,10 +33,11 @@ interface Props {
   name: string;
   email: string;
   kycStatus: string;
+  avatarUrl: string | null;
   children: React.ReactNode;
 }
 
-export function DashboardShell({ initials, name, email, kycStatus, children }: Props) {
+export function DashboardShell({ initials, name, email, kycStatus, avatarUrl, children }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);       // mobile drawer
   const [collapsed, setCollapsed] = useState(false); // desktop collapse
@@ -152,8 +153,11 @@ export function DashboardShell({ initials, name, email, kycStatus, children }: P
           {(!collapsed || mobile) ? (
             <>
               <div className="flex items-center gap-2.5 rounded-xl px-3 py-2">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground">
-                  {initials}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground overflow-hidden">
+                  {avatarUrl
+                    ? <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" />
+                    : initials
+                  }
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-xs font-semibold text-sidebar-foreground">{name}</p>
@@ -167,8 +171,11 @@ export function DashboardShell({ initials, name, email, kycStatus, children }: P
             </>
           ) : (
             <div className="flex flex-col items-center gap-1 py-1">
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground" title={name}>
-                {initials}
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-xs font-bold text-sidebar-primary-foreground overflow-hidden" title={name}>
+                {avatarUrl
+                  ? <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" />
+                  : initials
+                }
               </div>
               <Link href="/" title="Back to site" className="flex h-7 w-7 items-center justify-center rounded-lg text-sidebar-foreground/50 hover:bg-sidebar-accent transition-colors">
                 <ExternalLink className="h-3.5 w-3.5" />
@@ -220,9 +227,12 @@ export function DashboardShell({ initials, name, email, kycStatus, children }: P
             <div className="relative">
               <button
                 onClick={() => setAvatarOpen(v => !v)}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground overflow-hidden"
               >
-                {initials}
+                {avatarUrl
+                  ? <Image src={avatarUrl} alt={name} width={32} height={32} className="h-full w-full object-cover" />
+                  : initials
+                }
               </button>
               {avatarOpen && (
                 <>
