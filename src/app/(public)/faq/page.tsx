@@ -1,116 +1,88 @@
 import type { Metadata } from "next";
-import { Badge } from "@/components/ui/badge";
-import { ButtonLink } from "@/components/shared/button-link";
+import Link from "next/link";
+import { Sparkles, HelpCircle, ArrowRight, MessageSquare, Phone, Mail } from "lucide-react";
+import { AnimatedSection } from "@/components/shared/animated-section";
 
 export const metadata: Metadata = {
-  title: "FAQ",
+  title: "Frequently Asked Questions — Investor Knowledge Base | Biniyog Club",
   description:
-    "Frequently asked questions about investing on Biniyog Club — accounts, KYC, returns, withdrawals, risk, and more.",
+    "Everything you need to know about investing on Biniyog Club: KYC verification, legal deeds, bank escrow, returns, withdrawals, and risk management in Bangladesh.",
   openGraph: {
-    title: "FAQ — Biniyog Club",
-    description: "Everything you need to know about agricultural investment on Biniyog Club.",
+    title: "FAQ | Biniyog Club Co-Investment Platform",
+    description: "Answers to common questions about direct commercial co-investment, legal security, and return distribution.",
   },
 };
 
 const FAQ_SECTIONS = [
   {
-    heading: "Getting Started",
+    heading: "Getting Started & Identity Verification",
     items: [
       {
-        q: "Who can invest on Biniyog Club?",
-        a: "Any Bangladeshi citizen aged 18 or above with a valid National ID can invest. Non-resident Bangladeshis (NRBs) may also invest subject to applicable regulations.",
+        q: "Who is eligible to invest on Biniyog Club?",
+        a: "Any Bangladeshi citizen aged 18 or above with a valid National ID (NID) or Passport can register and invest. Non-Resident Bangladeshis (NRBs) can also participate using their valid passport or dual citizenship documents.",
       },
       {
-        q: "How do I create an account?",
-        a: "Click 'Start Investing' on the homepage, enter your name, email, and phone number, then verify your email. KYC verification is required before your first investment.",
+        q: "What is KYC and why is it mandatory?",
+        a: "KYC (Know Your Customer) is an identity verification protocol required under Bangladesh financial laws and anti-money laundering (AML) regulations. It verifies each investor to maintain a 100% compliant, secure co-investment community.",
       },
       {
-        q: "What is KYC and why is it required?",
-        a: "KYC (Know Your Customer) is an identity verification process required by Bangladesh's financial regulations. It protects both investors and farmers from fraud. You'll need to submit your National ID and a selfie.",
-      },
-      {
-        q: "How long does KYC verification take?",
-        a: "KYC is typically reviewed within 24–48 business hours. You'll receive an SMS and email notification once approved.",
+        q: "How fast is the verification process?",
+        a: "Our automated verification engine processes most NID submissions in under 2 minutes. In cases requiring manual document cross-checking, our compliance team reviews submissions within 2 to 4 business hours.",
       },
     ],
   },
   {
-    heading: "Investing",
+    heading: "Investing & Co-Investment Mechanics",
     items: [
       {
         q: "What is the minimum investment amount?",
-        a: "The platform minimum is ৳5,000. Individual projects may set higher minimums, which are clearly displayed on each project page.",
+        a: "The minimum entry threshold across project syndicates starts at just ৳5,000. Institutional Business Groups and higher-tier directorships have specific tier allocations clearly marked on their dossier cards.",
       },
       {
-        q: "Can I invest in multiple projects?",
-        a: "Yes. We encourage diversification across different crop types, regions, and durations to spread risk.",
+        q: "Can I diversify across multiple projects and groups?",
+        a: "Yes! In fact, we actively recommend spreading allocations across various sectors (such as Agro, SME trade finance, cold storage, and Business Groups) to optimize risk-adjusted returns.",
       },
       {
-        q: "What happens if a project doesn't reach its funding goal?",
-        a: "If a project fails to reach its minimum funding threshold by the deadline, all invested funds are returned to investors' wallets in full — no fees charged.",
+        q: "What payment methods are supported for funding?",
+        a: "You can fund your allocation via instant Bangladeshi Bank Transfer (BEFTN/NPSB/RTGS) directly into the project's segregated escrow account, or via approved Mobile Financial Services (bKash/Nagad).",
       },
       {
-        q: "Can I cancel my investment after committing?",
-        a: "Investments can be cancelled within 48 hours of commitment, provided the project has not yet reached its funding goal. Once a project is fully funded and active, investments cannot be cancelled.",
-      },
-    ],
-  },
-  {
-    heading: "Returns & Payments",
-    items: [
-      {
-        q: "How are returns calculated?",
-        a: "Returns are calculated based on the expected return percentage shown on each project page. For fixed-return projects, you receive a guaranteed percentage. For profit-share projects, returns depend on actual harvest proceeds.",
-      },
-      {
-        q: "When do I receive my returns?",
-        a: "Returns are distributed after the crop is harvested and sold. This typically occurs at the end of the project duration. You'll receive a notification when funds are credited to your wallet.",
-      },
-      {
-        q: "How do I withdraw my money?",
-        a: "You can withdraw from your wallet to a registered bank account or mobile banking number (bKash, Nagad, Rocket) at any time. Withdrawals are processed within 1–3 business days.",
-      },
-      {
-        q: "Are there any fees?",
-        a: "Biniyog Club charges a platform fee on returns only — not on your principal. The fee percentage is disclosed on each project page before you invest. There are no hidden charges.",
+        q: "What happens if a project does not meet its target goal?",
+        a: "If a project fails to achieve its designated minimum syndication threshold before its funding deadline, 100% of co-investor funds are released from escrow and returned directly to investor wallets with zero deduction.",
       },
     ],
   },
   {
-    heading: "Risk & Safety",
+    heading: "Returns, Wallet & Withdrawals",
     items: [
       {
-        q: "What are the risks of agricultural investment?",
-        a: "Agricultural investments carry risks including adverse weather, pest damage, disease, and market price fluctuations. We mitigate these through crop insurance, diversified project structures, and experienced farmer selection.",
+        q: "What returns can I realistically expect?",
+        a: "Annualized projected returns typically range from 14% to 26% depending on the sector, duration, and collateral tier. All formulas, historical benchmarks, and milestone schedules are published transparently on each opportunity page.",
       },
       {
-        q: "What happens if a crop fails?",
-        a: "In the event of a partial or full crop failure, investors are notified immediately. We work with farmers to recover maximum value. Where crop insurance applies, claims are processed and distributed to investors.",
+        q: "How do I withdraw my profits and capital?",
+        a: "Whenever a scheduled payout occurs or a project reaches maturity, the funds are credited instantly to your Biniyog Club wallet. You can submit a withdrawal request anytime to transfer funds directly into your verified Bangladeshi bank account or MFS wallet.",
       },
       {
-        q: "Is my money safe on the platform?",
-        a: "Uninvested wallet funds are held in a segregated escrow account. Invested funds are protected by legally binding contracts. We do not use investor funds for platform operations.",
-      },
-      {
-        q: "Is Biniyog Club regulated?",
-        a: "Biniyog Club operates under applicable Bangladesh financial regulations. All investment contracts are legally enforceable. We are committed to full regulatory compliance as the agri-fintech regulatory framework evolves.",
+        q: "Are there any hidden fees or deduction charges?",
+        a: "Zero hidden charges. Biniyog Club operates on complete transparency. Any platform structuring fee is charged to the borrowing enterprise upfront and never deducted from investor yields.",
       },
     ],
   },
   {
-    heading: "For Farmers",
+    heading: "Legal Enforceability & Capital Protection",
     items: [
       {
-        q: "How do I apply as a farmer?",
-        a: "Visit our Contact page and select 'Farmer Application'. Our team will reach out within 3 business days to begin the onboarding process.",
+        q: "Is my investment legally binding and enforceable?",
+        a: "Yes. Every co-investment generates an individualized digital agreement executed and countersigned under the Bangladesh Contract Act 1872. Each contract carries cryptographic timestamps and is legally binding in Bangladeshi courts.",
       },
       {
-        q: "Do I need to own land to apply?",
-        a: "No. You can apply with leased land, provided you have a valid lease agreement of at least one full crop cycle duration.",
+        q: "Where is my money kept before disbursal?",
+        a: "Investor funds are held strictly in segregated bank escrow accounts at scheduled commercial banks in Bangladesh. Capital is released to the business only in tranches when our on-site team verifies milestone progress.",
       },
       {
-        q: "What are the repayment terms?",
-        a: "Repayment terms are agreed upfront and documented in your project contract. Repayment occurs after harvest and crop sale — there are no monthly installments.",
+        q: "What collateral secures these investments?",
+        a: "Enterprises pledge tangible physical assets (machinery, inventory, real property), director personal guarantees, and post-dated security cheques as legal covenants before listing.",
       },
     ],
   },
@@ -118,46 +90,94 @@ const FAQ_SECTIONS = [
 
 export default function FaqPage() {
   return (
-    <>
-      <section className="bg-gradient-to-br from-brand-900 to-brand-700 py-16 text-white">
-        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
-          <Badge className="mb-4 border-brand-400/40 bg-brand-700/60 text-brand-100">Help Center</Badge>
-          <h1 className="mb-4 text-4xl font-bold text-white sm:text-5xl">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-lg text-brand-100/90">
-            Everything you need to know about investing on Biniyog Club.
-          </p>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* ── 1. Hero ── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/80 to-slate-950 py-20 lg:py-24 text-white border-b border-border/40">
+        <div className="absolute top-0 right-1/4 -mt-20 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 left-10 -mb-20 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+
+        <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <AnimatedSection animation="fade-down">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-light tracking-widest text-emerald-300 backdrop-blur-md mb-6">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <span>INVESTOR KNOWLEDGE BASE & SUPPORT</span>
+            </div>
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-white max-w-3xl mx-auto leading-tight">
+              Frequently Asked{" "}
+              <span className="font-semibold bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+                Questions
+              </span>
+            </h1>
+
+            <p className="mt-5 text-base sm:text-lg font-light text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              Everything you need to know about investing on Biniyog Club—from account setup and legal deeds to returns and bank withdrawals.
+            </p>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6">
+      {/* ── 2. FAQ Accordion Grid ── */}
+      <section className="py-20 lg:py-24">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="space-y-12">
-            {FAQ_SECTIONS.map(({ heading, items }) => (
-              <div key={heading}>
-                <h2 className="mb-5 text-xl font-bold border-b border-border pb-3">{heading}</h2>
+            {FAQ_SECTIONS.map(({ heading, items }, sIdx) => (
+              <AnimatedSection key={heading} delay={sIdx * 80} animation="fade-up">
+                <div className="border-b border-border/70 pb-3 mb-6">
+                  <h2 className="text-xl sm:text-2xl font-light tracking-tight text-foreground flex items-center gap-2">
+                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                    {heading}
+                  </h2>
+                </div>
+
                 <div className="space-y-4">
                   {items.map(({ q, a }) => (
-                    <div key={q} className="rounded-xl border border-border bg-card p-5">
-                      <p className="mb-2 font-semibold text-sm">{q}</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
+                    <div
+                      key={q}
+                      className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-6 shadow-sm transition-all duration-300 hover:border-emerald-500/40 hover:shadow-md"
+                    >
+                      <h3 className="text-base font-semibold text-foreground mb-2 flex items-start gap-2.5">
+                        <HelpCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{q}</span>
+                      </h3>
+                      <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed pl-6.5">
+                        {a}
+                      </p>
                     </div>
                   ))}
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
 
-          <div className="mt-12 rounded-xl border border-border bg-muted/30 p-8 text-center">
-            <h3 className="mb-2 font-semibold">Still have questions?</h3>
-            <p className="mb-5 text-sm text-muted-foreground">
-              Our support team is available Sunday–Thursday, 9am–6pm BST.
-            </p>
-            <ButtonLink href="/contact">Contact Support →</ButtonLink>
-          </div>
+          {/* Contact Support Box */}
+          <AnimatedSection animation="fade-up" delay={200}>
+            <div className="mt-16 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center sm:p-10">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <MessageSquare className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-medium text-foreground mb-2">Have a Question Not Answered Here?</h3>
+              <p className="text-xs sm:text-sm font-light text-muted-foreground max-w-md mx-auto mb-6">
+                Our investor relations desk in Mohakhali C/A, Dhaka is available Sunday through Thursday, 9:00 AM – 6:00 PM BST.
+              </p>
+              <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-xs sm:text-sm font-medium text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                >
+                  Contact Investor Desk <ArrowRight className="h-4 w-4" />
+                </Link>
+                <a
+                  href="tel:+8801335149033"
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-xs sm:text-sm font-medium text-foreground hover:border-emerald-500/50 transition-all"
+                >
+                  <Phone className="h-3.5 w-3.5 text-emerald-500" /> +880 1335-149033
+                </a>
+              </div>
+            </div>
+          </AnimatedSection>
         </div>
       </section>
-    </>
+    </div>
   );
 }

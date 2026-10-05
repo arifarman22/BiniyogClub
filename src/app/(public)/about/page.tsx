@@ -11,38 +11,90 @@ import {
   Sparkles,
   MapPin,
   CheckCircle2,
+  TrendingUp,
+  Scale,
+  Users,
+  BadgeCheck,
+  FileText,
+  Search,
+  Wallet,
+  Clock,
+  Layers,
 } from "lucide-react";
+import { AnimatedSection } from "@/components/shared/animated-section";
 
 export const metadata: Metadata = {
   title: "About Us — Pioneering Direct Investment | Biniyog Club",
   description:
-    "Discover Biniyog Club — Bangladesh's premier direct investment ecosystem connecting verified business groups with retail and corporate co-investors.",
+    "Discover Biniyog Club — Bangladesh's premier direct investment ecosystem connecting verified business groups with retail and corporate co-investors under Bangladesh Contract Act.",
   openGraph: {
-    title: "About Biniyog Club",
-    description: "Our mission, institutional values, and commitment to transparent direct investment in Bangladesh.",
+    title: "About Biniyog Club | Real Economy Direct Investment",
+    description: "Our mission, institutional due diligence process, and commitment to transparent, asset-backed direct investment in Bangladesh.",
   },
 };
 
+const STATS = [
+  { label: "Capital Deployed", value: "৳2.5 Cr+", sub: "Directly into verified enterprises" },
+  { label: "Payout Record", value: "100%", sub: "Zero delayed milestone returns" },
+  { label: "Target Yield", value: "14% - 26%", sub: "Annualized projected returns" },
+  { label: "Verified Investors", value: "5,000+", sub: "Active co-investment network" },
+];
+
 const VALUES = [
   {
-    icon: "/icons/search-engine.png",
-    title: "Radical Transparency",
-    desc: "Every transaction, legal contract, and financial distribution is tracked in our immutable double-entry ledger with zero hidden charges.",
-  },
-  {
-    icon: "/icons/investment.png",
+    image: "/icons/secure-platform.jpg",
+    tag: "RISK MITIGATION",
     title: "Asset-Backed Due Diligence",
-    desc: "We prioritize tangible business assets, audited bank records, and physical site verification before approving any business group listing.",
+    desc: "We perform exhaustive on-site audits, verify physical machinery and inventory, inspect CIB reports, and secure promoter personal guarantees before approving any listing.",
   },
   {
-    icon: "/icons/user.png",
-    title: "Enforceable Legal Deeds",
-    desc: "Every co-investment is structured with an individualized digital contract registered and legally binding under Bangladesh Contract Act.",
+    image: "/icons/transparent-process.jpg",
+    tag: "GOVERNANCE",
+    title: "Radical Transparency",
+    desc: "Every milestone update, audited balance sheet, financial disclosure, and yield calculation is published live with zero hidden platform charges.",
   },
   {
-    icon: "/icons/income.png",
-    title: "On-Time Return Payouts",
-    desc: "Our rigorous escrow allocation and repayment enforcement have maintained a 100% on-time payout record for our community.",
+    image: "/icons/modern-technology.jpg",
+    tag: "INFRASTRUCTURE",
+    title: "Cryptographic Ledger",
+    desc: "Our double-entry ledger architecture records every transaction with cryptographic verification, ensuring account balances and distributions are mathematically tamper-proof.",
+  },
+  {
+    image: "/icons/user-experience.jpg",
+    tag: "ACCESSIBILITY",
+    title: "Seamless Direct Participation",
+    desc: "From 2-minute digital KYC and instant bank/MFS deposits to direct wallet returns and scheduled automated payouts, investing in Bangladesh is frictionless.",
+  },
+];
+
+const VETTING_TIERS = [
+  {
+    step: "01",
+    name: "Promoter & CIB Screening",
+    badge: "BACKGROUND AUDIT",
+    desc: "Thorough review of business owners' credit history, tax compliance certificates, litigations, and commercial reputation across Bangladeshi banking registries.",
+    points: ["Credit Information Bureau (CIB) Check", "TIN & Audited Tax Return Verification", "Director Personal Guarantees"],
+  },
+  {
+    step: "02",
+    name: "Physical Site & Asset Audit",
+    badge: "ON-SITE INSPECTION",
+    desc: "Our in-house due diligence officers visit physical factories, farms, and storage facilities to verify existence, operational capacity, and asset collateral.",
+    points: ["Physical Plant & Equipment Inspection", "Warehouse & Inventory Assessment", "Supply Chain & Buyer Verification"],
+  },
+  {
+    step: "03",
+    name: "Financial Feasibility & Stress Test",
+    badge: "QUANTITATIVE RIGOR",
+    desc: "Rigorous financial modeling, historical balance sheet review, margin projections, and downside economic stress-testing before assigning investment terms.",
+    points: ["Historical P&L & Cash Flow Stress Testing", "Debt Service Coverage Ratio (DSCR)", "Realistic Milestone Yield Formulation"],
+  },
+  {
+    step: "04",
+    name: "Legal Covenants & Escrow Structuring",
+    badge: "CONTRACT ACT 1872",
+    desc: "Binding legal documentation prepared under Bangladesh Contract Act 1872, including registered deeds, security post-dated cheques, and segregated escrow allocation.",
+    points: ["Enforceable Digital Investment Deeds", "Security Cheques & Corporate Covenants", "Segregated Bank Escrow Accounts"],
   },
 ];
 
@@ -51,25 +103,25 @@ const MILESTONES = [
     year: "2023",
     tag: "FOUNDATION",
     title: "Legal Framework & Platform Inception",
-    desc: "Founded in Dhaka with the ambition of bridging the SME capital deficit through legally protected digital syndicates.",
+    desc: "Established in Dhaka with a clear vision: eliminating predatory financial intermediaries and structuring legally enforceable co-investment syndicates for Bangladesh's real economy.",
   },
   {
     year: "2024",
-    tag: "PILOT LAUNCH",
+    tag: "PILOT EXPANSION",
     title: "First Syndicate Cohort & ৳1 Cr Disbursed",
-    desc: "Successfully closed initial co-investment rounds for vetted local enterprises with 100% on-time return realization.",
+    desc: "Successfully deployed capital across vetted SME and agricultural projects with a 100% on-time return disbursement track record across all investor cohorts.",
   },
   {
     year: "2025",
-    tag: "EXPANSION",
-    title: "Institutional Business Groups & Tiers",
-    desc: "Structured multi-tier institutional business group portfolios, enabling co-investors to allocate across diverse commercial sectors.",
+    tag: "PORTFOLIO SCALE",
+    title: "Institutional Business Groups & Tiered Syndicates",
+    desc: "Partnered with premier commercial entities including Mariners Group, MOHS Group, and Marinozz Group, introducing Shareholder, Directorship, and Plot Booking tiers.",
   },
   {
     year: "2026",
-    tag: "SCALE",
-    title: "৳2.5 Cr+ Deployed & Automated Ledgers",
-    desc: "Scaled verified co-investor base, automated cryptographic verification, and expanded direct corporate syndicate facilities.",
+    tag: "AUTOMATION & ACCELERATION",
+    title: "৳2.5 Cr+ Deployed & Automated Cryptographic Ledgers",
+    desc: "Scaled our verified investor community past 5,000 members, launched automated double-entry ledger settlement, and expanded institutional corporate co-investment facilities.",
   },
 ];
 
@@ -77,174 +129,446 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── 1. Hero Section ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-900 via-emerald-950/70 to-slate-950 py-20 lg:py-24 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/80 to-slate-950 py-20 lg:py-28 text-white border-b border-border/40">
         <div className="absolute top-0 right-1/4 -mt-20 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-10 -mb-20 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-light tracking-widest text-emerald-300 backdrop-blur-md mb-6">
-            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-            <span>PIONEERING DIRECT INVESTMENT</span>
-          </div>
-
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-white max-w-3xl mx-auto leading-tight">
-            Bridging Productive Capital with{" "}
-            <span className="font-normal bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
-              Real Economic Growth
-            </span>
-          </h1>
-
-          <p className="mt-5 text-base sm:text-lg font-light text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Biniyog Club was established with an uncompromising mission: to give everyday investors secure, direct access to high-yield business investments backed by verified assets and enforceable legal deeds.
-          </p>
-        </div>
-      </section>
-
-      {/* ── 2. Mission, Vision, Approach Bento ── */}
-      <section className="relative z-20 -mt-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-[2rem] border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
-              <Target className="h-6 w-6" />
+          <AnimatedSection animation="fade-down">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-light tracking-widest text-emerald-300 backdrop-blur-md mb-6">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <span>ESTABLISHED IN DHAKA • BANGLADESH CONTRACT ACT 1872</span>
             </div>
-            <h2 className="text-xl font-normal sm:font-medium text-foreground mb-3">Our Mission</h2>
-            <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed">
-              To democratize direct capital in Bangladesh by eliminating predatory intermediaries and connecting audited enterprises with retail and institutional co-investors.
+
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-white max-w-4xl mx-auto leading-tight">
+              Democratizing Direct Capital for Bangladesh&apos;s{" "}
+              <span className="font-semibold bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+                Real Economy
+              </span>
+            </h1>
+
+            <p className="mt-6 text-base sm:text-lg font-light text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Biniyog Club is Bangladesh&apos;s premier co-investment ecosystem. We connect discerning individual and institutional investors directly with thoroughly audited business groups, manufacturing enterprises, and commercial ventures—backed by asset collateral, segregated bank escrow, and enforceable legal deeds.
             </p>
-          </div>
+          </AnimatedSection>
 
-          <div className="rounded-[2rem] border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
-              <Eye className="h-6 w-6" />
-            </div>
-            <h2 className="text-xl font-normal sm:font-medium text-foreground mb-3">Our Vision</h2>
-            <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed">
-              A modern Bangladesh financial landscape where every sound business can raise expansion capital swiftly, and every citizen can earn predictable returns with complete confidence.
-            </p>
-          </div>
-
-          <div className="rounded-[2rem] border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
-              <ShieldCheck className="h-6 w-6" />
-            </div>
-            <h2 className="text-xl font-normal sm:font-medium text-foreground mb-3">Legal Enforceability</h2>
-            <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed">
-              Every investment instrument on our platform is bound under Bangladesh Contract Act, backed by corporate guarantees, collateral covenants, and verified identity verification.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 3. Core Values with Flaticons ── */}
-      <section className="py-20 lg:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
-              <span>UNCOMPROMISING PRINCIPLES</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-foreground">
-              The Pillars that Define Biniyog Club
-            </h2>
-            <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
-              Our operating standards reflect our deep commitment to our co-investors and enterprise partners.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {VALUES.map((val) => (
-              <div
-                key={val.title}
-                className="group relative flex flex-col justify-between overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white/95 dark:bg-slate-900/90 dark:border-white/10 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10"
-              >
-                <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full bg-emerald-500/10 blur-xl transition-all duration-500 group-hover:scale-150 group-hover:bg-emerald-500/20 pointer-events-none" />
-                <div className="absolute inset-x-0 top-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/0 to-transparent transition-all duration-500 group-hover:via-emerald-500" />
-
-                <div>
-                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 p-2 shadow-sm mb-4 transition-transform duration-300 group-hover:scale-110">
-                    <Image src={val.icon} alt={val.title} width={32} height={32} className="object-contain" />
-                  </div>
-                  <h3 className="text-base font-normal sm:font-medium text-foreground mb-2">
-                    {val.title}
-                  </h3>
-                  <p className="text-xs font-light text-muted-foreground leading-relaxed">
-                    {val.desc}
+          {/* Stats Bar */}
+          <AnimatedSection animation="fade-up" delay={150}>
+            <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-5xl mx-auto">
+              {STATS.map((s) => (
+                <div
+                  key={s.label}
+                  className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-5 text-left transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/[0.08]"
+                >
+                  <p className="text-2xl sm:text-3xl font-light tracking-tight text-emerald-400 font-mono">
+                    {s.value}
                   </p>
+                  <p className="text-sm font-medium text-white mt-1">{s.label}</p>
+                  <p className="text-xs text-slate-400 mt-0.5">{s.sub}</p>
+                </div>
+              ))}
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ── 2. The Core Narrative: The Problem & The Biniyog Solution ── */}
+      <section className="py-20 lg:py-24 bg-card/50 border-b border-border/50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            {/* Left: Photorealistic On-site Due Diligence Image Showcase */}
+            <AnimatedSection animation="fade-right" className="lg:col-span-5">
+              <div className="relative rounded-3xl border border-border/80 bg-card overflow-hidden shadow-2xl group">
+                <div className="relative h-80 sm:h-96 w-full overflow-hidden bg-slate-900">
+                  <Image
+                    src="/images/about-due-diligence.jpg"
+                    alt="Biniyog Club Financial Analysts and Legal Auditors in Dhaka"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+
+                  <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 px-3.5 py-1 text-xs text-white">
+                    <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Certified Physical Audits</span>
+                  </div>
+
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <span className="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">Dhaka Headquarters</span>
+                    <p className="text-sm font-semibold text-white mt-0.5">On-Site Due Diligence & Balance Sheet Audits</p>
+                    <p className="text-xs text-slate-300 mt-1">Every business asset physically verified before co-investment listing.</p>
+                  </div>
                 </div>
 
-                <div className="mt-5 pt-3 border-t border-slate-100 dark:border-white/5 flex items-center justify-between">
-                  <span className="text-[11px] font-light text-muted-foreground">Certified Protocol</span>
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="p-6 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white">
+                  <div className="grid grid-cols-2 gap-3 text-xs mb-4">
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <p className="text-[10px] text-slate-400 uppercase font-semibold">Legal Enforceability</p>
+                      <p className="text-sm font-bold text-white mt-0.5">Contract Act 1872</p>
+                      <p className="text-[10px] text-emerald-400 mt-0.5">Civilly Binding Deeds</p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-white/5 p-3">
+                      <p className="text-[10px] text-slate-400 uppercase font-semibold">Ledger Security</p>
+                      <p className="text-sm font-bold text-white mt-0.5">Double-Entry</p>
+                      <p className="text-[10px] text-emerald-400 mt-0.5">Tamper-Proof Math</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-emerald-950/50 border border-emerald-500/30 p-3.5 flex items-center justify-between text-xs text-slate-200">
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                      100% Capital escrow segregation at scheduled banks
+                    </span>
+                    <span className="font-bold text-emerald-400">Audited</span>
+                  </div>
                 </div>
               </div>
+            </AnimatedSection>
+
+            {/* Right: The Shift from Broken Banking to Direct Co-Investment */}
+            <div className="lg:col-span-7">
+              <AnimatedSection animation="fade-left">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light text-emerald-600 dark:text-emerald-400 mb-3">
+                  <span>WHY BINIYOG CLUB WAS BORN</span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-light tracking-tight text-foreground leading-tight">
+                  Bridging the Financing Void in Bangladesh
+                </h2>
+                <p className="mt-4 text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+                  For decades, Bangladesh&apos;s financial architecture has penalized both hardworking business owners and everyday savers. Profitable businesses struggle with lengthy, bureaucratic commercial bank loan procedures, while retail investors are confined to fixed deposits yielding below real inflation.
+                </p>
+                <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+                  Biniyog Club solves this systemic gap through direct, legally safeguarded syndication. We allow everyday co-investors to pool capital starting from just ৳5,000 into vetted commercial projects and institutional business groups, generating predictable 14% to 26% returns while fueling domestic job creation and industrial productivity.
+                </p>
+
+                <div className="mt-8 grid sm:grid-cols-2 gap-4">
+                  <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4 dark:border-red-500/10">
+                    <p className="text-xs font-semibold text-red-600 dark:text-red-400 uppercase tracking-wider mb-2">
+                      The Traditional Problem
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-muted-foreground">
+                      <li>• Low bank deposit returns eaten up by inflation</li>
+                      <li>• High SME bank rejection rate due to cumbersome paperwork</li>
+                      <li>• Unregulated informal loans with zero legal recourse</li>
+                      <li>• Opaque accounting and unexpected hidden deductions</li>
+                    </ul>
+                  </div>
+
+                  <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/5 p-4 dark:border-emerald-500/15">
+                    <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-2">
+                      The Biniyog Club Solution
+                    </p>
+                    <ul className="space-y-1.5 text-xs text-foreground">
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> Direct 14%–26% returns from productive businesses</li>
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> 100% legal deeds signed under Bangladesh Contract Act</li>
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> Capital held in escrow until milestones verified</li>
+                      <li className="flex items-center gap-1.5"><CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" /> Live milestone tracking & automated wallet payouts</li>
+                    </ul>
+                  </div>
+                </div>
+              </AnimatedSection>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 3. Mission, Vision, and Institutional Mandate ── */}
+      <section className="py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
+              <span>OUR GUIDING COMPASS</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-foreground">
+              Built on Trust, Governed by Law
+            </h2>
+            <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground">
+              Every policy, algorithm, and legal instrument at Biniyog Club is designed with one goal: protecting co-investor principal while unlocking sustainable commercial expansion.
+            </p>
+          </AnimatedSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
+                <Target className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-medium text-foreground mb-3">Our Mission</h3>
+              <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                To build Bangladesh&apos;s most reliable direct investment infrastructure by eliminating predatory intermediaries and connecting audited, high-performing enterprises with retail and institutional co-investors.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
+                <Eye className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-medium text-foreground mb-3">Our Vision</h3>
+              <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                A modernized Bangladesh economic landscape where every credible enterprise can mobilize expansion capital swiftly, and every citizen can earn inflation-beating returns with complete peace of mind.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-8 shadow-lg shadow-emerald-500/5 transition-all duration-300 hover:border-emerald-500/40">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-6">
+                <ShieldCheck className="h-6 w-6" />
+              </div>
+              <h3 className="text-xl font-medium text-foreground mb-3">Legal Enforceability</h3>
+              <p className="text-sm font-light text-muted-foreground leading-relaxed">
+                Every co-investment instrument is registered and binding under the Bangladesh Contract Act 1872, fortified by promoter personal guarantees, security cheques, and bank escrow controls.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. The 4 Operational Pillars with Photographic Icons ── */}
+      <section className="py-20 lg:py-24 bg-gradient-to-b from-slate-50/50 via-emerald-50/15 to-slate-50/30 dark:from-slate-950 dark:via-emerald-950/10 dark:to-slate-900/40 border-y border-border/50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mb-14 text-center max-w-3xl mx-auto">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
+              <span>INSTITUTIONAL PILLARS</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-foreground">
+              How We Safeguard Your Capital
+            </h2>
+            <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+              Our 4-part operating standard guarantees that every project listed on Biniyog Club has passed stringent checks before a single taka is invested.
+            </p>
+          </AnimatedSection>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {VALUES.map((val, idx) => (
+              <AnimatedSection key={val.title} delay={idx * 80} animation="fade-up">
+                <div className="group relative flex flex-col justify-between h-full overflow-hidden rounded-3xl border border-slate-200/80 bg-card dark:border-white/10 p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/50 hover:shadow-xl hover:shadow-emerald-500/10">
+                  <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-5 bg-slate-100 dark:bg-slate-800">
+                    <Image
+                      src={val.image}
+                      alt={val.title}
+                      fill
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, 25vw"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+                    <span className="absolute bottom-3 left-3 rounded-full bg-emerald-950/80 backdrop-blur-md border border-emerald-500/30 px-3 py-0.5 text-[10px] font-semibold text-emerald-300 tracking-wider">
+                      {val.tag}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                      {val.title}
+                    </h3>
+                    <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed">
+                      {val.desc}
+                    </p>
+                  </div>
+
+                  <div className="mt-6 pt-3 border-t border-border/50 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Protocol Certified</span>
+                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+                </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── 4. Milestone Roadmap ── */}
-      <section className="py-20 lg:py-24 bg-gradient-to-b from-slate-50/80 via-emerald-50/20 to-slate-50/50 dark:from-slate-950 dark:via-emerald-950/15 dark:to-slate-900/30 border-y border-border/50">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-14 text-center">
+      {/* ── 5. The 4-Tier Due Diligence Machine ── */}
+      <section className="py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
             <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
-              <span>TRACK RECORD</span>
+              <span>ZERO COMPROMISE VETTING</span>
+            </div>
+            <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-foreground">
+              The 4-Stage Due Diligence Funnel
+            </h2>
+            <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground">
+              Less than 8% of applicants pass our screening. Here is the rigorous evaluation every enterprise must clear to be listed.
+            </p>
+          </AnimatedSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {VETTING_TIERS.map((tier, idx) => (
+              <AnimatedSection key={tier.step} delay={idx * 100} animation="fade-up">
+                <div className="relative flex flex-col justify-between h-full rounded-3xl border border-border/80 bg-card p-6 shadow-sm transition-all duration-300 hover:border-emerald-500/50 hover:shadow-lg">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-2xl font-light font-mono text-emerald-600 dark:text-emerald-400">
+                        {tier.step}
+                      </span>
+                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
+                        {tier.badge}
+                      </span>
+                    </div>
+
+                    <h3 className="text-base font-semibold text-foreground mb-2">
+                      {tier.name}
+                    </h3>
+                    <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed mb-4">
+                      {tier.desc}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 pt-4 border-t border-border/40">
+                    {tier.points.map((pt) => (
+                      <div key={pt} className="flex items-start gap-2 text-xs text-foreground/80">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                        <span>{pt}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </AnimatedSection>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. Investor Community & Social Impact Showcase ── */}
+      <section className="py-20 lg:py-24 bg-card/60 border-y border-border/50">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7">
+              <AnimatedSection animation="fade-right">
+                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light text-emerald-600 dark:text-emerald-400 mb-3">
+                  <Users className="h-3.5 w-3.5" />
+                  <span>THRIVING INVESTOR COMMUNITY</span>
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-light tracking-tight text-foreground leading-tight">
+                  Over 5,000 Everyday Bangladeshis Growing Wealth Together
+                </h2>
+                <p className="mt-4 text-sm sm:text-base font-light text-muted-foreground leading-relaxed">
+                  Our community comprises university educators, corporate executives, medical doctors, software engineers, and small business owners from Dhaka, Chittagong, Sylhet, and overseas expatriates who believe in transparent, Shariah-aligned and asset-backed wealth creation.
+                </p>
+
+                <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                  <div className="rounded-2xl border border-border bg-background p-4">
+                    <p className="text-2xl font-light text-emerald-600 dark:text-emerald-400 font-mono">100%</p>
+                    <p className="text-xs text-muted-foreground mt-1">On-time disbursement record</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-background p-4">
+                    <p className="text-2xl font-light text-emerald-600 dark:text-emerald-400 font-mono">৳5,000</p>
+                    <p className="text-xs text-muted-foreground mt-1">Accessible entry threshold</p>
+                  </div>
+                  <div className="rounded-2xl border border-border bg-background p-4">
+                    <p className="text-2xl font-light text-emerald-600 dark:text-emerald-400 font-mono">64 Districts</p>
+                    <p className="text-xs text-muted-foreground mt-1">Countrywide investor base</p>
+                  </div>
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-4">
+                  <Link
+                    href="/projects"
+                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-600/20 transition-all hover:bg-emerald-700 hover:-translate-y-0.5"
+                  >
+                    Explore Investment Opportunities <ArrowRight className="h-4 w-4" />
+                  </Link>
+                  <Link
+                    href="/how-it-works"
+                    className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3 text-sm font-medium text-foreground transition-all hover:border-emerald-500/50"
+                  >
+                    How It Works
+                  </Link>
+                </div>
+              </AnimatedSection>
+            </div>
+
+            <AnimatedSection animation="fade-left" className="lg:col-span-5">
+              <div className="relative rounded-3xl border border-border/80 overflow-hidden shadow-2xl group">
+                <div className="relative h-80 sm:h-96 w-full">
+                  <Image
+                    src="/images/investor-community.jpg"
+                    alt="Biniyog Club Investor Community Seminar and Co-Investment Workshop in Dhaka"
+                    fill
+                    className="object-cover transition-transform duration-700 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 40vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
+                  <div className="absolute bottom-5 left-5 right-5 text-white">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400">Community Workshops</span>
+                    <p className="text-base font-semibold mt-1">Financial Literacy & Co-Investment Summits</p>
+                    <p className="text-xs text-slate-300 mt-1">Regular investor meetups at our Mohakhali headquarters.</p>
+                  </div>
+                </div>
+              </div>
+            </AnimatedSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 7. Milestone Roadmap ── */}
+      <section className="py-20 lg:py-24">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mb-14 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light tracking-widest text-emerald-600 dark:text-emerald-400 mb-3">
+              <span>PROVEN TRACK RECORD</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-light tracking-tight text-foreground">
               Our Journey of Rapid Growth
             </h2>
-          </div>
+            <p className="mt-3 text-sm sm:text-base font-light text-muted-foreground">
+              Every milestone represents disciplined execution and an unblemished commitment to investor security.
+            </p>
+          </AnimatedSection>
 
-          <div className="space-y-6">
-            {MILESTONES.map((item) => (
-              <div
-                key={item.year}
-                className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-6 sm:p-7 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-4">
-                  <span className="text-2xl sm:text-3xl font-light tracking-tight text-emerald-600 dark:text-emerald-400 min-w-[70px]">
-                    {item.year}
-                  </span>
-                  <div>
-                    <span className="inline-block rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-normal text-emerald-600 dark:text-emerald-400 mb-1">
-                      {item.tag}
+          <div className="space-y-5">
+            {MILESTONES.map((item, idx) => (
+              <AnimatedSection key={item.year} delay={idx * 90} animation="fade-up">
+                <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-6 sm:p-7 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all duration-300 hover:border-emerald-500/40 hover:shadow-md">
+                  <div className="flex items-start sm:items-center gap-5">
+                    <span className="text-3xl sm:text-4xl font-light tracking-tight text-emerald-600 dark:text-emerald-400 font-mono min-w-[80px]">
+                      {item.year}
                     </span>
-                    <h3 className="text-base font-normal sm:font-medium text-foreground">{item.title}</h3>
-                    <p className="text-xs sm:text-sm font-light text-muted-foreground mt-0.5">{item.desc}</p>
+                    <div>
+                      <span className="inline-block rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+                        {item.tag}
+                      </span>
+                      <h3 className="text-base sm:text-lg font-medium text-foreground">{item.title}</h3>
+                      <p className="text-xs sm:text-sm font-light text-muted-foreground mt-1 leading-relaxed">{item.desc}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── 5. Corporate Presence & Contact Link ── */}
-      <section className="py-20 lg:py-24">
+      {/* ── 8. Corporate Headquarters & Contact Link ── */}
+      <section className="py-20 lg:py-24 bg-gradient-to-b from-card to-background border-t border-border/50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-[2.5rem] border border-slate-200/80 dark:border-white/10 bg-card p-8 sm:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-8 sm:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
             <div className="max-w-2xl">
               <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light text-emerald-600 dark:text-emerald-400 mb-3">
                 <MapPin className="h-3.5 w-3.5" />
                 <span>DHAKA HEADQUARTERS</span>
               </span>
               <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-foreground">
-                Visit Our Corporate Offices
+                Visit Our Corporate Headquarters
               </h2>
               <p className="mt-3 text-sm font-light text-muted-foreground leading-relaxed">
-                Located at MG SAM Center, 12 Mohakhali C/A, Dhaka-1212. Our doors are open for institutional consultations, corporate syndicates, and investor meetings.
+                Located at MG SAM Center, 12 Mohakhali C/A, Dhaka-1212. Our doors are open Sunday through Thursday for institutional consultations, corporate syndicates, and investor meetings.
               </p>
+              <div className="mt-4 flex flex-wrap gap-4 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5"><Clock className="h-3.5 w-3.5 text-emerald-500" /> Sun–Thu: 9:00 AM – 6:00 PM</span>
+                <span className="flex items-center gap-1.5"><Wallet className="h-3.5 w-3.5 text-emerald-500" /> Investor Relations: +880 1335-149033</span>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3.5 shrink-0">
               <Link
                 href="/contact"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-normal text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5"
               >
-                Schedule a Visit <ArrowRight className="h-4 w-4" />
+                Schedule an In-Person Visit <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/projects"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-light text-foreground transition-all hover:border-emerald-500/50"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground transition-all hover:border-emerald-500/50"
               >
-                Browse Projects
+                View Opportunities
               </Link>
             </div>
           </div>
