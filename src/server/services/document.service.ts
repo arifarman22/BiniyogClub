@@ -167,16 +167,16 @@ async function deleteDocument(session: SessionUser, documentId: string): Promise
   await auditDocument(doc.id, session.id, "DELETE");
 }
 
-// ─── Investment Agreement Generation ─────────────────────────────────────────
+// ─── Investment Receipt Generation ───────────────────────────────────────────
+// Generates an INVESTMENT_RECEIPT PDF for the investor after a confirmed
+// investment. Runs as a system operation — no session permission check needed
+// since it is always triggered server-side after payment confirmation.
 
-const AGREEMENT_TEMPLATE_VERSION = "v1.0.0";
+const RECEIPT_TEMPLATE_VERSION = "v1.0.0";
 
-async function generateInvestmentAgreement(
-  session: SessionUser,
+async function generateInvestmentReceipt(
   investmentId: string,
 ): Promise<{ documentId: string; storageKey: string }> {
-  await requirePermission(session, PERMISSIONS.DOCUMENT_MANAGE);
-
   const investment = await db.investment.findUnique({
     where: { id: investmentId },
     select: {
@@ -199,11 +199,23 @@ async function generateInvestmentAgreement(
           user: { select: { id: true, name: true, email: true, phone: true } },
         },
       },
-      contract: { select: { id: true, status: true } },
     },
   });
 
   if (!investment) throw new NotFoundError("Investment");
+
+  // Skip if receipt already exists for this investment
+  const existing = await db.document.findFirst({
+    where: {
+      entityType: "PROJECT",
+      entityId: investment.project.id,
+      category: "INVESTMENT_RECEIPT",
+      ownerUserId: investment.investorProfile.user.id,
+      deletedAt: null,
+    },
+    select: { id: true, storageKey: true },
+  });
+  if (existing) return { documentId: existing.id, storageKey: existing.storageKey ?? "" };
 
   const now = new Date();
   const pdfContent = await renderInvestmentCertificate({
@@ -229,38 +241,57 @@ async function generateInvestmentAgreement(
     },
   });
 
-  const filename = `certificate_${investment.receiptNumber ?? investment.id}`;
-  const storageKey = buildStorageKey("INVESTMENT_AGREEMENT", investmentId, filename);
-
+  const filename = `receipt_${investment.receiptNumber ?? investment.id}`;
+  // entityId must be a valid Project.id due to the Document→Project FK constraint
+  const storageKey = buildStorageKey("INVESTMENT_RECEIPT", investment.project.id, filename);
   const { key } = await storage.upload(pdfContent, storageKey, "application/pdf");
+
+  const investorUserId = investment.investorProfile.user.id;
 
   const doc = await db.document.create({
     data: {
-      uploadedBy:      session.id,
-      entityType:      "INVESTMENT",
-      entityId:        investmentId,
-      category:        "INVESTMENT_AGREEMENT",
-      name:            `Investment Certificate — ${investment.project.title}`,
-      description:     `Investment certificate for ${investment.receiptNumber ?? investment.id}`,
+      uploadedBy:      investorUserId,
+      entityType:      "PROJECT",
+      entityId:        investment.project.id,   // valid Project FK
+      category:        "INVESTMENT_RECEIPT",
+      name:            `Investment Receipt — ${investment.project.title}`,
+      description:     `Receipt #${investment.receiptNumber ?? investment.id}`,
       fileUrl:         key,
       storageKey:      key,
       mimeType:        "application/pdf",
       sizeBytes:       pdfContent.length,
       isPublic:        false,
       isFinalized:     true,
-      templateVersion: AGREEMENT_TEMPLATE_VERSION,
-      generatedAt:     new Date(),
-      ownerUserId:     investment.investorProfile.user.id,
-      allowedRoles:    CATEGORY_ACCESS.INVESTMENT_AGREEMENT,
+      templateVersion: RECEIPT_TEMPLATE_VERSION,
+      generatedAt:     now,
+      ownerUserId:     investorUserId,
+      allowedRoles:    CATEGORY_ACCESS.INVESTMENT_RECEIPT,
     },
   });
 
-  await auditDocument(doc.id, session.id, "GENERATE", {
-    templateVersion: AGREEMENT_TEMPLATE_VERSION,
-    investmentId,
+  await db.documentAuditLog.create({
+    data: {
+      documentId: doc.id,
+      actorId:    null,
+      action:     "GENERATE",
+      metadata:   { templateVersion: RECEIPT_TEMPLATE_VERSION, investmentId } as Prisma.InputJsonValue,
+    },
   });
 
   return { documentId: doc.id, storageKey: key };
+}
+
+// ─── Investment Agreement Generation (staff-only, kept for admin use) ─────────
+
+const AGREEMENT_TEMPLATE_VERSION = "v1.0.0";
+
+async function generateInvestmentAgreement(
+  session: SessionUser,
+  investmentId: string,
+): Promise<{ documentId: string; storageKey: string }> {
+  await requirePermission(session, PERMISSIONS.DOCUMENT_MANAGE);
+  // Delegate to the receipt generator (same PDF, different category label)
+  return generateInvestmentReceipt(investmentId);
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -332,6 +363,7 @@ export const documentService = {
   upload,
   getSignedDownloadUrl,
   deleteDocument,
+  generateInvestmentReceipt,
   generateInvestmentAgreement,
   getDocumentsByEntity,
   getDocumentsByOwner,

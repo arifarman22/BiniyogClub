@@ -96,10 +96,10 @@ export async function confirmPaymentAction(
       .notifyInvestor(inv.investorProfile.user.id, inv.id, result.receiptNumber)
       .catch((err) => console.error("[investment] notification failed:", err));
 
-    // Generate investment certificate PDF (fire-and-forget)
+    // Generate investment receipt PDF (fire-and-forget)
     documentService
-      .generateInvestmentAgreement(session, parsed.data.investmentId)
-      .catch((err) => console.error("[investment] certificate generation failed:", err));
+      .generateInvestmentReceipt(parsed.data.investmentId)
+      .catch((err) => console.error("[investment] receipt generation failed:", err));
 
     revalidatePath("/dashboard/investments");
     revalidatePath("/dashboard/transactions");

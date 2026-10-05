@@ -108,16 +108,17 @@ export default async function InvestmentsPage() {
     .map((i) => i.id);
   const submissionMap = await getLatestSubmissionsForInvestments(pendingIds, session.id);
 
-  // Fetch investment certificates for ACTIVE/MATURED/COMPLETED investments
-  const confirmedIds = investments
-    .filter((i) => ["ACTIVE", "MATURED", "COMPLETED"].includes(i.status))
-    .map((i) => i.id);
-  const certificateDocs = confirmedIds.length > 0
+  // Fetch investment receipts for ACTIVE/MATURED/COMPLETED investments
+  // Receipts use entityType=PROJECT and entityId=projectId (FK constraint),
+  // so we match by ownerUserId + projectId and map back to investmentId.
+  const confirmedInvs = investments.filter((i) => ["ACTIVE", "MATURED", "COMPLETED"].includes(i.status));
+  const confirmedProjectIds = confirmedInvs.map((i) => i.project.id);
+  const receiptDocs = confirmedProjectIds.length > 0
     ? await db.document.findMany({
         where: {
-          entityType: "INVESTMENT",
-          entityId: { in: confirmedIds },
-          category: "INVESTMENT_AGREEMENT",
+          entityType: "PROJECT",
+          entityId: { in: confirmedProjectIds },
+          category: "INVESTMENT_RECEIPT",
           deletedAt: null,
           ownerUserId: session.id,
         },
@@ -125,10 +126,15 @@ export default async function InvestmentsPage() {
         orderBy: { createdAt: "desc" },
       })
     : [];
-  // Map investmentId → documentId (first/latest cert per investment)
+  // Map investmentId → documentId via projectId
+  const receiptByProjectId = new Map<string, string>();
+  for (const doc of receiptDocs) {
+    if (!receiptByProjectId.has(doc.entityId)) receiptByProjectId.set(doc.entityId, doc.id);
+  }
   const certMap = new Map<string, string>();
-  for (const doc of certificateDocs) {
-    if (!certMap.has(doc.entityId)) certMap.set(doc.entityId, doc.id);
+  for (const inv of confirmedInvs) {
+    const docId = receiptByProjectId.get(inv.project.id);
+    if (docId) certMap.set(inv.id, docId);
   }
 
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);

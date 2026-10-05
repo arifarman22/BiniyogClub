@@ -214,10 +214,10 @@ export async function investFromWalletAction(
     const session = await requireSession();
     const result = await walletService.investFromWallet(session, input);
 
-    // Generate investment certificate PDF (fire-and-forget)
+    // Generate investment receipt PDF (fire-and-forget)
     documentService
-      .generateInvestmentAgreement(session, result.investmentId)
-      .catch((err) => console.error("[wallet invest] certificate generation failed:", err));
+      .generateInvestmentReceipt(result.investmentId)
+      .catch((err) => console.error("[wallet invest] receipt generation failed:", err));
 
     revalidatePath("/dashboard/investments");
     revalidatePath("/dashboard/wallet");
