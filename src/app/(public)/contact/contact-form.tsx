@@ -37,10 +37,10 @@ const CONTACT_CARDS = [
   {
     icon: "/icons/search-engine.png",
     title: "Official Inquiries",
-    value: "info@biniyog.club",
+    value: "info@biniyogclub.com",
     sub: "Guaranteed response within 24 hours",
     action: "Send Email",
-    href: "mailto:info@biniyog.club",
+    href: "mailto:info@biniyogclub.com",
   },
   {
     icon: "/icons/investment.png",

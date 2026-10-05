@@ -79,11 +79,11 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
             <span className="hidden md:inline text-slate-700">|</span>
 
             <a
-              href="mailto:info@biniyog.club"
+              href="mailto:info@biniyogclub.com"
               className="hidden sm:inline-flex items-center gap-1.5 text-slate-300 hover:text-emerald-300 transition-colors text-[11px]"
             >
               <Mail className="h-3 w-3 text-emerald-400 shrink-0" />
-              <span>info@biniyog.club</span>
+              <span>info@biniyogclub.com</span>
             </a>
 
             <span className="hidden xl:inline text-slate-700">|</span>
@@ -254,8 +254,8 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <a href="tel:+8801335149033" className="font-semibold text-emerald-700 dark:text-emerald-400">
                 +880 1335-149033
               </a>
-              <a href="mailto:info@biniyog.club" className="text-[11px] font-medium underline text-slate-600 dark:text-slate-400">
-                info@biniyog.club
+              <a href="mailto:info@biniyogclub.com" className="text-[11px] font-medium underline text-slate-600 dark:text-slate-400">
+                info@biniyogclub.com
               </a>
             </div>
           </div>

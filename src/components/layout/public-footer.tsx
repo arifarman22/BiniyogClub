@@ -126,8 +126,8 @@ export function PublicFooter() {
               </li>
               <li className="flex items-center gap-3 text-sm text-slate-300">
                 <Mail className="h-4 w-4 shrink-0 text-emerald-400" />
-                <a href="mailto:info@biniyog.club" className="transition-colors hover:text-emerald-300 font-medium">
-                  info@biniyog.club
+                <a href="mailto:info@biniyogclub.com" className="transition-colors hover:text-emerald-300 font-medium">
+                  info@biniyogclub.com
                 </a>
               </li>
             </ul>
