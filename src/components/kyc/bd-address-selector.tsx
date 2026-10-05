@@ -8,11 +8,15 @@ interface Opt { id: string; name: string; }
 
 interface AddressValue {
   address: string;
-  division: string;
-  district: string;
-  upazila: string;
-  postOffice: string;
+  division: string;   // stores name
+  district: string;   // stores name
+  upazila: string;    // stores name
+  postOffice: string; // stores name
   postalCode: string;
+  // internal IDs for cascading — not persisted
+  divisionId?: string;
+  districtId?: string;
+  upazilaId?: string;
 }
 
 interface Props {
@@ -37,7 +41,7 @@ function SearchSelect({
   const filtered = options.filter((o) =>
     o.name.toLowerCase().includes(search.toLowerCase())
   );
-  const selected = options.find((o) => o.id === value);
+  const selected = options.find((o) => o.id === value || o.name === value);
 
   return (
     <div className="relative">
@@ -116,46 +120,55 @@ export function BdAddressSelector({ prefix, label, value, onChange, fieldErrors 
       .catch(() => { setError("Unable to load divisions. Please try again."); setLoadingDiv(false); });
   }, []);
 
-  // Load districts when division changes
+  // Load districts when divisionId changes
   useEffect(() => {
-    if (!value.division) { setDistricts([]); return; }
+    if (!value.divisionId) { setDistricts([]); return; }
     setLoadingDist(true);
-    fetch(`/api/locations/districts?divisionId=${value.division}`)
+    fetch(`/api/locations/districts?divisionId=${value.divisionId}`)
       .then((r) => r.json())
       .then((d) => { setDistricts(Array.isArray(d) ? d : []); setLoadingDist(false); })
       .catch(() => { setError("Unable to load districts."); setLoadingDist(false); });
-  }, [value.division]);
+  }, [value.divisionId]);
 
-  // Load upazilas when district changes
+  // Load upazilas when districtId changes
   useEffect(() => {
-    if (!value.district) { setUpazilas([]); return; }
+    if (!value.districtId) { setUpazilas([]); return; }
     setLoadingUpz(true);
-    fetch(`/api/locations/upazilas?districtId=${value.district}`)
+    fetch(`/api/locations/upazilas?districtId=${value.districtId}`)
       .then((r) => r.json())
       .then((d) => { setUpazilas(Array.isArray(d) ? d : []); setLoadingUpz(false); })
       .catch(() => { setError("Unable to load upazilas."); setLoadingUpz(false); });
-  }, [value.district]);
+  }, [value.districtId]);
 
-  // Load post offices when upazila changes
+  // Load post offices when upazilaId changes
   useEffect(() => {
-    if (!value.upazila) { setPostOffices([]); return; }
+    if (!value.upazilaId) { setPostOffices([]); return; }
     setLoadingPo(true);
-    fetch(`/api/locations/postoffices?upazilaId=${value.upazila}`)
+    fetch(`/api/locations/postoffices?upazilaId=${value.upazilaId}`)
       .then((r) => r.json())
       .then((d) => { setPostOffices(Array.isArray(d) ? d : []); setLoadingPo(false); })
       .catch(() => { setError("Unable to load post offices."); setLoadingPo(false); });
-  }, [value.upazila]);
+  }, [value.upazilaId]);
 
-  function set(field: keyof AddressValue, val: string) {
-    const next = { ...value, [field]: val };
-    // Cascade resets
-    if (field === "division")  { next.district = ""; next.upazila = ""; next.postOffice = ""; next.postalCode = ""; }
-    if (field === "district")  { next.upazila = ""; next.postOffice = ""; next.postalCode = ""; }
-    if (field === "upazila")   { next.postOffice = ""; next.postalCode = ""; }
-    if (field === "postOffice") {
-      // auto-fill postal code not available from this API — user types it
+  function setByOpt(field: "division" | "district" | "upazila" | "postOffice", opt: Opt) {
+    const next = { ...value };
+    if (field === "division") {
+      next.division = opt.name; next.divisionId = opt.id;
+      next.district = ""; next.districtId = ""; next.upazila = ""; next.upazilaId = ""; next.postOffice = ""; next.postalCode = "";
+    } else if (field === "district") {
+      next.district = opt.name; next.districtId = opt.id;
+      next.upazila = ""; next.upazilaId = ""; next.postOffice = ""; next.postalCode = "";
+    } else if (field === "upazila") {
+      next.upazila = opt.name; next.upazilaId = opt.id;
+      next.postOffice = ""; next.postalCode = "";
+    } else {
+      next.postOffice = opt.name;
     }
     onChange(next);
+  }
+
+  function set(field: keyof AddressValue, val: string) {
+    onChange({ ...value, [field]: val });
   }
 
   const p = (f: string) => `${prefix}.${f}`;
@@ -183,8 +196,8 @@ export function BdAddressSelector({ prefix, label, value, onChange, fieldErrors 
           id={`${prefix}-division`}
           label="Division *"
           options={divisions}
-          value={value.division}
-          onChange={(v) => set("division", v)}
+          value={value.divisionId ?? ""}
+          onChange={(v) => { const o = divisions.find((d) => d.id === v); if (o) setByOpt("division", o); }}
           loading={loadingDiv}
           disabled={disabled}
           placeholder="Select Division"
@@ -194,22 +207,22 @@ export function BdAddressSelector({ prefix, label, value, onChange, fieldErrors 
           id={`${prefix}-district`}
           label="District *"
           options={districts}
-          value={value.district}
-          onChange={(v) => set("district", v)}
+          value={value.districtId ?? ""}
+          onChange={(v) => { const o = districts.find((d) => d.id === v); if (o) setByOpt("district", o); }}
           loading={loadingDist}
-          disabled={disabled || !value.division}
-          placeholder={value.division ? "Select District" : "Select Division first"}
+          disabled={disabled || !value.divisionId}
+          placeholder={value.divisionId ? "Select District" : "Select Division first"}
           error={fieldErrors[p("district")]}
         />
         <SearchSelect
           id={`${prefix}-upazila`}
           label="Upazila / Thana *"
           options={upazilas}
-          value={value.upazila}
-          onChange={(v) => set("upazila", v)}
+          value={value.upazilaId ?? ""}
+          onChange={(v) => { const o = upazilas.find((u) => u.id === v); if (o) setByOpt("upazila", o); }}
           loading={loadingUpz}
-          disabled={disabled || !value.district}
-          placeholder={value.district ? "Select Upazila" : "Select District first"}
+          disabled={disabled || !value.districtId}
+          placeholder={value.districtId ? "Select Upazila" : "Select District first"}
           error={fieldErrors[p("upazila")]}
         />
         <SearchSelect
@@ -217,10 +230,10 @@ export function BdAddressSelector({ prefix, label, value, onChange, fieldErrors 
           label="Post Office"
           options={postOffices}
           value={value.postOffice}
-          onChange={(v) => set("postOffice", v)}
+          onChange={(v) => { const o = postOffices.find((p) => p.name === v); if (o) setByOpt("postOffice", o); }}
           loading={loadingPo}
-          disabled={disabled || !value.upazila}
-          placeholder={value.upazila ? "Select Post Office" : "Select Upazila first"}
+          disabled={disabled || !value.upazilaId}
+          placeholder={value.upazilaId ? "Select Post Office" : "Select Upazila first"}
           error={fieldErrors[p("postOffice")]}
         />
       </div>

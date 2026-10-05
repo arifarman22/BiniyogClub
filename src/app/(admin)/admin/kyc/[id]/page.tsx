@@ -8,6 +8,35 @@ import { KycReviewActions } from "@/components/kyc/kyc-review-actions";
 import { FileText, User, MapPin, CreditCard, Landmark } from "lucide-react";
 import type { AsyncComponentProps } from "@/types";
 
+const BD_API = "https://bdapi.vercel.app/api/v.1";
+
+async function resolveLocationName(type: "division" | "district" | "upazila", id: string): Promise<string> {
+  if (!id || !/^\d+$/.test(id)) return id; // already a name, return as-is
+  try {
+    const endpoints: Record<string, string> = {
+      division: `${BD_API}/division`,
+      district: `${BD_API}/district`,
+      upazila:  `${BD_API}/upazilla`,
+    };
+    const res = await fetch(endpoints[type], { next: { revalidate: 86400 } });
+    if (!res.ok) return id;
+    const json = await res.json();
+    const items: { id: string; name: string }[] = json.data ?? [];
+    return items.find((i) => String(i.id) === String(id))?.name ?? id;
+  } catch {
+    return id;
+  }
+}
+
+async function resolveAddress(division?: string | null, district?: string | null, upazila?: string | null) {
+  const [div, dist, upz] = await Promise.all([
+    division ? resolveLocationName("division", division) : Promise.resolve(division ?? ""),
+    district ? resolveLocationName("district", district) : Promise.resolve(district ?? ""),
+    upazila  ? resolveLocationName("upazila",  upazila)  : Promise.resolve(upazila  ?? ""),
+  ]);
+  return { division: div, district: dist, upazila: upz };
+}
+
 export const metadata: Metadata = { title: "KYC Review — Admin" };
 
 const DOC_LABELS: Record<string, string> = {
@@ -50,6 +79,11 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
 
   const kyc = await getAdminKycById(session, id as string);
   const user = (kyc as typeof kyc & { user: { id: string; name: string; email: string; phone: string | null; role: string } }).user;
+
+  const [present, permanent] = await Promise.all([
+    resolveAddress(kyc.presentDivision ?? kyc.division, kyc.presentDistrict ?? kyc.district, kyc.presentUpazila),
+    resolveAddress(kyc.permanentDivision, kyc.permanentDistrict, kyc.permanentUpazila),
+  ]);
 
   const canReview = ["SUBMITTED", "UNDER_REVIEW"].includes(kyc.status);
 
@@ -129,9 +163,9 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
               <h2 className="font-semibold">Present Address</h2>
             </div>
             <InfoRow label="Address" value={kyc.presentAddress ?? kyc.addressLine} />
-            <InfoRow label="Division" value={kyc.presentDivision ?? kyc.division} />
-            <InfoRow label="District" value={kyc.presentDistrict ?? kyc.district} />
-            <InfoRow label="Upazila / Thana" value={kyc.presentUpazila ?? undefined} />
+            <InfoRow label="Division" value={present.division} />
+            <InfoRow label="District" value={present.district} />
+            <InfoRow label="Upazila / Thana" value={present.upazila || undefined} />
             <InfoRow label="Post Office" value={kyc.presentPostOffice ?? undefined} />
             <InfoRow label="Postal Code" value={kyc.presentPostalCode ?? kyc.postalCode} />
           </div>
@@ -143,9 +177,9 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
                 <h2 className="font-semibold">Permanent Address</h2>
               </div>
               <InfoRow label="Address" value={kyc.permanentAddress ?? undefined} />
-              <InfoRow label="Division" value={kyc.permanentDivision ?? undefined} />
-              <InfoRow label="District" value={kyc.permanentDistrict ?? undefined} />
-              <InfoRow label="Upazila / Thana" value={kyc.permanentUpazila ?? undefined} />
+              <InfoRow label="Division" value={permanent.division || undefined} />
+              <InfoRow label="District" value={permanent.district || undefined} />
+              <InfoRow label="Upazila / Thana" value={permanent.upazila || undefined} />
               <InfoRow label="Post Office" value={kyc.permanentPostOffice ?? undefined} />
               <InfoRow label="Postal Code" value={kyc.permanentPostalCode ?? undefined} />
             </div>
