@@ -1,6 +1,7 @@
 "use server";
 
 import { walletService } from "@/server/services/wallet.service";
+import { documentService } from "@/server/services/document.service";
 import {
   depositSchema,
   withdrawalRequestSchema,
@@ -212,6 +213,12 @@ export async function investFromWalletAction(
   try {
     const session = await requireSession();
     const result = await walletService.investFromWallet(session, input);
+
+    // Generate investment certificate PDF (fire-and-forget)
+    documentService
+      .generateInvestmentAgreement(session, result.investmentId)
+      .catch((err) => console.error("[wallet invest] certificate generation failed:", err));
+
     revalidatePath("/dashboard/investments");
     revalidatePath("/dashboard/wallet");
     revalidatePath("/dashboard/transactions");

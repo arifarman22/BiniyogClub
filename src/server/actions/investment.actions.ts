@@ -1,6 +1,7 @@
 "use server";
 
 import { investmentService } from "@/server/services/investment.service";
+import { documentService } from "@/server/services/document.service";
 import {
   createInvestmentSchema,
   confirmPaymentSchema,
@@ -94,6 +95,11 @@ export async function confirmPaymentAction(
     investmentService
       .notifyInvestor(inv.investorProfile.user.id, inv.id, result.receiptNumber)
       .catch((err) => console.error("[investment] notification failed:", err));
+
+    // Generate investment certificate PDF (fire-and-forget)
+    documentService
+      .generateInvestmentAgreement(session, parsed.data.investmentId)
+      .catch((err) => console.error("[investment] certificate generation failed:", err));
 
     revalidatePath("/dashboard/investments");
     revalidatePath("/dashboard/transactions");

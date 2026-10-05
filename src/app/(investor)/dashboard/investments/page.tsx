@@ -5,8 +5,10 @@ import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorInvestments, getLatestSubmissionsForInvestments } from "@/server/data/investor.data";
 import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
+import { db } from "@/lib/db/prisma";
 import { PaymentVerifier } from "@/components/shared/payment-verifier";
 import { SubmitPaymentProofDialog } from "@/components/shared/submit-payment-proof-dialog";
+import { DownloadCertificateButton } from "@/components/investments/download-certificate-button";
 import { cn } from "cn";
 
 export const metadata: Metadata = { title: "Investments — Dashboard" };
@@ -106,6 +108,29 @@ export default async function InvestmentsPage() {
     .map((i) => i.id);
   const submissionMap = await getLatestSubmissionsForInvestments(pendingIds, session.id);
 
+  // Fetch investment certificates for ACTIVE/MATURED/COMPLETED investments
+  const confirmedIds = investments
+    .filter((i) => ["ACTIVE", "MATURED", "COMPLETED"].includes(i.status))
+    .map((i) => i.id);
+  const certificateDocs = confirmedIds.length > 0
+    ? await db.document.findMany({
+        where: {
+          entityType: "INVESTMENT",
+          entityId: { in: confirmedIds },
+          category: "INVESTMENT_AGREEMENT",
+          deletedAt: null,
+          ownerUserId: session.id,
+        },
+        select: { id: true, entityId: true },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
+  // Map investmentId → documentId (first/latest cert per investment)
+  const certMap = new Map<string, string>();
+  for (const doc of certificateDocs) {
+    if (!certMap.has(doc.entityId)) certMap.set(doc.entityId, doc.id);
+  }
+
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
   const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
   const totalActual = investments
@@ -148,6 +173,7 @@ export default async function InvestmentsPage() {
               inv.status === "PAYMENT_PENDING" &&
               bankAccounts.length > 0 &&
               (!submission || submission.status === "REJECTED");
+            const certificateDocId = certMap.get(inv.id) ?? null;
 
             return (
               <div key={inv.id} className="rounded-xl border border-border bg-card overflow-hidden">
@@ -238,7 +264,7 @@ export default async function InvestmentsPage() {
                 )}
 
                 {/* Progress bar for active investments */}
-                {["ACTIVE", "MATURED"].includes(inv.status) && (
+                {["ACTIVE", "MATURED", "COMPLETED"].includes(inv.status) && (
                   <div className="border-t border-border px-4 py-2 flex items-center gap-3">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
                       <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
@@ -248,6 +274,9 @@ export default async function InvestmentsPage() {
                       <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
                         Matures {fmtDate(maturity)}
                       </span>
+                    )}
+                    {certificateDocId && (
+                      <DownloadCertificateButton documentId={certificateDocId} />
                     )}
                   </div>
                 )}

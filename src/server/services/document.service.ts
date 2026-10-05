@@ -17,6 +17,7 @@ import {
 import type { SessionUser } from "@/lib/auth/session";
 import type { DocumentCategory, DocumentEntityType } from "@/types/prisma";
 import { headers } from "next/headers";
+import { renderInvestmentCertificate } from "@/lib/pdf/investment-certificate";
 
 // ─── Access control matrix ────────────────────────────────────────────────────
 // Defines which roles can access each document category.
@@ -184,9 +185,14 @@ async function generateInvestmentAgreement(
       expectedReturnBdt: true,
       returnType: true,
       createdAt: true,
+      activatedAt: true,
       receiptNumber: true,
       project: {
-        select: { id: true, title: true, slug: true, expectedReturnPct: true, durationDays: true },
+        select: {
+          id: true, title: true, slug: true,
+          expectedReturnPct: true, durationDays: true,
+          category: true, location: true,
+        },
       },
       investorProfile: {
         select: {
@@ -199,14 +205,12 @@ async function generateInvestmentAgreement(
 
   if (!investment) throw new NotFoundError("Investment");
 
-  // Build structured agreement data (no user editing allowed after finalization)
-  const agreementData = {
-    templateVersion:  AGREEMENT_TEMPLATE_VERSION,
-    generatedAt:      new Date().toISOString(),
-    investmentId:     investment.id,
-    receiptNumber:    investment.receiptNumber,
+  const now = new Date();
+  const pdfContent = await renderInvestmentCertificate({
+    receiptNumber:  investment.receiptNumber ?? investment.id,
+    generatedAt:    now.toISOString(),
     investor: {
-      name:  investment.investorProfile.user.name,
+      name:  investment.investorProfile.user.name ?? "Investor",
       email: investment.investorProfile.user.email,
       phone: investment.investorProfile.user.phone,
     },
@@ -214,19 +218,18 @@ async function generateInvestmentAgreement(
       title:             investment.project.title,
       expectedReturnPct: Number(investment.project.expectedReturnPct),
       durationDays:      investment.project.durationDays,
+      category:          investment.project.category ?? undefined,
+      location:          investment.project.location,
     },
     investment: {
       amountBdt:         Number(investment.amountBdt),
       expectedReturnBdt: Number(investment.expectedReturnBdt),
       returnType:        investment.returnType,
-      createdAt:         investment.createdAt.toISOString(),
+      activatedAt:       (investment.activatedAt ?? investment.createdAt).toISOString(),
     },
-  };
+  });
 
-  // Generate PDF content (structured JSON stored as PDF placeholder)
-  // In production, replace with a PDF library like @react-pdf/renderer or puppeteer
-  const pdfContent = Buffer.from(JSON.stringify(agreementData, null, 2));
-  const filename = `agreement_${investment.receiptNumber ?? investment.id}`;
+  const filename = `certificate_${investment.receiptNumber ?? investment.id}`;
   const storageKey = buildStorageKey("INVESTMENT_AGREEMENT", investmentId, filename);
 
   const { key } = await storage.upload(pdfContent, storageKey, "application/pdf");
@@ -237,8 +240,8 @@ async function generateInvestmentAgreement(
       entityType:      "INVESTMENT",
       entityId:        investmentId,
       category:        "INVESTMENT_AGREEMENT",
-      name:            `Investment Agreement — ${investment.project.title}`,
-      description:     `Generated agreement for investment ${investment.receiptNumber ?? investment.id}`,
+      name:            `Investment Certificate — ${investment.project.title}`,
+      description:     `Investment certificate for ${investment.receiptNumber ?? investment.id}`,
       fileUrl:         key,
       storageKey:      key,
       mimeType:        "application/pdf",
