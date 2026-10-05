@@ -1,16 +1,7 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import { env } from "@/config/env";
 
-// ─── Transport ────────────────────────────────────────────────────────────────
-
-function getTransporter() {
-  return nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
-    auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
-  });
-}
+const resend = new Resend(env.RESEND_API_KEY);
 
 interface SendEmailOptions {
   to: string;
@@ -19,7 +10,13 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<void> {
-  await getTransporter().sendMail({ from: env.SMTP_FROM, to, subject, html });
+  const { error } = await resend.emails.send({
+    from: env.EMAIL_FROM,
+    to,
+    subject,
+    html,
+  });
+  if (error) throw new Error(`Resend error: ${error.message}`);
 }
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
@@ -36,13 +33,11 @@ function emailLayout(content: string): string {
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f3;padding:32px 16px;">
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
-        <!-- Header -->
         <tr>
           <td style="background:#1a4731;border-radius:12px 12px 0 0;padding:24px 32px;">
             <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.3px;">🌿 Biniyog Club</span>
           </td>
         </tr>
-        <!-- Body -->
         <tr>
           <td style="background:#ffffff;padding:32px;border-radius:0 0 12px 12px;border:1px solid #e5e7eb;border-top:none;">
             ${content}
@@ -77,8 +72,24 @@ export function buildVerificationEmail(name: string, verificationUrl: string): s
     <p style="color:#6b7280;font-size:13px;margin:8px 0 0;">
       This link expires in <strong>24 hours</strong>. If you didn't create an account, you can ignore this email.
     </p>
-    <p style="color:#9ca3af;font-size:12px;margin:12px 0 0;word-break:break-all;">
-      Or copy this link: ${verificationUrl}
+  `);
+}
+
+export function buildPasswordResetOtpEmail(name: string, otp: string): string {
+  return emailLayout(`
+    <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 8px;">Password Reset Code</h2>
+    <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi ${escapeHtml(name)},</p>
+    <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
+      Use the verification code below to reset your Biniyog Club password:
+    </p>
+    <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:24px;text-align:center;margin:0 0 16px;">
+      <span style="font-size:40px;font-weight:800;letter-spacing:14px;color:#15803d;font-family:monospace;">${otp}</span>
+    </div>
+    <p style="color:#6b7280;font-size:13px;margin:0;">
+      This code expires in <strong>30 seconds</strong>. Do not share it with anyone.
+    </p>
+    <p style="color:#ef4444;font-size:13px;margin:12px 0 0;">
+      If you did not request a password reset, please ignore this email — your account is safe.
     </p>
   `);
 }
@@ -88,14 +99,11 @@ export function buildPasswordResetEmail(name: string, resetUrl: string): string 
     <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 8px;">Reset your password</h2>
     <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi ${escapeHtml(name)},</p>
     <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 4px;">
-      We received a request to reset your Biniyog Club password. Click the button below to choose a new password.
+      We received a request to reset your Biniyog Club password.
     </p>
     ${ctaButton(resetUrl, "Reset Password")}
     <p style="color:#6b7280;font-size:13px;margin:8px 0 0;">
-      This link expires in <strong>1 hour</strong>. If you didn't request a password reset, no action is needed — your account is safe.
-    </p>
-    <p style="color:#9ca3af;font-size:12px;margin:12px 0 0;word-break:break-all;">
-      Or copy this link: ${resetUrl}
+      This link expires in <strong>1 hour</strong>.
     </p>
   `);
 }
@@ -104,9 +112,6 @@ export function buildOtpEmail(name: string, otp: string): string {
   return emailLayout(`
     <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 8px;">Your verification code</h2>
     <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">Hi ${escapeHtml(name)},</p>
-    <p style="color:#374151;font-size:15px;line-height:1.6;margin:0 0 16px;">
-      Use the code below to complete your verification:
-    </p>
     <div style="background:#f0fdf4;border:2px solid #bbf7d0;border-radius:10px;padding:20px;text-align:center;margin:0 0 16px;">
       <span style="font-size:36px;font-weight:800;letter-spacing:12px;color:#15803d;font-family:monospace;">${otp}</span>
     </div>
@@ -124,7 +129,7 @@ export function buildPasswordChangedEmail(name: string): string {
       Your Biniyog Club password was successfully changed.
     </p>
     <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;">
-      If you did not make this change, please <a href="${env.NEXT_PUBLIC_APP_URL}/auth/forgot-password" style="color:#1a6b3c;font-weight:600;">reset your password immediately</a> and contact our support team.
+      If you did not make this change, please <a href="${env.NEXT_PUBLIC_APP_URL}/auth/forgot-password" style="color:#1a6b3c;font-weight:600;">reset your password immediately</a>.
     </p>
   `);
 }

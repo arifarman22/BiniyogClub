@@ -125,16 +125,26 @@ export async function resendVerificationEmailAction(): Promise<ActionResult> {
   }
 }
 
-export async function forgotPasswordAction(formData: unknown): Promise<ActionResult> {
+export async function forgotPasswordAction(formData: unknown): Promise<ActionResult<{ found: boolean }>> {
   const parsed = forgotPasswordSchema.safeParse(formData);
-  if (!parsed.success) return validationError(parsed.error.issues);
+  if (!parsed.success) return validationError(parsed.error.issues) as ActionResult<{ found: boolean }>;
 
-  // Always succeed — prevents email enumeration
-  await authService.sendPasswordReset(parsed.data.email).catch((err) =>
-    console.error("[action] forgot password email failed:", err),
-  );
+  try {
+    const found = await authService.sendPasswordResetOtp(parsed.data.email);
+    return { success: true, data: { found } };
+  } catch (error) {
+    return serviceError(error) as ActionResult<{ found: boolean }>;
+  }
+}
 
-  return { success: true, data: undefined };
+export async function verifyPasswordResetOtpAction(email: string, otp: string): Promise<ActionResult<{ resetToken: string }>> {
+  if (!email || !otp) return { success: false, error: "Invalid request" };
+  try {
+    const resetToken = await authService.verifyPasswordResetOtp(email, otp);
+    return { success: true, data: { resetToken } };
+  } catch (error) {
+    return serviceError(error) as ActionResult<{ resetToken: string }>;
+  }
 }
 
 export async function resetPasswordAction(formData: unknown): Promise<ActionResult> {

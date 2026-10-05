@@ -10,6 +10,7 @@ import {
   sendEmail,
   buildVerificationEmail,
   buildPasswordResetEmail,
+  buildPasswordResetOtpEmail,
   buildOtpEmail,
   buildPasswordChangedEmail,
 } from "@/lib/email/mailer";
@@ -166,7 +167,54 @@ export const authService = {
     ]);
   },
 
-  // ── Password Reset ───────────────────────────────────────────────────────────
+  // ── Password Reset OTP ──────────────────────────────────────────────────────
+
+  async sendPasswordResetOtp(email: string): Promise<boolean> {
+    const user = await userRepository.findByEmail(email);
+    if (!user || user.deletedAt) return false;
+
+    await tokenRepository.deleteByUserAndType(user.id, "PASSWORD_RESET");
+
+    const otp = generateOtp(6);
+    const expiresAt = new Date(Date.now() + 30 * 1000); // 30 seconds
+
+    await tokenRepository.create({ userId: user.id, token: otp, type: "PASSWORD_RESET", expiresAt });
+
+    await sendEmail({
+      to: email,
+      subject: "Your Biniyog Club password reset code",
+      html: buildPasswordResetOtpEmail(user.name, otp),
+    });
+
+    return true;
+  },
+
+  async verifyPasswordResetOtp(email: string, otp: string): Promise<string> {
+    const user = await userRepository.findByEmail(email);
+    if (!user) throw new InvalidTokenError();
+
+    const record = await tokenRepository.findByToken(otp);
+    if (
+      !record ||
+      record.userId !== user.id ||
+      record.type !== "PASSWORD_RESET" ||
+      record.usedAt ||
+      record.expiresAt < new Date()
+    ) {
+      throw new InvalidTokenError();
+    }
+
+    await tokenRepository.markUsed(record.id);
+
+    // Issue a short-lived reset token for the actual password change
+    const resetToken = generateSecureToken();
+    const resetExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+    await tokenRepository.create({ userId: user.id, token: resetToken, type: "PASSWORD_RESET", expiresAt: resetExpiry });
+
+    return resetToken;
+  },
+
+  // ── Password Reset (link-based, kept for compatibility) ───────────────────
 
   async sendPasswordReset(email: string) {
     const user = await userRepository.findByEmail(email);
