@@ -25,6 +25,11 @@ export function LoginForm() {
     formState: { errors, isSubmitting },
   } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
 
+  const STAFF_ROLES = ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"];
+
+  // Never allow callbackUrl to point to /admin from the investor login
+  const safeDest = callbackUrl && !callbackUrl.startsWith("/admin") ? callbackUrl : "/dashboard";
+
   async function onSubmit(data: LoginInput) {
     setServerError(null);
     const result = await loginAction(data);
@@ -32,15 +37,12 @@ export function LoginForm() {
       setServerError({ message: result.error, code: result.code });
       return;
     }
-    const role = result.data.role;
-    const defaultDest =
-      role === "INVESTOR"
-        ? "/dashboard"
-        : ["ADMIN", "SUPER_ADMIN", "FINANCE_OFFICER", "PROJECT_MANAGER", "KYC_OFFICER", "FIELD_OFFICER", "SUPPORT"].includes(role)
-        ? "/admin"
-        : "/";
-    const dest = callbackUrl ?? defaultDest;
-    router.push(dest);
+    const { role } = result.data;
+    if (STAFF_ROLES.includes(role)) {
+      setServerError({ message: "Staff accounts must use the Admin Portal to sign in." });
+      return;
+    }
+    router.push(safeDest);
     router.refresh();
   }
 
@@ -56,6 +58,14 @@ export function LoginForm() {
                 {" "}
                 <Link href="/auth/resend-verification" className="font-semibold underline">
                   Resend verification email
+                </Link>
+              </span>
+            )}
+            {serverError.message.includes("Admin Portal") && (
+              <span>
+                {" "}
+                <Link href="/admin/login" className="font-semibold underline">
+                  Go to Admin Portal →
                 </Link>
               </span>
             )}
