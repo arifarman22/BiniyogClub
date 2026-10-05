@@ -195,12 +195,12 @@ export const projectService = {
     return projectRepository.update(projectId, { deletedAt: new Date() });
   },
 
-  // ── Admin force delete (soft) ────────────────────────────────────────────────
+  // ── Hard delete ──────────────────────────────────────────────────────────────
   async delete(session: SessionUser, projectId: string) {
     await requirePermission(session, PERMISSIONS.PROJECT_DELETE);
     const project = await projectRepository.findById(projectId);
     if (!project) throw new NotFoundError("Project");
-    return projectRepository.update(projectId, { deletedAt: new Date() });
+    await db.project.delete({ where: { id: projectId } });
   },
 
   // ── Get single (with auth) ───────────────────────────────────────────────────

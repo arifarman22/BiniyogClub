@@ -105,7 +105,7 @@ export default async function KycPage() {
   ];
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="KYC Verification"
         description="Identity verification is required to invest on Biniyog Club"

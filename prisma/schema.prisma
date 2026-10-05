@@ -351,7 +351,7 @@ model ProjectUpdate {
   publishedAt DateTime?
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
-  project     Project           @relation(fields: [projectId], references: [id])
+  project     Project           @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([type])
@@ -382,7 +382,7 @@ model Investment {
   gatewayPayments    GatewayPayment[]
   contract           InvestmentContract?
   investorProfile    InvestorProfile           @relation(fields: [investorProfileId], references: [id])
-  project            Project                   @relation(fields: [projectId], references: [id])
+  project            Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   ledgerTransactions LedgerTransaction[]
   manualPayments     ManualPaymentSubmission[]
   distributions      ProfitDistribution[]
@@ -426,8 +426,8 @@ model ProfitDistribution {
   distributedAt  DateTime
   notes          String?
   createdAt      DateTime   @default(now())
-  investment     Investment @relation(fields: [investmentId], references: [id])
-  project        Project    @relation(fields: [projectId], references: [id])
+  investment     Investment @relation(fields: [investmentId], references: [id], onDelete: Cascade)
+  project        Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@index([investmentId])
@@ -577,7 +577,7 @@ model ManualPaymentSubmission {
   rejectionReason String?
   createdAt       DateTime            @default(now())
   updatedAt       DateTime            @updatedAt
-  investment      Investment          @relation(fields: [investmentId], references: [id])
+  investment      Investment          @relation(fields: [investmentId], references: [id], onDelete: Cascade)
 
   @@index([investmentId])
   @@index([status])
@@ -608,7 +608,7 @@ model GatewayPayment {
   refundReference   String?
   createdAt         DateTime             @default(now())
   updatedAt         DateTime             @default(now()) @updatedAt
-  investment        Investment           @relation(fields: [investmentId], references: [id])
+  investment        Investment           @relation(fields: [investmentId], references: [id], onDelete: Cascade)
 
   @@index([investmentId])
   @@index([provider])
@@ -717,7 +717,7 @@ model Document {
   ownerUserId     String?
   deletedAt       DateTime?
   createdAt       DateTime           @default(now())
-  project         Project            @relation(fields: [entityId], references: [id], map: "document_project_fk")
+  project         Project            @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "document_project_fk")
   uploader        User               @relation(fields: [uploadedBy], references: [id])
   auditLogs       DocumentAuditLog[]
 
@@ -1048,7 +1048,7 @@ model DistributionRule {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
-  project Project             @relation(fields: [projectId], references: [id])
+  project Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
   batches DistributionBatch[]
 
   @@index([projectId])
@@ -1082,8 +1082,8 @@ model DistributionBatch {
   createdAt        DateTime                @default(now())
   updatedAt        DateTime                @updatedAt
 
-  project   Project                @relation(fields: [projectId], references: [id])
-  rule      DistributionRule       @relation(fields: [ruleId], references: [id])
+  project   Project                @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  rule      DistributionRule       @relation(fields: [ruleId], references: [id], onDelete: Cascade)
   lineItems DistributionLineItem[]
 
   @@index([projectId])
@@ -1110,7 +1110,7 @@ model DistributionLineItem {
   updatedAt           DateTime               @updatedAt
 
   batch      DistributionBatch @relation(fields: [batchId], references: [id])
-  investment Investment        @relation(fields: [investmentId], references: [id])
+  investment Investment        @relation(fields: [investmentId], references: [id], onDelete: Cascade)
 
   @@index([batchId])
   @@index([investmentId])
