@@ -75,6 +75,7 @@ class CloudinaryProvider implements StorageProvider {
       resource_type: resourceType,
       type:          "authenticated",
       expires_at:    expiresAt,
+      attachment:    true,
     });
   }
 }
