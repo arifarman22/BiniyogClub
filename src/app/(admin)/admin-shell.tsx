@@ -54,7 +54,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { href: "/admin/notifications", label: "Notifications", icon: Bell,       permission: null },
       { href: "/admin/documents",     label: "Documents",     icon: FileText,   permission: "document.view" },
       { href: "/admin/audit-logs",    label: "Audit Logs",    icon: ScrollText, permission: "audit.view" },
-      { href: "/admin/settings",      label: "Settings",      icon: Settings,   permission: "audit.view" },
+      { href: "/admin/settings",      label: "Configuration", icon: Settings,   permission: "audit.view" },
     ],
   },
 ];
