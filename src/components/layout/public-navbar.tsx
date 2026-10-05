@@ -21,11 +21,11 @@ import { logoutAction } from "@/server/actions/auth.actions";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/projects", label: "Projects" },
-  { href: "/groups", label: "Groups" },
-  { href: "/how-it-works", label: "How It Works" },
-  { href: "/updates", label: "Updates" },
   { href: "/about", label: "About" },
+  { href: "/how-it-works", label: "How It Works" },
+  { href: "/projects", label: "Opportunities" },
+  { href: "/#features", label: "Features" },
+  { href: "/#faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -191,9 +191,9 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-medium text-white shadow-md shadow-emerald-600/25 transition-all duration-200 hover:bg-emerald-700 hover:-translate-y-0.5"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-emerald-600/30 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0"
                 >
-                  Start Investing <ChevronRight className="h-3.5 w-3.5" />
+                  Get Started <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </>
             )}
@@ -292,9 +292,9 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/auth/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white text-center shadow-md shadow-emerald-600/20"
+                  className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-md shadow-emerald-600/20"
                 >
-                  Start Investing
+                  Get Started
                 </Link>
               </>
             )}

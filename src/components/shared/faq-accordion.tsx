@@ -20,7 +20,7 @@ export function FaqAccordion() {
       {FAQS.map(({ q, a }, i) => (
         <div
           key={q}
-          className="rounded-2xl border border-border bg-card overflow-hidden transition-all duration-300 hover:border-primary/25"
+          className="rounded-none border border-border bg-card overflow-hidden transition-all duration-300 hover:border-primary/25"
         >
           <button
             onClick={() => setOpen(open === i ? null : i)}
