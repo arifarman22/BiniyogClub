@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import {
   Menu,
   X,
@@ -32,37 +32,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [lang, setLang] = useState<"en" | "bn">("en");
-
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
-  // Inject Google Translate script once
-  useEffect(() => {
-    if (document.getElementById("gt-script")) return;
-    (window as any).googleTranslateElementInit = () => {
-      new (window as any).google.translate.TranslateElement(
-        { pageLanguage: "en", includedLanguages: "en,bn", autoDisplay: false },
-        "google_translate_element",
-      );
-    };
-    const s = document.createElement("script");
-    s.id = "gt-script";
-    s.src = "//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit";
-    s.async = true;
-    document.body.appendChild(s);
-  }, []);
-
-  const switchLang = useCallback((target: "en" | "bn") => {
-    setLang(target);
-    const select = document.querySelector(".goog-te-combo") as HTMLSelectElement | null;
-    if (select) {
-      select.value = target;
-      select.dispatchEvent(new Event("change"));
-    }
   }, []);
 
   return (
@@ -168,27 +141,6 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
 
           {/* Desktop CTAs */}
           <div className="hidden items-center gap-3 md:flex">
-            {/* Language switcher */}
-            <div className="flex items-center rounded-full border border-white/15 bg-white/5 p-0.5 text-xs font-semibold">
-              <button
-                onClick={() => switchLang("en")}
-                className={cn(
-                  "rounded-full px-3 py-1 transition-all",
-                  lang === "en" ? "bg-emerald-500 text-white shadow" : "text-slate-300 hover:text-white"
-                )}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => switchLang("bn")}
-                className={cn(
-                  "rounded-full px-3 py-1 transition-all",
-                  lang === "bn" ? "bg-emerald-500 text-white shadow" : "text-slate-300 hover:text-white"
-                )}
-              >
-                বাং
-              </button>
-            </div>
             {session ? (
               <>
                 <Link
@@ -286,21 +238,6 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
 
           {/* Mobile Auth Actions */}
           <div className="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4">
-            {/* Mobile language switcher */}
-            <div className="flex items-center justify-center rounded-full border border-white/15 bg-white/5 p-0.5 text-xs font-semibold self-start">
-              <button
-                onClick={() => switchLang("en")}
-                className={cn("rounded-full px-4 py-1.5 transition-all", lang === "en" ? "bg-emerald-500 text-white shadow" : "text-slate-300")}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => switchLang("bn")}
-                className={cn("rounded-full px-4 py-1.5 transition-all", lang === "bn" ? "bg-emerald-500 text-white shadow" : "text-slate-300")}
-              >
-                বাং
-              </button>
-            </div>
             {session ? (
               <>
                 <Link
@@ -340,8 +277,6 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
           </div>
         </div>
       )}
-      {/* Hidden Google Translate element */}
-      <div id="google_translate_element" className="hidden" />
     </header>
   );
 }
