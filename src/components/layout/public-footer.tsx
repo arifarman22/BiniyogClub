@@ -24,10 +24,24 @@ const FOOTER_LINKS = {
 };
 
 const SOCIAL = [
-  { href: "https://facebook.com", label: "Facebook", abbr: "fb" },
-  { href: "https://twitter.com", label: "Twitter", abbr: "𝕏" },
-  { href: "https://linkedin.com", label: "LinkedIn", abbr: "in" },
-  { href: "https://youtube.com", label: "YouTube", abbr: "yt" },
+  {
+    href: "https://www.facebook.com/BiniyogClub",
+    label: "Facebook",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.267h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z" />
+      </svg>
+    ),
+  },
+  {
+    href: "https://www.youtube.com/@BiniyogClub",
+    label: "YouTube",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4">
+        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+      </svg>
+    ),
+  },
 ];
 
 export function PublicFooter() {
@@ -64,16 +78,16 @@ export function PublicFooter() {
 
             {/* Social handles */}
             <div className="mt-6 flex gap-2.5">
-              {SOCIAL.map(({ href, label, abbr }) => (
+              {SOCIAL.map(({ href, label, icon }) => (
                 <a
                   key={label}
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={label}
-                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-bold text-slate-300 transition-all duration-300 hover:border-emerald-400/50 hover:bg-emerald-950/60 hover:text-emerald-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-950/50 uppercase"
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300 transition-all duration-300 hover:border-emerald-400/50 hover:bg-emerald-950/60 hover:text-emerald-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-950/50"
                 >
-                  {abbr}
+                  {icon}
                 </a>
               ))}
             </div>
