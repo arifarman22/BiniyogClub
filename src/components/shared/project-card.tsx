@@ -175,9 +175,7 @@ export function ProjectCard({
           </div>
         )}
 
-        {/* Dual Cinematic Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/20 to-transparent pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent pointer-events-none" />
+
 
         {/* Top Badges Dock */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10">
