@@ -163,3 +163,75 @@ export async function reconcileWalletAction(): Promise<
     return serviceError(error);
   }
 }
+
+export async function submitDepositRequestAction(
+  input: { walletId: string; amountBdt: number; paymentMethod: string; transactionRef: string; proofFileUrl: string },
+): Promise<ActionResult<{ paymentId: string }>> {
+  if (!input.walletId || !input.amountBdt || !input.transactionRef || !input.proofFileUrl) {
+    return { success: false, error: "All fields are required" };
+  }
+  try {
+    const session = await requireSession();
+    const { db } = await import("@/lib/db/prisma");
+
+    // Verify wallet belongs to session user
+    const wallet = await db.wallet.findUnique({ where: { id: input.walletId }, select: { userId: true } });
+    if (!wallet || wallet.userId !== session.id) return { success: false, error: "Wallet not found" };
+
+    // Create a PENDING payment record — admin will confirm and post ledger entry
+    const payment = await db.payment.create({
+      data: {
+        walletId: input.walletId,
+        direction: "INBOUND",
+        method: input.paymentMethod as "BANK_TRANSFER" | "MOBILE_BANKING" | "CARD" | "WALLET",
+        status: "PENDING",
+        amountBdt: input.amountBdt,
+        feeBdt: 0,
+        netAmountBdt: input.amountBdt,
+        currency: "BDT",
+        externalReference: input.transactionRef,
+        description: `Deposit request — ${input.paymentMethod.replace("_", " ")}`,
+        gatewayResponse: { proofFileUrl: input.proofFileUrl, transactionRef: input.transactionRef },
+      },
+      select: { id: true },
+    });
+
+    revalidatePath("/dashboard/wallet");
+    return { success: true, data: { paymentId: payment.id } };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function investFromWalletAction(
+  input: { projectId: string; amountBdt: number; idempotencyKey: string },
+): Promise<ActionResult<{ investmentId: string; receiptNumber: string }>> {
+  if (!input.projectId || !input.amountBdt || !input.idempotencyKey) {
+    return { success: false, error: "Invalid request" };
+  }
+  try {
+    const session = await requireSession();
+    const result = await walletService.investFromWallet(session, input);
+    revalidatePath("/dashboard/investments");
+    revalidatePath("/dashboard/wallet");
+    revalidatePath("/dashboard/transactions");
+    return { success: true, data: { investmentId: result.investmentId, receiptNumber: result.receiptNumber } };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
+export async function confirmDepositAction(
+  paymentId: string,
+): Promise<ActionResult<void>> {
+  if (!paymentId) return { success: false, error: "Payment ID required" };
+  try {
+    const session = await requireSession();
+    await walletService.confirmDeposit(session, paymentId);
+    revalidatePath("/admin/payments");
+    revalidatePath("/dashboard/wallet");
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}

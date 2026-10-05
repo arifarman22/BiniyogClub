@@ -506,6 +506,190 @@ export const walletService = {
   },
 
   /**
+   * Invest directly from wallet balance.
+   * Validates balance, creates investment, posts ledger entry atomically.
+   */
+  async investFromWallet(
+    session: SessionUser,
+    input: { projectId: string; amountBdt: number; idempotencyKey: string },
+  ) {
+    await requirePermission(session, PERMISSIONS.INVESTMENT_CREATE);
+    assertPositiveBdt(input.amountBdt, "Investment amount");
+
+    // KYC check
+    const kyc = await db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } });
+    if (!kyc || kyc.status !== "VERIFIED") {
+      throw new ForbiddenError("KYC verification required before investing.");
+    }
+
+    // Idempotency
+    const existing = await db.investment.findUnique({ where: { idempotencyKey: input.idempotencyKey }, select: { id: true, receiptNumber: true } });
+    if (existing) return { investmentId: existing.id, receiptNumber: existing.receiptNumber ?? "" };
+
+    const wallet = await walletRepository.findByUserId(session.id);
+    if (!wallet) throw new NotFoundError("Wallet");
+    if (!wallet.isActive) throw new ValidationError("Wallet is not active");
+
+    const trueBalance = await ledgerService.getTrueBalance(wallet.id);
+    if (trueBalance < input.amountBdt) {
+      throw new ValidationError(
+        `Insufficient wallet balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${input.amountBdt.toFixed(2)}`,
+      );
+    }
+
+    return db.$transaction(
+      async (tx) => {
+        // Fetch and lock project
+        const project = await tx.project.findUnique({
+          where: { id: input.projectId },
+          select: {
+            id: true, title: true, status: true,
+            fundingGoalBdt: true, fundedAmountBdt: true,
+            minInvestmentBdt: true, maxInvestmentBdt: true,
+            expectedReturnPct: true, returnType: true, fundingDeadline: true,
+          },
+        });
+        if (!project) throw new NotFoundError("Project");
+        if (project.status !== "FUNDRAISING") throw new ValidationError("Project is not accepting investments");
+        if (new Date(project.fundingDeadline) < new Date()) throw new ValidationError("Funding deadline has passed");
+
+        const min = Number(project.minInvestmentBdt);
+        const max = project.maxInvestmentBdt ? Number(project.maxInvestmentBdt) : null;
+        if (input.amountBdt < min) throw new ValidationError(`Minimum investment is \u09F3${min.toLocaleString("en-BD")}`);
+        if (max && input.amountBdt > max) throw new ValidationError(`Maximum investment is \u09F3${max.toLocaleString("en-BD")}`);
+
+        const remaining = Number(project.fundingGoalBdt) - Number(project.fundedAmountBdt);
+        if (remaining <= 0) throw new ConflictError("Project is fully funded");
+        if (input.amountBdt > remaining) throw new ValidationError(`Only \u09F3${remaining.toLocaleString("en-BD")} remaining`);
+
+        // Duplicate check
+        const profile = await tx.investorProfile.findUnique({ where: { userId: session.id }, select: { id: true } });
+        if (!profile) throw new ForbiddenError("Investor profile not found");
+
+        const duplicate = await tx.investment.findFirst({
+          where: { investorProfileId: profile.id, projectId: input.projectId, status: { notIn: ["CANCELLED", "REFUNDED"] } },
+          select: { id: true },
+        });
+        if (duplicate) throw new ConflictError("You already have an active investment in this project");
+
+        const expectedReturnBdt = Math.round(input.amountBdt * (Number(project.expectedReturnPct) / 100) * 100) / 100;
+        const receiptNumber = `BC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        const now = new Date();
+
+        // Create investment
+        const investment = await tx.investment.create({
+          data: {
+            investorProfileId: profile.id,
+            projectId: input.projectId,
+            amountBdt: input.amountBdt,
+            expectedReturnBdt,
+            returnType: project.returnType,
+            idempotencyKey: input.idempotencyKey,
+            status: "ACTIVE",
+            confirmedAt: now,
+            activatedAt: now,
+            receiptNumber,
+          },
+          select: { id: true, receiptNumber: true },
+        });
+
+        // Post ledger: debit investor wallet, credit escrow
+        const { ledgerTx } = await ledgerService.recordInvestmentFunding(
+          session.id,
+          input.amountBdt,
+          {
+            investmentId: investment.id,
+            idempotencyKey: input.idempotencyKey,
+            projectTitle: project.title,
+            metadata: { source: "WALLET", walletId: wallet.id },
+          },
+        );
+
+        // Update project funded amount
+        const updated = await tx.project.update({
+          where: { id: input.projectId },
+          data: { fundedAmountBdt: { increment: input.amountBdt } },
+          select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+        });
+        if (Number(updated.fundedAmountBdt) >= Number(updated.fundingGoalBdt) && updated.status === "FUNDRAISING") {
+          await tx.project.update({ where: { id: input.projectId }, data: { status: "FUNDED" } });
+        }
+
+        // Contract
+        await tx.investmentContract.create({
+          data: {
+            investmentId: investment.id,
+            status: "DRAFT",
+            templateVersion: "v1.0",
+            terms: { amountBdt: input.amountBdt, expectedReturnBdt, returnType: project.returnType, projectId: input.projectId, projectTitle: project.title, investorId: session.id, activatedAt: now.toISOString(), source: "WALLET" },
+          },
+        });
+
+        // Notification
+        await tx.notification.create({
+          data: {
+            userId: session.id,
+            type: "INVESTMENT_CONFIRMED",
+            title: "Investment Confirmed",
+            body: `Your wallet investment of \u09F3${input.amountBdt.toLocaleString("en-BD")} has been confirmed. Receipt: ${receiptNumber}`,
+            data: { investmentId: investment.id, receiptNumber, source: "WALLET" },
+          },
+        });
+
+        return { investmentId: investment.id, receiptNumber: investment.receiptNumber ?? "", ledgerTxId: ledgerTx.id };
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
+   * Admin confirms a pending deposit payment and posts the ledger entry.
+   */
+  async confirmDeposit(session: SessionUser, paymentId: string) {
+    await requirePermission(session, PERMISSIONS.PAYMENT_VERIFY);
+
+    const payment = await db.payment.findUnique({
+      where: { id: paymentId },
+      select: {
+        id: true, status: true, amountBdt: true, walletId: true,
+        wallet: { select: { userId: true } },
+        gatewayResponse: true,
+      },
+    });
+    if (!payment) throw new NotFoundError("Payment");
+    if (payment.status !== "PENDING") throw new ValidationError(`Payment is already ${payment.status}`);
+
+    const idempotencyKey = generateIdempotencyKey(IDEMPOTENCY_PREFIXES.DEPOSIT);
+
+    await db.$transaction(
+      async (tx) => {
+        await tx.payment.update({
+          where: { id: paymentId },
+          data: { status: "COMPLETED", processedAt: new Date() },
+        });
+
+        await ledgerService.recordDeposit(payment.wallet.userId, Number(payment.amountBdt), {
+          idempotencyKey,
+          referenceId: paymentId,
+          description: "Wallet deposit confirmed by admin",
+          metadata: { paymentId, confirmedBy: session.id },
+        });
+
+        await tx.notification.create({
+          data: {
+            userId: payment.wallet.userId,
+            type: "PAYMENT_RECEIVED",
+            title: "Deposit Confirmed",
+            body: `\u09F3${Number(payment.amountBdt).toLocaleString("en-BD")} has been added to your wallet.`,
+            data: { paymentId },
+          },
+        });
+      },
+      { isolationLevel: "Serializable" },
+    );
+  },
+
+  /**
    * Distribute profit to an investor after project completion.
    * Called by the investment service during the DISTRIBUTION stage.
    * Handles both the net distribution and the platform fee in one call.

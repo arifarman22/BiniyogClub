@@ -6,7 +6,8 @@ import { ledgerService } from "@/server/services/ledger.service";
 import { db } from "@/lib/db/prisma";
 import { WithdrawDialog } from "@/components/wallet/withdraw-dialog";
 import { CancelWithdrawalButton } from "@/components/wallet/cancel-withdrawal-button";
-import { Wallet, ArrowDownLeft, ArrowUpRight, Clock, AlertCircle, Building2, Smartphone, BadgeCheck, BadgeX, CreditCard, Wifi } from "lucide-react";
+import { AddMoneyDialog } from "@/components/wallet/add-money-dialog";
+import { Wallet, ArrowDownLeft, ArrowUpRight, Clock, AlertCircle, Building2, Smartphone, BadgeCheck, BadgeX, CreditCard, Wifi, TrendingUp, RefreshCw } from "lucide-react";
 import { cn } from "cn";
 
 export const metadata: Metadata = { title: "Wallet — Dashboard" };
@@ -58,6 +59,11 @@ export default async function WalletPage() {
   const trueBalance = wallet ? await ledgerService.getTrueBalance(wallet.id) : 0;
   const cachedBalance = Number(wallet?.cachedBalance ?? 0);
 
+  // Ledger history for this wallet
+  const ledgerHistory = wallet
+    ? await ledgerService.getHistory(wallet.id, 1, 30)
+    : { entries: [], total: 0 };
+
   // All withdrawals for history
   const allWithdrawals = wallet
     ? await db.withdrawal.findMany({
@@ -98,7 +104,10 @@ export default async function WalletPage() {
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10">
               <Wallet className="h-6 w-6" />
             </div>
-            <WithdrawDialog availableBalance={availableBalance} />
+            <div className="flex gap-2">
+              {wallet && <AddMoneyDialog walletId={wallet.id} />}
+              <WithdrawDialog availableBalance={availableBalance} />
+            </div>
           </div>
         </div>
         <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/20 pt-4">
@@ -208,6 +217,46 @@ export default async function WalletPage() {
           <p className="text-xs text-muted-foreground mt-1">
             Your withdrawal history will appear here once you make a request.
           </p>
+        </div>
+      )}
+
+      {/* Ledger history */}
+      {ledgerHistory.entries.length > 0 && (
+        <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="border-b border-border px-5 py-4 flex items-center justify-between">
+            <h2 className="font-semibold">Transaction History</h2>
+            <span className="text-xs text-muted-foreground">{ledgerHistory.total} entries</span>
+          </div>
+          <div className="divide-y divide-border">
+            {ledgerHistory.entries.map((entry) => {
+              const isCredit = entry.entryType === "CREDIT";
+              const txType = entry.ledgerTransaction.type.replace(/_/g, " ");
+              return (
+                <div key={entry.id} className="flex items-center justify-between px-5 py-3.5 gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={cn(
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
+                      isCredit ? "bg-success/10 text-success" : "bg-destructive/10 text-destructive"
+                    )}>
+                      {isCredit ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate">{entry.ledgerTransaction.description}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {txType} · {new Date(entry.createdAt).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" })}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className={cn("text-sm font-semibold", isCredit ? "text-success" : "text-destructive")}>
+                      {isCredit ? "+" : "-"}{fmtBdt(Number(entry.amountBdt))}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Bal: {fmtBdt(Number(entry.balanceAfterBdt))}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 
