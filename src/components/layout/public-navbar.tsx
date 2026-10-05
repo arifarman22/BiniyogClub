@@ -14,6 +14,7 @@ import {
   Clock,
   ShieldCheck,
   ArrowRight,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "cn";
 import type { SessionUser } from "@/lib/auth/session";
@@ -24,8 +25,8 @@ const NAV_LINKS = [
   { href: "/about", label: "About" },
   { href: "/how-it-works", label: "How It Works" },
   { href: "/projects", label: "Opportunities" },
-  { href: "/#features", label: "Features" },
-  { href: "/#faq", label: "FAQ" },
+  { href: "/groups", label: "Business Groups" },
+  { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
 
@@ -40,13 +41,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const isHome = pathname === "/";
-  const transparent = isHome && !scrolled && !open;
-
   return (
     <header className="fixed top-0 left-0 right-0 z-50 w-full transition-all duration-300">
       {/* ── 1. Upper Stripe Header with Contact Information ── */}
-      <div className="bg-[#05110c] text-slate-300 border-b border-emerald-900/30 text-[11px] font-light transition-all duration-300">
+      <div className="bg-[#030b07] text-slate-300 border-b border-emerald-500/15 text-[11px] font-normal transition-all duration-300">
         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Left info (Headquarters Location & Support Schedule) */}
           <div className="flex items-center gap-4 text-slate-300">
@@ -60,23 +58,23 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <span>Sun–Thu: 9:00 AM – 6:00 PM BST</span>
             </span>
             {/* Mobile city preview */}
-            <span className="inline-flex sm:hidden items-center gap-1.5 text-emerald-400 font-normal">
+            <span className="inline-flex sm:hidden items-center gap-1.5 text-emerald-400 font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Dhaka, Bangladesh</span>
             </span>
           </div>
 
           {/* Right info (Helpline, Email, Security) */}
-          <div className="flex items-center gap-3.5 sm:gap-4 text-xs font-light">
+          <div className="flex items-center gap-3.5 sm:gap-4 text-xs font-normal">
             <a
               href="tel:+8801335149033"
               className="inline-flex items-center gap-1.5 text-slate-200 hover:text-emerald-300 transition-colors"
             >
               <Phone className="h-3 w-3 text-emerald-400 shrink-0" />
-              <span className="font-medium text-[11px]">+880 1335-149033</span>
+              <span className="font-semibold text-[11px]">+880 1335-149033</span>
             </a>
 
-            <span className="hidden md:inline text-slate-700">|</span>
+            <span className="hidden md:inline text-emerald-950">|</span>
 
             <a
               href="mailto:info@biniyogclub.com"
@@ -86,45 +84,41 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <span>info@biniyogclub.com</span>
             </a>
 
-            <span className="hidden xl:inline text-slate-700">|</span>
+            <span className="hidden xl:inline text-emerald-950">|</span>
 
-            <span className="hidden xl:inline-flex items-center gap-1.5 text-emerald-400 text-[11px]">
-              <ShieldCheck className="h-3 w-3 text-emerald-400 shrink-0" />
-              <span>100% KYC & Legal Deeds</span>
+            <span className="hidden xl:inline-flex items-center gap-1.5 text-emerald-400 text-[11px] font-medium">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+              <span>Contract Act 1872 • 100% Escrow Segregated</span>
             </span>
           </div>
         </div>
       </div>
 
-      {/* ── 2. Main Navigation Bar ── */}
+      {/* ── 2. Main Navigation Bar (Dark Emerald Frosted Glass matching the Landing Site) ── */}
       <div
         className={cn(
           "transition-all duration-300",
-          transparent
-            ? "border-b border-white/10 bg-slate-950/65 backdrop-blur-md shadow-sm"
-            : "border-b border-border/70 bg-background/95 backdrop-blur-xl shadow-[0_4px_25px_-4px_rgba(0,140,100,0.08)]"
+          scrolled
+            ? "border-b border-emerald-500/30 bg-slate-950/95 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.5)]"
+            : "border-b border-emerald-500/20 bg-slate-950/85 backdrop-blur-xl shadow-[0_4px_25px_-4px_rgba(0,140,100,0.15)]"
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center group">
-            <div className="relative h-10 w-32 overflow-hidden group-hover:opacity-90 transition-opacity">
+            <div className="relative h-10 w-36 overflow-hidden transition-transform duration-300 group-hover:scale-105">
               <Image
                 src="/logo.png"
                 alt="Biniyog Club"
                 fill
-                className={cn(
-                  "object-contain object-left transition-all",
-                  transparent && "brightness-0 invert",
-                  "dark:brightness-0 dark:invert"
-                )}
+                className="object-contain object-left brightness-0 invert"
                 priority
               />
             </div>
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden items-center gap-1 lg:gap-1.5 md:flex">
+          <nav className="hidden items-center gap-1 lg:gap-2 md:flex">
             {NAV_LINKS.map((link) => {
               const active =
                 link.href === "/"
@@ -136,14 +130,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all duration-200",
+                    "rounded-full px-3.5 py-1.5 text-xs lg:text-sm font-medium transition-all duration-200",
                     active
-                      ? transparent
-                        ? "text-emerald-300 bg-white/15 font-semibold shadow-sm"
-                        : "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 font-semibold shadow-sm"
-                      : transparent
-                        ? "text-slate-100 hover:text-white hover:bg-white/10"
-                        : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold shadow-sm shadow-emerald-500/10"
+                      : "text-slate-200 hover:text-white hover:bg-white/10"
                   )}
                 >
                   {link.label}
@@ -153,24 +143,19 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
           </nav>
 
           {/* Desktop CTAs */}
-          <div className="hidden items-center gap-2.5 md:flex">
+          <div className="hidden items-center gap-3 md:flex">
             {session ? (
               <>
                 <Link
                   href="/dashboard"
-                  className="rounded-full bg-emerald-600 px-4 py-1.5 text-xs sm:text-sm font-medium text-white shadow-md shadow-emerald-600/20 transition-all hover:bg-emerald-700 hover:-translate-y-0.5"
+                  className="rounded-full bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:-translate-y-0.5"
                 >
                   Dashboard
                 </Link>
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className={cn(
-                      "rounded-full border px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all hover:-translate-y-0.5",
-                      transparent
-                        ? "border-white/20 text-slate-100 hover:text-white hover:bg-white/10"
-                        : "border-slate-300 dark:border-white/15 text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                    )}
+                    className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs sm:text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition-all"
                   >
                     Sign Out
                   </button>
@@ -180,18 +165,13 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <>
                 <Link
                   href="/auth/login"
-                  className={cn(
-                    "rounded-full px-3.5 py-1.5 text-xs sm:text-sm font-medium transition-all hover:-translate-y-0.5",
-                    transparent
-                      ? "text-slate-100 hover:text-white"
-                      : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
-                  )}
+                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs sm:text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition-all hover:-translate-y-0.5"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-500 px-4 py-1.5 text-xs sm:text-sm font-semibold text-white shadow-md shadow-emerald-600/30 transition-all duration-200 hover:shadow-lg hover:shadow-emerald-500/40 hover:-translate-y-0.5 active:translate-y-0"
+                  className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:shadow-emerald-500/50 hover:from-emerald-400 hover:to-teal-400 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Get Started <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
@@ -201,12 +181,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
 
           {/* Mobile Menu Toggle Button */}
           <button
-            className={cn(
-              "rounded-xl p-2 transition-colors md:hidden border border-transparent",
-              transparent
-                ? "text-white hover:bg-white/10"
-                : "text-foreground hover:bg-muted"
-            )}
+            className="rounded-xl p-2 text-white hover:bg-white/10 transition-colors md:hidden border border-white/10"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -215,10 +190,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
         </div>
       </div>
 
-      {/* ── 3. Mobile Navigation Drawer ── */}
+      {/* ── 3. Mobile Navigation Drawer (Consistent Dark Slate/Emerald Theme) ── */}
       {open && (
-        <div className="border-b border-border/80 bg-background/98 backdrop-blur-2xl px-4 pt-3 pb-6 md:hidden shadow-2xl animate-in slide-in-from-top-2 duration-200">
-          <nav className="flex flex-col gap-1">
+        <div className="border-b border-emerald-500/30 bg-slate-950/98 backdrop-blur-2xl px-4 pt-3 pb-6 md:hidden shadow-2xl animate-in slide-in-from-top-2 duration-200 text-white">
+          <nav className="flex flex-col gap-1.5">
             {NAV_LINKS.map((link) => {
               const active =
                 link.href === "/"
@@ -231,50 +206,54 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   href={link.href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    "flex items-center justify-between rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center justify-between rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
                     active
-                      ? "text-emerald-800 dark:text-emerald-300 bg-emerald-500/15 font-semibold"
-                      : "text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-semibold"
+                      : "text-slate-200 hover:text-white hover:bg-white/10"
                   )}
                 >
                   <span>{link.label}</span>
-                  {active && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />}
+                  {active ? (
+                    <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  ) : (
+                    <ChevronRight className="h-4 w-4 text-slate-400" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
           {/* Mobile Contact Quick Card */}
-          <div className="mt-4 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-3.5 text-xs text-slate-700 dark:text-slate-300">
-            <p className="font-medium text-foreground flex items-center gap-1.5 mb-1.5">
-              <Phone className="h-3 w-3 text-emerald-500" />
-              <span>Investor Support Line</span>
+          <div className="mt-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3.5 text-xs text-slate-200">
+            <p className="font-semibold text-emerald-300 flex items-center gap-1.5 mb-1.5">
+              <Phone className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Direct Investor Helpline</span>
             </p>
             <div className="flex items-center justify-between">
-              <a href="tel:+8801335149033" className="font-semibold text-emerald-700 dark:text-emerald-400">
+              <a href="tel:+8801335149033" className="font-bold text-white text-sm">
                 +880 1335-149033
               </a>
-              <a href="mailto:info@biniyogclub.com" className="text-[11px] font-medium underline text-slate-600 dark:text-slate-400">
+              <a href="mailto:info@biniyogclub.com" className="text-xs text-emerald-400 underline">
                 info@biniyogclub.com
               </a>
             </div>
           </div>
 
           {/* Mobile Auth Actions */}
-          <div className="mt-4 flex flex-col gap-2 border-t border-border/60 pt-4">
+          <div className="mt-4 flex flex-col gap-2.5 border-t border-white/10 pt-4">
             {session ? (
               <>
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white text-center shadow-md shadow-emerald-600/20"
+                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-md shadow-emerald-600/30"
                 >
                   Go to Dashboard
                 </Link>
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="w-full rounded-full border border-slate-300 dark:border-white/15 px-4 py-2 text-sm font-medium text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                    className="w-full rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10"
                   >
                     Sign Out
                   </button>
@@ -285,14 +264,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/auth/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-full border border-slate-300 dark:border-white/15 px-4 py-2.5 text-sm font-medium text-center text-slate-800 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+                  className="rounded-full border border-white/20 px-4 py-2.5 text-sm font-medium text-center text-slate-200 hover:bg-white/10"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-md shadow-emerald-600/20"
+                  className="rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-lg shadow-emerald-600/30"
                 >
                   Get Started
                 </Link>
