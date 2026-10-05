@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
-import { Upload, X, ImageIcon, Plus, Pencil, Trash2, Check, Building2, Loader2 } from "lucide-react";
+import { X, Plus, Pencil, Trash2, Check, Building2, Loader2 } from "lucide-react";
 import { createProjectAction, updateProjectAction, uploadProjectCoverImageAction } from "@/server/actions/project.actions";
 import { upsertProjectBankAccountAction, deleteProjectBankAccountAction } from "@/server/actions/project-bank.actions";
 
@@ -110,7 +110,6 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const extraFileInputRef = useRef<HTMLInputElement>(null);
 
   // Bank accounts — local for create, saved for edit
   const [savedBanks, setSavedBanks] = useState<BankAccount[]>(initialBankAccounts);
@@ -120,19 +119,6 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [bankError, setBankError] = useState<string | null>(null);
   const [bankFieldErrors, setBankFieldErrors] = useState<Record<string, string>>({});
   const [bankPending, startBankTransition] = useTransition();
-
-  async function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImageError(null);
-    setImageUploading(true);
-    const fd = new FormData();
-    fd.append("file", file);
-    const result = await uploadProjectCoverImageAction(fd);
-    setImageUploading(false);
-    if (!result.success) { setImageError(result.error); return; }
-    setCoverImageUrl(result.data.url);
-  }
 
   async function handleExtraImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -150,8 +136,13 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
     const failed = results.find((r) => !r.success);
     if (failed && !failed.success) { setImageError(failed.error); return; }
     const urls = results.filter((r) => r.success).map((r) => (r as { success: true; data: { url: string } }).data.url);
-    setImageUrls((prev) => [...prev, ...urls]);
-    if (extraFileInputRef.current) extraFileInputRef.current.value = "";
+    if (!coverImageUrl && urls.length > 0) {
+      setCoverImageUrl(urls[0]);
+      setImageUrls((prev) => [...prev, ...urls.slice(1)]);
+    } else {
+      setImageUrls((prev) => [...prev, ...urls]);
+    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -364,61 +355,65 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       </SectionCard>
 
       <SectionCard title="Media">
-        <div className="space-y-5">
-          {/* Cover image */}
-          <div className="space-y-2">
-            <Label>Cover Image <span className="font-normal text-muted-foreground">(primary)</span></Label>
-            {coverImageUrl ? (
-              <div className="relative w-full max-w-sm">
-                <Image src={coverImageUrl} alt="Cover preview" width={400} height={225}
-                  className="rounded-lg border border-border object-cover w-full h-auto" />
-                <button type="button"
-                  onClick={() => { setCoverImageUrl(""); if (fileInputRef.current) fileInputRef.current.value = ""; }}
-                  className="absolute top-2 right-2 rounded-full bg-background/80 p-1 hover:bg-background border border-border">
-                  <X className="h-4 w-4" />
+        <div className="space-y-3">
+          <p className="text-xs text-muted-foreground">Upload at least 3 images. The first image is the cover. All images rotate as a slider on project cards.</p>
+
+          {/* Primary images grid */}
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+            {/* Existing slots */}
+            {[coverImageUrl, ...imageUrls].filter(Boolean).map((url, i) => (
+              <div key={url} className="relative aspect-video rounded-lg overflow-hidden border border-border group">
+                <Image src={url} alt={`Image ${i + 1}`} fill className="object-cover" sizes="200px" />
+                {i === 0 && (
+                  <span className="absolute top-1 left-1 rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white">Cover</span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (i === 0) {
+                      const remaining = imageUrls.filter(Boolean);
+                      setCoverImageUrl(remaining[0] ?? "");
+                      setImageUrls(remaining.slice(1));
+                    } else {
+                      setImageUrls((prev) => prev.filter((_, j) => j !== i - 1));
+                    }
+                    if (fileInputRef.current) fileInputRef.current.value = "";
+                  }}
+                  className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <X className="h-5 w-5 text-white" />
                 </button>
               </div>
-            ) : (
-              <button type="button" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}
-                className="flex w-full max-w-sm flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border bg-muted/30 py-10 text-sm text-muted-foreground hover:border-primary/50 hover:bg-muted/50 transition-colors disabled:opacity-50">
-                {imageUploading ? <span className="animate-pulse">Uploading…</span> : (
-                  <><ImageIcon className="h-8 w-8 opacity-40" /><span>Click to upload cover image</span><span className="text-xs opacity-60">JPEG, PNG, WebP · max 5 MB</span></>
-                )}
-              </button>
-            )}
-            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleImageChange} />
-            {!coverImageUrl && (
-              <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={imageUploading}>
-                <Upload className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Upload Image"}
-              </Button>
-            )}
-            <FieldError msg={fieldErrors.coverImageUrl} />
+            ))}
+
+            {/* Add slot */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={imageUploading}
+              className="aspect-video rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 hover:border-primary/50 hover:bg-muted/30 transition-colors disabled:opacity-50"
+            >
+              {imageUploading
+                ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                : <Plus className="h-5 w-5 text-muted-foreground" />}
+              <span className="text-[10px] text-muted-foreground">{imageUploading ? "Uploading…" : "Add"}</span>
+            </button>
           </div>
 
-          {/* Additional images */}
-          <div className="space-y-2">
-            <Label>Additional Images <span className="font-normal text-muted-foreground">(shown as slider on cards)</span></Label>
-            {imageUrls.length > 0 && (
-              <div className="flex flex-wrap gap-3">
-                {imageUrls.map((url, i) => (
-                  <div key={url} className="relative">
-                    <Image src={url} alt={`Image ${i + 1}`} width={120} height={80}
-                      className="rounded-lg border border-border object-cover h-20 w-[120px]" />
-                    <button type="button"
-                      onClick={() => setImageUrls((prev) => prev.filter((_, j) => j !== i))}
-                      className="absolute -top-1.5 -right-1.5 rounded-full bg-background border border-border p-0.5 hover:bg-destructive hover:text-white hover:border-destructive transition-colors">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-            <Button type="button" variant="outline" size="sm" onClick={() => extraFileInputRef.current?.click()} disabled={imageUploading}>
-              <Plus className="mr-2 h-4 w-4" /> {imageUploading ? "Uploading…" : "Add Images"}
-            </Button>
-            <input ref={extraFileInputRef} type="file" accept="image/jpeg,image/png,image/webp" multiple className="hidden" onChange={handleExtraImagesChange} />
-          </div>
+          {[coverImageUrl, ...imageUrls].filter(Boolean).length < 3 && (
+            <p className="text-xs text-warning flex items-center gap-1">
+              <span>⚠</span> Add at least {3 - [coverImageUrl, ...imageUrls].filter(Boolean).length} more image{3 - [coverImageUrl, ...imageUrls].filter(Boolean).length > 1 ? "s" : ""} for the slider.
+            </p>
+          )}
 
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            multiple
+            className="hidden"
+            onChange={handleExtraImagesChange}
+          />
           {imageError && <p className="text-xs text-destructive">{imageError}</p>}
         </div>
       </SectionCard>
