@@ -129,7 +129,7 @@ export function PlatformFeaturesSection() {
                           {feature.badge}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                      <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
                         {feature.desc}
                       </p>
                     </div>

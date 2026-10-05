@@ -35,7 +35,7 @@ export function CalculatorSection() {
             </span>
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
             Simulate your investment growth across audited project tiers. Direct capital preservation backed by enforceable contracts.
           </p>
         </AnimatedSection>

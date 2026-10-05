@@ -153,11 +153,11 @@
 
   /* Semantic surface */
   --background:           oklch(0.990 0.004 100);
-  --foreground:           oklch(0.155 0.010 250);
+  --foreground:           oklch(0.110 0.010 250);
   --card:                 oklch(1 0 0);
-  --card-foreground:      oklch(0.155 0.010 250);
+  --card-foreground:      oklch(0.110 0.010 250);
   --popover:              oklch(1 0 0);
-  --popover-foreground:   oklch(0.155 0.010 250);
+  --popover-foreground:   oklch(0.110 0.010 250);
 
   /* Primary = brand teal (logo color) */
   --primary:              oklch(0.468 0.105 177);
@@ -167,9 +167,9 @@
   --secondary:            oklch(0.955 0.025 177);
   --secondary-foreground: oklch(0.372 0.088 177);
 
-  /* Muted = warm neutral */
+  /* Muted = warm neutral with high-contrast text */
   --muted:                oklch(0.965 0.006 100);
-  --muted-foreground:     oklch(0.400 0.015 250);
+  --muted-foreground:     oklch(0.240 0.015 250);
 
   /* Accent = harvest amber */
   --accent:               oklch(0.960 0.040 80);
@@ -223,7 +223,7 @@
   --secondary-foreground: oklch(0.785 0.110 177);
 
   --muted:                oklch(0.210 0.012 250);
-  --muted-foreground:     oklch(0.680 0.015 250);
+  --muted-foreground:     oklch(0.850 0.012 250);
 
   --accent:               oklch(0.250 0.040 80);
   --accent-foreground:    oklch(0.820 0.160 80);

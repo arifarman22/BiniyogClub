@@ -98,7 +98,7 @@ export default function FaqPage() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection animation="fade-down">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-light tracking-widest text-emerald-300 backdrop-blur-md mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-emerald-300 backdrop-blur-md mb-6">
               <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
               <span>INVESTOR KNOWLEDGE BASE & SUPPORT</span>
             </div>
@@ -110,7 +110,7 @@ export default function FaqPage() {
               </span>
             </h1>
 
-            <p className="mt-5 text-base sm:text-lg font-light text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-5 text-base sm:text-lg font-normal text-slate-100 max-w-2xl mx-auto leading-relaxed">
               Everything you need to know about investing on Biniyog Club—from account setup and legal deeds to returns and bank withdrawals.
             </p>
           </AnimatedSection>
@@ -124,7 +124,7 @@ export default function FaqPage() {
             {FAQ_SECTIONS.map(({ heading, items }, sIdx) => (
               <AnimatedSection key={heading} delay={sIdx * 80} animation="fade-up">
                 <div className="border-b border-border/70 pb-3 mb-6">
-                  <h2 className="text-xl sm:text-2xl font-light tracking-tight text-foreground flex items-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-normal tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     {heading}
                   </h2>
@@ -134,13 +134,13 @@ export default function FaqPage() {
                   {items.map(({ q, a }) => (
                     <div
                       key={q}
-                      className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-6 shadow-sm transition-all duration-300 hover:border-emerald-500/40 hover:shadow-md"
+                      className="rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-6 shadow-sm transition-all duration-300 hover:border-emerald-500/40 hover:shadow-md"
                     >
-                      <h3 className="text-base font-semibold text-foreground mb-2 flex items-start gap-2.5">
-                        <HelpCircle className="h-4 w-4 text-emerald-500 shrink-0 mt-0.5" />
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white mb-2 flex items-start gap-2.5">
+                        <HelpCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span>{q}</span>
                       </h3>
-                      <p className="text-xs sm:text-sm font-light text-muted-foreground leading-relaxed pl-6.5">
+                      <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed pl-6.5">
                         {a}
                       </p>
                     </div>
@@ -153,25 +153,25 @@ export default function FaqPage() {
           {/* Contact Support Box */}
           <AnimatedSection animation="fade-up" delay={200}>
             <div className="mt-16 rounded-3xl border border-emerald-500/30 bg-emerald-500/5 p-8 text-center sm:p-10">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
                 <MessageSquare className="h-6 w-6" />
               </div>
-              <h3 className="text-xl font-medium text-foreground mb-2">Have a Question Not Answered Here?</h3>
-              <p className="text-xs sm:text-sm font-light text-muted-foreground max-w-md mx-auto mb-6">
+              <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Have a Question Not Answered Here?</h3>
+              <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 max-w-md mx-auto mb-6">
                 Our investor relations desk in Mohakhali C/A, Dhaka is available Sunday through Thursday, 9:00 AM – 6:00 PM BST.
               </p>
               <div className="flex flex-col sm:flex-row justify-center items-center gap-3">
                 <Link
                   href="/contact"
-                  className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-xs sm:text-sm font-medium text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+                  className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
                 >
                   Contact Investor Desk <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
                   href="tel:+8801335149033"
-                  className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-6 py-3 text-xs sm:text-sm font-medium text-foreground hover:border-emerald-500/50 transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-300 dark:border-white/20 bg-card px-6 py-3 text-xs sm:text-sm font-semibold text-slate-900 dark:text-white hover:border-emerald-500/50 transition-all"
                 >
-                  <Phone className="h-3.5 w-3.5 text-emerald-500" /> +880 1335-149033
+                  <Phone className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> +880 1335-149033
                 </a>
               </div>
             </div>

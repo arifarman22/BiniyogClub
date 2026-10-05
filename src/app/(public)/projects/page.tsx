@@ -131,7 +131,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
 
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
           <AnimatedSection animation="fade-down">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-light tracking-widest text-emerald-300 backdrop-blur-md mb-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-emerald-300 backdrop-blur-md mb-6">
               <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
               <span>CURATED DIRECT INVESTMENTS • REAL ECONOMY CO-INVESTMENT</span>
             </div>
@@ -143,7 +143,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
               </span>
             </h1>
 
-            <p className="mt-5 text-base sm:text-lg font-light text-slate-300 max-w-3xl mx-auto leading-relaxed">
+            <p className="mt-5 text-base sm:text-lg font-normal text-slate-100 max-w-3xl mx-auto leading-relaxed">
               Explore audited commercial syndicates, agricultural ventures, SME trade finance, and expansion portfolios. Every opportunity is vetted by our Dhaka finance team, protected under the Contract Act 1872, and governed by segregated bank escrow.
             </p>
           </AnimatedSection>
@@ -151,28 +151,28 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
           {/* Trust Guarantees Bar */}
           <AnimatedSection animation="fade-up" delay={120}>
             <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-3 max-w-4xl mx-auto">
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 text-left">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">Entry Level</span>
-                <p className="text-xl sm:text-2xl font-light text-white font-mono mt-0.5">৳5,000</p>
-                <p className="text-xs text-slate-400 mt-0.5">Start with minimal capital</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-4 text-left">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Entry Level</span>
+                <p className="text-xl sm:text-2xl font-normal text-white font-mono mt-0.5">৳5,000</p>
+                <p className="text-xs text-slate-200 font-normal mt-0.5">Start with minimal capital</p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 text-left">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">Target Yield</span>
-                <p className="text-xl sm:text-2xl font-light text-white font-mono mt-0.5">14% - 26%</p>
-                <p className="text-xs text-slate-400 mt-0.5">Annualized milestone returns</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-4 text-left">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Target Yield</span>
+                <p className="text-xl sm:text-2xl font-normal text-white font-mono mt-0.5">14% - 26%</p>
+                <p className="text-xs text-slate-200 font-normal mt-0.5">Annualized milestone returns</p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 text-left">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">Legal Security</span>
-                <p className="text-xl sm:text-2xl font-light text-white font-mono mt-0.5">Contract Act</p>
-                <p className="text-xs text-slate-400 mt-0.5">Enforceable digital deeds</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-4 text-left">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Legal Security</span>
+                <p className="text-xl sm:text-2xl font-normal text-white font-mono mt-0.5">Contract Act</p>
+                <p className="text-xs text-slate-200 font-normal mt-0.5">Enforceable digital deeds</p>
               </div>
 
-              <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md p-4 text-left">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-400 font-semibold">Track Record</span>
-                <p className="text-xl sm:text-2xl font-light text-white font-mono mt-0.5">100%</p>
-                <p className="text-xs text-slate-400 mt-0.5">On-time return disbursements</p>
+              <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-md p-4 text-left">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-300 font-bold">Track Record</span>
+                <p className="text-xl sm:text-2xl font-normal text-white font-mono mt-0.5">100%</p>
+                <p className="text-xs text-slate-200 font-normal mt-0.5">On-time return disbursements</p>
               </div>
             </div>
           </AnimatedSection>
@@ -184,7 +184,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {SECTOR_HIGHLIGHTS.map((item, idx) => (
             <AnimatedSection key={item.title} delay={idx * 80} animation="fade-up">
-              <div className="group relative overflow-hidden rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-5 shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/50 hover:shadow-xl">
+              <div className="group relative overflow-hidden rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-5 shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/50 hover:shadow-xl">
                 <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-4 bg-slate-100 dark:bg-slate-800">
                   <Image
                     src={item.image}
@@ -194,18 +194,18 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                     sizes="(max-width: 768px) 100vw, 33vw"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-                  <span className="absolute top-3 right-3 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/15 px-2.5 py-0.5 text-[10px] font-semibold text-emerald-300 uppercase tracking-wider">
+                  <span className="absolute top-3 right-3 rounded-full bg-slate-900/90 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-200 uppercase tracking-wider">
                     {item.tag}
                   </span>
-                  <span className="absolute bottom-3 left-3 rounded-full bg-emerald-950/80 backdrop-blur-md border border-emerald-500/30 px-3 py-0.5 text-xs font-semibold text-emerald-300">
+                  <span className="absolute bottom-3 left-3 rounded-full bg-emerald-950/90 backdrop-blur-md border border-emerald-500/40 px-3 py-0.5 text-xs font-bold text-emerald-200">
                     {item.expectedReturn}
                   </span>
                 </div>
 
-                <h3 className="text-base font-semibold text-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
                   {item.title}
                 </h3>
-                <p className="text-xs font-light text-muted-foreground mt-1.5 leading-relaxed">
+                <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 mt-1.5 leading-relaxed">
                   {item.subtitle}
                 </p>
               </div>
@@ -220,13 +220,13 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
           {/* Header row */}
           <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4 pb-6 border-b border-border/60">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-0.5 text-xs font-light text-emerald-600 dark:text-emerald-400 mb-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3 py-0.5 text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-2">
                 <span>ACTIVE PIPELINE</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-slate-900 dark:text-white">
                 All Available Opportunities
               </h2>
-              <p className="text-xs sm:text-sm font-light text-muted-foreground mt-1">
+              <p className="text-xs sm:text-sm font-normal text-slate-700 dark:text-slate-200 mt-1">
                 Showing {total} verified investment {total === 1 ? "project" : "projects"} currently available for syndication
               </p>
             </div>
@@ -234,7 +234,7 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
             {/* Quick links to Groups */}
             <Link
               href="/groups"
-              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/5 px-4 py-2 text-xs font-medium text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-all shrink-0"
+              className="inline-flex items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-bold text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 transition-all shrink-0"
             >
               <Building2 className="h-3.5 w-3.5" /> Explore Partner Business Groups <ArrowRight className="h-3.5 w-3.5" />
             </Link>
@@ -243,29 +243,29 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
           {/* Search + Sort Bar */}
           <div className="mb-6 flex flex-wrap items-center gap-3">
             <form method="GET" action="/projects" className="relative flex-1 min-w-[260px]">
-              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-600 dark:text-slate-300" />
               <input
                 name="search"
                 defaultValue={search}
                 placeholder="Search projects by title, sector, location..."
-                className="w-full rounded-2xl border border-input bg-card py-2.5 pl-10 pr-4 text-sm outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
+                className="w-full rounded-2xl border border-input bg-card py-2.5 pl-10 pr-4 text-sm font-normal text-slate-900 dark:text-white outline-none transition-all focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20"
               />
               {category && <input type="hidden" name="category" value={category} />}
               {sort !== "newest" && <input type="hidden" name="sort" value={sort} />}
             </form>
 
             <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+              <SlidersHorizontal className="h-4 w-4 text-slate-700 dark:text-slate-300" />
               <div className="flex flex-wrap gap-1">
                 {Object.entries(SORT_LABELS).map(([v, l]) => (
                   <Link
                     key={v}
                     href={buildUrl({ sort: v, page: "1" })}
                     className={cn(
-                      "rounded-xl px-3 py-1.5 text-xs font-medium transition-all",
+                      "rounded-xl px-3 py-1.5 text-xs font-semibold transition-all",
                       sort === v
                         ? "bg-emerald-600 text-white shadow-sm"
-                        : "bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted",
+                        : "bg-muted text-slate-800 dark:text-slate-200 hover:text-foreground hover:bg-muted/80",
                     )}
                   >
                     {l}
@@ -280,10 +280,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
             <Link
               href={buildUrl({ category: undefined, page: "1" })}
               className={cn(
-                "rounded-full border px-4 py-1.5 text-xs font-medium transition-all",
+                "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all",
                 !category
                   ? "border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                  : "border-border bg-card text-muted-foreground hover:border-emerald-500/50 hover:text-foreground",
+                  : "border-slate-300 dark:border-white/20 bg-card text-slate-800 dark:text-slate-200 hover:border-emerald-500/50 hover:text-foreground",
               )}
             >
               All Sectors ({total})
@@ -296,10 +296,10 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                   key={cat}
                   href={buildUrl({ category: cat, page: "1" })}
                   className={cn(
-                    "rounded-full border px-4 py-1.5 text-xs font-medium transition-all",
+                    "rounded-full border px-4 py-1.5 text-xs font-semibold transition-all",
                     category === cat
                       ? "border-emerald-600 bg-emerald-600 text-white shadow-md shadow-emerald-600/20"
-                      : "border-border bg-card text-muted-foreground hover:border-emerald-500/50 hover:text-foreground",
+                      : "border-slate-300 dark:border-white/20 bg-card text-slate-800 dark:text-slate-200 hover:border-emerald-500/50 hover:text-foreground",
                   )}
                 >
                   {label} ({count})
@@ -344,18 +344,18 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
                   {page > 1 && (
                     <Link
                       href={buildUrl({ page: String(page - 1) })}
-                      className="rounded-full border border-border px-5 py-2 text-xs font-medium hover:border-emerald-500/50 transition-colors"
+                      className="rounded-full border border-slate-300 dark:border-white/20 px-5 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:border-emerald-500/50 transition-colors"
                     >
                       Previous
                     </Link>
                   )}
-                  <span className="text-xs text-muted-foreground font-mono">
+                  <span className="text-xs text-slate-800 dark:text-slate-200 font-mono font-medium">
                     Page {page} of {totalPages}
                   </span>
                   {page < totalPages && (
                     <Link
                       href={buildUrl({ page: String(page + 1) })}
-                      className="rounded-full border border-border px-5 py-2 text-xs font-medium hover:border-emerald-500/50 transition-colors"
+                      className="rounded-full border border-slate-300 dark:border-white/20 px-5 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 hover:border-emerald-500/50 transition-colors"
                     >
                       Next
                     </Link>
@@ -364,16 +364,16 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
               )}
             </>
           ) : (
-            <div className="rounded-3xl border border-dashed border-border/80 bg-card/50 py-20 text-center">
+            <div className="rounded-3xl border border-dashed border-border/80 bg-card/60 py-20 text-center">
               <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
                 <Search className="h-6 w-6" />
               </div>
-              <h3 className="text-lg font-medium text-foreground">No matching projects found</h3>
-              <p className="mt-2 text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white">No matching projects found</h3>
+              <p className="mt-2 text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 max-w-md mx-auto leading-relaxed">
                 {search || category ? (
                   <>
                     Try adjusting your filters, searching with different terms, or{" "}
-                    <Link href="/projects" className="text-emerald-600 dark:text-emerald-400 font-medium hover:underline">
+                    <Link href="/projects" className="text-emerald-600 dark:text-emerald-400 font-bold hover:underline">
                       view all available projects
                     </Link>
                     .
@@ -388,31 +388,31 @@ export default async function ProjectsPage({ searchParams }: { searchParams: Sea
       </section>
 
       {/* ── 4. Cross-Promotion: Institutional Business Groups ── */}
-      <section className="py-20 bg-gradient-to-b from-card to-background border-t border-border/50">
+      <section className="py-20 bg-gradient-to-b from-card to-background border-t border-border/60">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border border-slate-200/80 dark:border-white/10 bg-card p-8 sm:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
+          <div className="rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-8 sm:p-12 shadow-xl relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-8">
             <div className="max-w-2xl">
-              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-light text-emerald-600 dark:text-emerald-400 mb-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-3">
                 <Building2 className="h-3.5 w-3.5" />
                 <span>INSTITUTIONAL SYNDICATES</span>
               </div>
-              <h2 className="text-2xl sm:text-3xl font-light tracking-tight text-foreground">
+              <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-slate-900 dark:text-white">
                 Looking for Higher-Tier Directorship or Property Stakes?
               </h2>
-              <p className="mt-3 text-sm font-light text-muted-foreground leading-relaxed">
+              <p className="mt-3 text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
                 In addition to commercial projects, Biniyog Club partners directly with leading conglomerate entities—Mariners Group, MOHS Group, and Marinozz Group. Explore Shareholder, Directorship, Plot Booking, and Land Sharing tiers.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3.5 shrink-0">
               <Link
                 href="/groups"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-medium text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5"
               >
                 Explore Business Groups <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/how-it-works"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-border px-8 py-3.5 text-sm font-medium text-foreground transition-all hover:border-emerald-500/50"
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-slate-300 dark:border-white/20 px-8 py-3.5 text-sm font-semibold text-slate-900 dark:text-white transition-all hover:border-emerald-500/50 hover:bg-muted/30"
               >
                 How It Works
               </Link>

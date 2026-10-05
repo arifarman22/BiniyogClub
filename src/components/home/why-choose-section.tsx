@@ -69,7 +69,7 @@ export function WhyChooseSection() {
             </span>
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
             Engineered with private equity discipline, institutional governance, and radical transparency for Bangladeshi investors.
           </p>
         </AnimatedSection>
@@ -110,7 +110,7 @@ export function WhyChooseSection() {
                       {card.title}
                     </h3>
 
-                    <p className="text-sm font-normal text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
                       {card.desc}
                     </p>
                   </div>

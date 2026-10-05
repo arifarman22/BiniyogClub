@@ -102,11 +102,11 @@ export function AboutSection() {
                 </span>
               </h2>
 
-              <p className="text-base sm:text-lg text-slate-700 dark:text-slate-300 font-normal leading-relaxed mb-4">
+              <p className="text-base sm:text-lg text-slate-900 dark:text-slate-100 font-normal leading-relaxed mb-4">
                 Biniyog Club was established with a clear mandate: to bridge the gap between conscientious co-investors and high-potential, vetted commercial opportunities in Bangladesh.
               </p>
 
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed mb-8">
+              <p className="text-sm sm:text-base text-slate-900 dark:text-slate-100 font-normal leading-relaxed mb-8">
                 By combining institutional-grade financial analysis, direct legal enforceability, and an immutable double-entry ledger, we give everyday investors and institutions access to structured wealth creation previously reserved for private equity firms.
               </p>
 
@@ -129,7 +129,7 @@ export function AboutSection() {
                       </div>
                       <h4 className="text-sm font-semibold text-foreground">{pillar.title}</h4>
                     </div>
-                    <p className="text-xs text-slate-600 dark:text-slate-300 pl-14 leading-relaxed">
+                    <p className="text-xs font-normal text-slate-800 dark:text-slate-200 pl-14 leading-relaxed">
                       {pillar.desc}
                     </p>
                   </div>

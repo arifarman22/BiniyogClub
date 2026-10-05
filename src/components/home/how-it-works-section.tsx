@@ -47,7 +47,7 @@ export function HowItWorksSection() {
               Works
             </span>
           </h2>
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
             Four clear steps from registration to receiving scheduled profit payouts directly into your bank or mobile wallet.
           </p>
         </AnimatedSection>
@@ -82,7 +82,7 @@ export function HowItWorksSection() {
                   <h3 className="mb-2 text-base sm:text-lg font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
                     {stepItem.title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 leading-relaxed">
+                  <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
                     {stepItem.desc}
                   </p>
 

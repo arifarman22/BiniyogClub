@@ -65,7 +65,7 @@ export function SecuritySection() {
                 </span>
               </h2>
 
-              <p className="text-base sm:text-lg text-slate-300 font-normal leading-relaxed mb-8">
+              <p className="text-base sm:text-lg text-slate-100 font-normal leading-relaxed mb-8">
                 We believe Bangladeshi co-investors deserve uncompromised rigor. Biniyog Club pairs mathematical ledger precision with enforceable legal contracts to safeguard your capital at every step.
               </p>
 
@@ -83,7 +83,7 @@ export function SecuritySection() {
                         </div>
                         <h4 className="text-xs sm:text-sm font-semibold text-white leading-snug">{item.title}</h4>
                       </div>
-                      <p className="text-xs text-slate-300 pl-10 leading-relaxed">{item.desc}</p>
+                      <p className="text-xs text-slate-200 pl-10 leading-relaxed font-normal">{item.desc}</p>
                     </div>
                   );
                 })}

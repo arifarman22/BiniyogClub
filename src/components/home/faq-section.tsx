@@ -16,7 +16,7 @@ export function FaqSection() {
               Know
             </span>
           </h2>
-          <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300">
+          <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100">
             Clear answers regarding security, compliance, minimum investments, and payout cycles.
           </p>
         </AnimatedSection>
@@ -29,7 +29,7 @@ export function FaqSection() {
           <div className="mt-12 rounded-none border border-border/80 bg-slate-50 dark:bg-slate-900/60 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left shadow-sm">
             <div>
               <h4 className="text-base font-semibold text-foreground">Still have questions about investing?</h4>
-              <p className="text-xs sm:text-sm font-normal text-slate-600 dark:text-slate-300 mt-1 max-w-lg">
+              <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 mt-1 max-w-lg">
                 Our investor relations team is ready to assist you with contract details, bank wires, and legal deeds.
               </p>
             </div>

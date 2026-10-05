@@ -41,7 +41,7 @@ export function CommunitySection() {
             </span>
           </h2>
 
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
+          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
             By aggregating collective purchasing power, Biniyog Club enables everyday investors to participate in high-yield commercial ventures previously accessible only to major conglomerates.
           </p>
         </AnimatedSection>
@@ -94,7 +94,7 @@ export function CommunitySection() {
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                       {pillar.title}
                     </h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
                       {pillar.desc}
                     </p>
                   </div>
@@ -117,7 +117,7 @@ export function CommunitySection() {
                 Referral Network
               </span>
               <h4 className="text-xl font-semibold text-foreground">Introduce Friends & Earn Legally Verified Rewards</h4>
-              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 mt-1 max-w-xl">
+              <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 mt-1 max-w-xl">
                 Every verified referral who funds a vetted project earns you referral allocations credited directly to your platform wallet.
               </p>
             </div>
