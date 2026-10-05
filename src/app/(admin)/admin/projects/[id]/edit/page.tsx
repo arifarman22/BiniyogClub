@@ -24,7 +24,7 @@ export default async function EditProjectPage({ params }: Props) {
   if (!project) notFound();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <div className="space-y-6">
       <div>
         <Link href={`/admin/projects/${id}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ChevronLeft className="h-4 w-4" /> Back to Project
