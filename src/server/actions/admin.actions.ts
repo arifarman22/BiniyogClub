@@ -112,9 +112,17 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
           await tx.profitDistribution.deleteMany({ where: { investmentId: { in: investmentIds } } });
           await tx.distributionLineItem.deleteMany({ where: { investmentId: { in: investmentIds } } });
           await tx.gatewayPayment.deleteMany({ where: { investmentId: { in: investmentIds } } });
+          // Must delete ledger entries before ledger transactions (FK constraint)
+          await tx.ledgerEntry.deleteMany({ where: { ledgerTransaction: { investmentId: { in: investmentIds } } } });
           await tx.ledgerTransaction.deleteMany({ where: { investmentId: { in: investmentIds } } });
           await tx.investment.deleteMany({ where: { id: { in: investmentIds } } });
         }
+      }
+      // Delete wallet ledger entries + snapshots (wallet itself cascades via user delete)
+      const wallet = await tx.wallet.findUnique({ where: { userId }, select: { id: true } });
+      if (wallet) {
+        await tx.walletSnapshot.deleteMany({ where: { walletId: wallet.id } });
+        await tx.ledgerEntry.deleteMany({ where: { walletId: wallet.id } });
       }
       // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
       await tx.user.delete({ where: { id: userId } });
@@ -122,6 +130,8 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
 
     await auditLog(session.id, "DELETE", "User", userId);
     revalidatePath("/admin/users");
+    revalidatePath("/admin");
+    revalidatePath("/admin/investments");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }
 }
