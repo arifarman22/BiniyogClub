@@ -235,8 +235,10 @@ export async function confirmDepositAction(
   try {
     const session = await requireSession();
     await walletService.confirmDeposit(session, paymentId);
+    revalidatePath("/admin/deposits");
     revalidatePath("/admin/payments");
     revalidatePath("/dashboard/wallet");
+    revalidatePath("/dashboard/deposits");
     return { success: true, data: undefined };
   } catch (error) {
     return serviceError(error);
