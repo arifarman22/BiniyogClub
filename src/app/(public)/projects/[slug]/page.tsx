@@ -18,6 +18,8 @@ import { db } from "@/lib/db/prisma";
 import { ProjectInvestForm } from "@/components/shared/project-invest-form";
 import { ProjectBankDetails } from "@/components/shared/project-bank-details";
 import { ProjectStatusBadge } from "@/components/shared/project-status-badge";
+import { ProjectInvestmentStatus } from "@/components/shared/project-investment-status";
+import type { ExistingInvestment } from "@/components/shared/project-investment-status";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -119,9 +121,45 @@ export default async function ProjectDetailPage({ params }: Props) {
   if (!project) notFound();
 
   let kycApproved = false;
+  let existingInvestment: ExistingInvestment | null = null;
+
   if (session) {
-    const kyc = await db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } });
+    const [kyc, profile] = await Promise.all([
+      db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } }),
+      db.investorProfile.findUnique({ where: { userId: session.id }, select: { id: true } }),
+    ]);
     kycApproved = kyc?.status === "VERIFIED";
+
+    if (profile) {
+      const inv = await db.investment.findFirst({
+        where: {
+          investorProfileId: profile.id,
+          projectId: project.id,
+          status: { notIn: ["CANCELLED", "REFUNDED"] },
+        },
+        select: {
+          id: true,
+          status: true,
+          amountBdt: true,
+          expectedReturnBdt: true,
+          manualPayments: {
+            where: { submittedBy: session.id },
+            select: { id: true, status: true, transactionRef: true, rejectionReason: true, createdAt: true },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
+      });
+      if (inv) {
+        existingInvestment = {
+          id: inv.id,
+          status: inv.status,
+          amountBdt: Number(inv.amountBdt),
+          expectedReturnBdt: Number(inv.expectedReturnBdt),
+          lastSubmission: inv.manualPayments[0] ?? null,
+        };
+      }
+    }
   }
 
   const pct = fundingPct(project.fundedAmountBdt.toString(), project.fundingGoalBdt.toString());
@@ -405,7 +443,12 @@ export default async function ProjectDetailPage({ params }: Props) {
                       <p className="text-xs font-medium text-harvest-600">{days > 0 ? `${days} days left to invest` : "Closing very soon"}</p>
                     </div>
                   )}
-                  {canInvestNow ? (
+                  {existingInvestment ? (
+                    <ProjectInvestmentStatus
+                      investment={existingInvestment}
+                      bankAccounts={project.bankAccounts}
+                    />
+                  ) : canInvestNow ? (
                     <ProjectInvestForm
                       project={{
                         id: project.id,
