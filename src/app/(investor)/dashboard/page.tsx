@@ -281,7 +281,14 @@ export default async function DashboardPage() {
             <p className="text-4xl font-bold tracking-tight">{fmt(stats.walletBalance)}</p>
             <p className="mt-1 text-xs opacity-60">Available to invest</p>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            {stats.reservedAmount > 0 && (
+              <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5">
+                <Lock className="h-3 w-3 opacity-70" />
+                <span className="text-xs opacity-80">{fmt(stats.reservedAmount)} reserved — pending approval</span>
+              </div>
+            )}
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-white/10 px-3 py-2.5">
                 <p className="text-[10px] opacity-70 mb-0.5">Total Invested</p>
                 <p className="text-base font-bold">{fmt(stats.totalInvested)}</p>

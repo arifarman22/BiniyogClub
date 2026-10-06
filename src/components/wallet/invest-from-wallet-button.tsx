@@ -112,7 +112,7 @@ export function InvestFromWalletButton({ projectId, projectTitle, minAmountBdt, 
                   {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wallet className="h-4 w-4" />}
                   {isPending ? "Processing…" : "Confirm Investment"}
                 </button>
-                <p className="text-center text-xs text-muted-foreground">Funds will be deducted from your wallet immediately</p>
+                <p className="text-center text-xs text-muted-foreground">Funds will be reserved from your wallet pending admin approval</p>
               </form>
             )}
           </div>

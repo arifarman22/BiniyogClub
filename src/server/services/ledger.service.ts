@@ -227,6 +227,104 @@ export const ledgerService = {
   },
 
   /**
+   * INVESTMENT_RESERVATION: Lock funds for a PENDING investment.
+   * Debit: investor wallet (available balance decreases)
+   * Credit: platform escrow (funds held pending admin approval)
+   *
+   * This prevents the investor from spending the same money on another investment
+   * while this one awaits admin approval. Released on approval or cancellation.
+   */
+  async recordInvestmentReservation(
+    investorUserId: string,
+    amountBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      projectTitle: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Reservation amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "INVESTMENT_RESERVATION",
+          `Investment reservation: ${opts.projectTitle}`,
+          amountBdt,
+          investorWallet.id, // debit investor (funds reserved)
+          escrowWallet.id,   // credit escrow (funds held)
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { timeout: 15000 },
+    );
+  },
+
+  /**
+   * INVESTMENT_RESERVATION_RELEASE: Release a reservation back to the investor.
+   * Called when a PENDING investment is cancelled/rejected.
+   * Debit: platform escrow
+   * Credit: investor wallet (funds returned to available balance)
+   */
+  async recordReservationRelease(
+    investorUserId: string,
+    amountBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      description?: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Release amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const investorWallet = await walletRepository.getOrCreate(tx, investorUserId, "INVESTOR");
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "INVESTMENT_RESERVATION_RELEASE",
+          opts.description ?? "Investment reservation released",
+          amountBdt,
+          escrowWallet.id,   // debit escrow
+          investorWallet.id, // credit investor (funds returned)
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { timeout: 15000 },
+    );
+  },
+
+  /**
    * INVESTMENT_FUNDING: Investor commits funds to a project.
    * Debit: investor wallet (balance decreases)
    * Credit: platform escrow (escrow holds the funds)

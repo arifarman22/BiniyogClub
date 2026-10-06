@@ -18,7 +18,7 @@ const mockDb = {
     update: vi.fn(),
     updateMany: vi.fn(),
   },
-  project: { update: vi.fn() },
+  project: { update: vi.fn(), findUnique: vi.fn() },
   wallet: { findUnique: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
   payment: { create: vi.fn(), updateMany: vi.fn() },
   ledgerTransaction: { create: vi.fn() },
@@ -139,7 +139,17 @@ describe("investmentService.create", () => {
     mockDb.kyc.findUnique.mockResolvedValue({ status: "VERIFIED" });
     mockInvestmentRepo.findByIdempotencyKey.mockResolvedValue(null);
     mockDb.investorProfile.findUnique.mockResolvedValue({ id: "profile-1" });
-    mockDb.$queryRaw.mockResolvedValue([baseProject]);
+    mockDb.project.findUnique.mockResolvedValue({
+      id: baseProject.id,
+      status: baseProject.status,
+      fundingGoalBdt: baseProject.funding_goal_bdt,
+      fundedAmountBdt: baseProject.funded_amount_bdt,
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: baseProject.max_investment_bdt,
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: baseProject.funding_deadline,
+    });
     mockDb.investment.findFirst.mockResolvedValue(null);
     mockDb.investment.create.mockResolvedValue({
       id: "inv-1",
@@ -245,7 +255,7 @@ describe("investmentService.create", () => {
   });
 
   it("throws NotFoundError when project does not exist", async () => {
-    mockDb.$queryRaw.mockResolvedValue([]);
+    mockDb.project.findUnique.mockResolvedValue(null);
 
     await expect(
       investmentService.create(investorSession, {
@@ -258,7 +268,16 @@ describe("investmentService.create", () => {
   });
 
   it("throws ValidationError when project is not FUNDRAISING", async () => {
-    mockDb.$queryRaw.mockResolvedValue([{ ...baseProject, status: "FUNDED" }]);
+    mockDb.project.findUnique.mockResolvedValue({ ...{
+      id: baseProject.id, status: "FUNDED",
+      fundingGoalBdt: baseProject.funding_goal_bdt,
+      fundedAmountBdt: baseProject.funded_amount_bdt,
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: baseProject.max_investment_bdt,
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: baseProject.funding_deadline,
+    } });
 
     await expect(
       investmentService.create(investorSession, {
@@ -271,9 +290,16 @@ describe("investmentService.create", () => {
   });
 
   it("throws ValidationError when funding deadline has passed", async () => {
-    mockDb.$queryRaw.mockResolvedValue([
-      { ...baseProject, funding_deadline: new Date(Date.now() - 1000) },
-    ]);
+    mockDb.project.findUnique.mockResolvedValue({
+      id: baseProject.id, status: baseProject.status,
+      fundingGoalBdt: baseProject.funding_goal_bdt,
+      fundedAmountBdt: baseProject.funded_amount_bdt,
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: baseProject.max_investment_bdt,
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: new Date(Date.now() - 1000),
+    });
 
     await expect(
       investmentService.create(investorSession, {
@@ -297,9 +323,16 @@ describe("investmentService.create", () => {
   });
 
   it("throws ValidationError when amount exceeds maximum", async () => {
-    mockDb.$queryRaw.mockResolvedValue([
-      { ...baseProject, max_investment_bdt: "50000.00" },
-    ]);
+    mockDb.project.findUnique.mockResolvedValue({
+      id: baseProject.id, status: baseProject.status,
+      fundingGoalBdt: baseProject.funding_goal_bdt,
+      fundedAmountBdt: baseProject.funded_amount_bdt,
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: "50000.00",
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: baseProject.funding_deadline,
+    });
 
     await expect(
       investmentService.create(investorSession, {
@@ -312,9 +345,16 @@ describe("investmentService.create", () => {
   });
 
   it("throws ConflictError when project is fully funded", async () => {
-    mockDb.$queryRaw.mockResolvedValue([
-      { ...baseProject, funded_amount_bdt: "500000.00" }, // fully funded
-    ]);
+    mockDb.project.findUnique.mockResolvedValue({
+      id: baseProject.id, status: baseProject.status,
+      fundingGoalBdt: "500000.00",
+      fundedAmountBdt: "500000.00",
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: baseProject.max_investment_bdt,
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: baseProject.funding_deadline,
+    });
 
     await expect(
       investmentService.create(investorSession, {
@@ -327,9 +367,16 @@ describe("investmentService.create", () => {
   });
 
   it("throws ValidationError when amount exceeds remaining capacity", async () => {
-    mockDb.$queryRaw.mockResolvedValue([
-      { ...baseProject, funded_amount_bdt: "490000.00" }, // only 10000 remaining
-    ]);
+    mockDb.project.findUnique.mockResolvedValue({
+      id: baseProject.id, status: baseProject.status,
+      fundingGoalBdt: "500000.00",
+      fundedAmountBdt: "490000.00",
+      minInvestmentBdt: baseProject.min_investment_bdt,
+      maxInvestmentBdt: baseProject.max_investment_bdt,
+      expectedReturnPct: baseProject.expected_return_pct,
+      returnType: baseProject.return_type,
+      fundingDeadline: baseProject.funding_deadline,
+    });
 
     await expect(
       investmentService.create(investorSession, {
@@ -623,9 +670,16 @@ describe("expected return calculation", () => {
 
   for (const { amount, pct, expected } of cases) {
     it(`calculates ${amount} * ${pct}% = ${expected}`, async () => {
-      mockDb.$queryRaw.mockResolvedValue([
-        { ...baseProject, expected_return_pct: pct },
-      ]);
+      mockDb.project.findUnique.mockResolvedValue({
+        id: baseProject.id, status: baseProject.status,
+        fundingGoalBdt: baseProject.funding_goal_bdt,
+        fundedAmountBdt: baseProject.funded_amount_bdt,
+        minInvestmentBdt: baseProject.min_investment_bdt,
+        maxInvestmentBdt: baseProject.max_investment_bdt,
+        expectedReturnPct: pct,
+        returnType: baseProject.return_type,
+        fundingDeadline: baseProject.funding_deadline,
+      });
 
       await investmentService.create(investorSession, {
         projectId: "project-1",

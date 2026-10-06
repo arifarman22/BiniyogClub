@@ -507,7 +507,12 @@ export const walletService = {
 
   /**
    * Invest directly from wallet balance.
-   * Validates balance, creates investment, posts ledger entry atomically.
+   * 1. Checks available balance (trueBalance already includes prior reservations).
+   * 2. Creates a PENDING investment record.
+   * 3. Posts an INVESTMENT_RESERVATION ledger entry (debit investor, credit escrow)
+   *    so the reserved funds cannot be spent on another investment.
+   * Admin approval converts the reservation to INVESTMENT_FUNDING.
+   * Cancellation releases the reservation back to the investor.
    */
   async investFromWallet(
     session: SessionUser,
@@ -516,21 +521,32 @@ export const walletService = {
     await requirePermission(session, PERMISSIONS.INVESTMENT_CREATE);
     assertPositiveBdt(input.amountBdt, "Investment amount");
 
-    // KYC check
     const kyc = await db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } });
     if (!kyc || kyc.status !== "VERIFIED") {
       throw new ForbiddenError("KYC verification required before investing.");
     }
 
-    // Idempotency
-    const existing = await db.investment.findUnique({ where: { idempotencyKey: input.idempotencyKey }, select: { id: true, receiptNumber: true } });
+    const existing = await db.investment.findUnique({
+      where: { idempotencyKey: input.idempotencyKey },
+      select: { id: true, receiptNumber: true },
+    });
     if (existing) return { investmentId: existing.id, receiptNumber: existing.receiptNumber ?? "" };
 
     const wallet = await walletRepository.findByUserId(session.id);
     if (!wallet) throw new NotFoundError("Wallet");
     if (!wallet.isActive) throw new ValidationError("Wallet is not active");
 
-    return db.$transaction(
+    // trueBalance already accounts for all POSTED debits including prior reservations.
+    const availableBalance = await ledgerService.getTrueBalance(wallet.id);
+    if (availableBalance < input.amountBdt) {
+      throw new ValidationError(
+        `Insufficient wallet balance. Available: \u09F3${availableBalance.toFixed(2)}, Required: \u09F3${input.amountBdt.toFixed(2)}. Please deposit funds before investing.`,
+      );
+    }
+
+    const reservationKey = `${IDEMPOTENCY_PREFIXES.INVESTMENT}${input.idempotencyKey}`;
+
+    const { investmentId, projectTitle } = await db.$transaction(
       async (tx) => {
         const project = await tx.project.findUnique({
           where: { id: input.projectId },
@@ -565,8 +581,6 @@ export const walletService = {
 
         const expectedReturnBdt = Math.round(input.amountBdt * (Number(project.expectedReturnPct) / 100) * 100) / 100;
 
-        // Create investment as PENDING — no ledger entry, no balance deduction yet.
-        // Admin approval triggers the ledger debit.
         const investment = await tx.investment.create({
           data: {
             investorProfileId: profile.id,
@@ -584,16 +598,28 @@ export const walletService = {
           data: {
             userId: session.id,
             type: "INVESTMENT_CONFIRMED",
-            title: "Investment Submitted",
-            body: `Your investment request of \u09F3${input.amountBdt.toLocaleString("en-BD")} in "${project.title}" is pending admin approval.`,
+            title: "Investment Submitted — Pending Approval",
+            body: `Your investment of \u09F3${input.amountBdt.toLocaleString("en-BD")} in "${project.title}" is pending admin approval. Funds are reserved from your wallet.`,
             data: { investmentId: investment.id },
           },
         });
 
-        return { investmentId: investment.id, receiptNumber: "" };
+        return { investmentId: investment.id, projectTitle: project.title };
       },
       { timeout: 15000 },
     );
+
+    // Post reservation OUTSIDE the main transaction (avoids nested tx / P2028).
+    // The reservation debits the investor wallet immediately so the funds cannot
+    // be spent on another investment while this one awaits admin approval.
+    await ledgerService.recordInvestmentReservation(session.id, input.amountBdt, {
+      investmentId,
+      idempotencyKey: reservationKey,
+      projectTitle,
+      metadata: { reservedBy: session.id },
+    });
+
+    return { investmentId, receiptNumber: "" };
   },
 
   /**

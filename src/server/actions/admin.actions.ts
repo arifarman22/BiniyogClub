@@ -369,11 +369,28 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
       });
     });
 
-    // Post ledger entry outside the main transaction (avoids nested tx / P2028)
-    // Debit investor wallet, credit escrow
+    // Release the INVESTMENT_RESERVATION and post INVESTMENT_FUNDING.
+    // The reservation (posted at submission time) already debited the investor
+    // wallet and credited escrow. We void it then re-post as INVESTMENT_FUNDING
+    // so the ledger type is correct and the net effect on balances is zero
+    // (escrow stays funded, investor wallet stays debited).
+    const { generateIdempotencyKey: genKey, IDEMPOTENCY_PREFIXES: PREFIXES } =
+      await import("@/lib/financial/idempotency");
+    const releaseKey = `${PREFIXES.REFUND}release-${investmentId}`;
+    const fundingKey = idempotencyKey;
+
+    // 1. Release the reservation (escrow -> investor, net-zero on investor)
+    await ledgerService.recordReservationRelease(investorUserId, amountBdt, {
+      investmentId,
+      idempotencyKey: releaseKey,
+      description: `Reservation released on approval: ${inv.project.title}`,
+      metadata: { approvedBy: session.id },
+    });
+
+    // 2. Post the actual INVESTMENT_FUNDING (investor -> escrow)
     await ledgerService.recordInvestmentFunding(investorUserId, amountBdt, {
       investmentId,
-      idempotencyKey,
+      idempotencyKey: fundingKey,
       projectTitle: inv.project.title,
       metadata: { approvedBy: session.id },
     });
@@ -415,13 +432,24 @@ export async function cancelInvestmentAdminAction(investmentId: string, reason: 
       data: { status: "CANCELLED", cancelledAt: new Date(), cancellationReason: reason },
     });
 
-    // If ACTIVE, reverse the ledger entry (refund wallet)
-    if (inv.status === "ACTIVE") {
-      const { ledgerService } = await import("@/server/services/ledger.service");
-      const { generateIdempotencyKey, IDEMPOTENCY_PREFIXES } = await import("@/lib/financial/idempotency");
+    const { ledgerService } = await import("@/server/services/ledger.service");
+    const { generateIdempotencyKey, IDEMPOTENCY_PREFIXES } = await import("@/lib/financial/idempotency");
+    const investorUserId = inv.investorProfile.user.id;
+    const amountBdt = Number(inv.amountBdt);
+
+    if (inv.status === "PENDING") {
+      // Release the reservation — funds return to investor available balance
+      await ledgerService.recordReservationRelease(investorUserId, amountBdt, {
+        investmentId,
+        idempotencyKey: generateIdempotencyKey(IDEMPOTENCY_PREFIXES.REFUND),
+        description: `Investment reservation released: ${reason}`,
+        metadata: { investmentId, cancelledBy: session.id, reason },
+      });
+    } else if (inv.status === "ACTIVE") {
+      // Reverse the INVESTMENT_FUNDING — refund from escrow to investor
       await ledgerService.recordRefund(
-        inv.investorProfile.user.id,
-        Number(inv.amountBdt),
+        investorUserId,
+        amountBdt,
         {
           referenceId: investmentId,
           referenceType: "Investment",

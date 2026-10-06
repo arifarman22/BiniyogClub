@@ -60,11 +60,12 @@ export async function resolveProfile(session: SessionUser) {
 export async function getInvestorDashboard(session: SessionUser) {
   const profileId = await resolveProfile(session);
 
-  const [investments, wallet, pendingPayments] = await Promise.all([
+  const [investments, wallet, pendingPayments, pendingInvestments] = await Promise.all([
+    // Only ACTIVE/MATURED/COMPLETED count toward totalInvested and portfolioValue
     db.investment.findMany({
       where: {
         investorProfileId: profileId,
-        status: { notIn: ["PENDING"] },
+        status: { in: ["ACTIVE", "MATURED", "COMPLETED"] },
       },
       select: {
         id: true,
@@ -79,28 +80,29 @@ export async function getInvestorDashboard(session: SessionUser) {
     }),
     db.wallet.findUnique({
       where: { userId: session.id },
-      select: { cachedBalance: true, currency: true },
+      select: { id: true, cachedBalance: true, currency: true },
     }),
     db.payment.count({
-      where: {
-        wallet: { userId: session.id },
-        status: "PENDING",
-      },
+      where: { wallet: { userId: session.id }, status: "PENDING" },
+    }),
+    // Pending investments — reserved but not yet approved
+    db.investment.aggregate({
+      where: { investorProfileId: profileId, status: "PENDING" },
+      _sum: { amountBdt: true },
+      _count: true,
     }),
   ]);
 
+  // totalInvested = sum of APPROVED (ACTIVE/MATURED/COMPLETED) investments only
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
-  const activeCount = investments.filter((i) => ["ACTIVE", "CONFIRMED"].includes(i.status)).length;
+  const activeCount = investments.filter((i) => i.status === "ACTIVE").length;
   const completedCount = investments.filter((i) => i.status === "MATURED").length;
 
-  // Portfolio value = active investments at cost + matured at actual return
   const portfolioValue = investments.reduce((s, i) => {
     if (i.status === "MATURED" && i.actualReturnBdt) {
       return s + Number(i.amountBdt) + Number(i.actualReturnBdt);
     }
-    if (["ACTIVE", "CONFIRMED"].includes(i.status)) {
-      return s + Number(i.amountBdt);
-    }
+    if (i.status === "ACTIVE") return s + Number(i.amountBdt);
     return s;
   }, 0);
 
@@ -109,13 +111,20 @@ export async function getInvestorDashboard(session: SessionUser) {
     0,
   );
 
+  // Use ledger-derived true balance (already accounts for reservations as debits)
+  const { ledgerService } = await import("@/server/services/ledger.service");
+  const walletBalance = wallet ? await ledgerService.getTrueBalance(wallet.id) : 0;
+  const reservedAmount = Number(pendingInvestments._sum.amountBdt ?? 0);
+
   return {
     totalInvested,
     activeCount,
     completedCount,
     portfolioValue,
     distributedReturns,
-    walletBalance: Number(wallet?.cachedBalance ?? 0),
+    walletBalance,
+    reservedAmount,
+    pendingInvestmentCount: pendingInvestments._count,
     pendingTransactions: pendingPayments,
     investmentCount: investments.length,
   };

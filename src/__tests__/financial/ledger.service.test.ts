@@ -144,6 +144,9 @@ describe("ledgerService.recordInvestmentFunding", () => {
       .mockReset()
       .mockResolvedValueOnce({ id: "wallet-escrow",   cachedBalance: "200000.00", isActive: true })
       .mockResolvedValueOnce({ id: "wallet-investor", cachedBalance: "5000.00",   isActive: true }); // only 5000
+    mockDb.wallet.findUnique.mockImplementation(({ where }: { where: { id: string } }) =>
+      Promise.resolve({ type: where.id === "wallet-investor" ? "INVESTOR" : "PLATFORM_ESCROW" }),
+    );
 
     await expect(
       ledgerService.recordInvestmentFunding("user-1", 10000, {

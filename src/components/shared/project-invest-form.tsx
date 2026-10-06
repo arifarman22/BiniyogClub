@@ -231,7 +231,7 @@ function ProjectInvestFormInner({
             </div>
             {!canPayFromWallet && (
               <p className="mt-1 text-warning">
-                Insufficient balance. <a href="/dashboard/wallet" className="underline font-medium">Add money →</a>
+                Insufficient wallet balance. <a href="/dashboard/wallet" className="underline font-medium">Deposit funds →</a>
               </p>
             )}
             {canPayFromWallet && amtNum > walletBalance && (
