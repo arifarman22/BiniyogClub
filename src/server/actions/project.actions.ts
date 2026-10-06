@@ -49,7 +49,7 @@ export async function uploadProjectCoverImageAction(
 
     const allowed = ["image/jpeg", "image/png", "image/webp"];
     if (!allowed.includes(file.type)) return { success: false, error: "File must be JPEG, PNG, or WebP" };
-    if (file.size > 5 * 1024 * 1024) return { success: false, error: "File must be smaller than 5 MB" };
+    if (file.size > 3 * 1024 * 1024) return { success: false, error: "File must be smaller than 3 MB" };
 
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -63,7 +63,15 @@ export async function uploadProjectCoverImageAction(
 
     const url = await new Promise<string>((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
-        { public_id: key, resource_type: "image", type: "upload", overwrite: true },
+        {
+          public_id: key,
+          resource_type: "image",
+          type: "upload",
+          overwrite: true,
+          quality: "auto:good",
+          fetch_format: "auto",
+          transformation: [{ width: 1280, crop: "limit" }],
+        },
         (err, result) => {
           if (err || !result) return reject(err ?? new Error("Upload failed"));
           resolve(result.secure_url);

@@ -124,6 +124,8 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     setImageError(null);
+    const oversized = files.find((f) => f.size > 3 * 1024 * 1024);
+    if (oversized) { setImageError(`"${oversized.name}" exceeds 3 MB. Please use a smaller image.`); return; }
     setImageUploading(true);
     const results = await Promise.all(
       files.map(async (file) => {
@@ -356,7 +358,7 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
 
       <SectionCard title="Media">
         <div className="space-y-3">
-          <p className="text-xs text-muted-foreground">Upload at least 3 images. The first image is the cover. All images rotate as a slider on project cards.</p>
+          <p className="text-xs text-muted-foreground">Upload at least 3 images. The first image is the cover. All images rotate as a slider on project cards. Max <span className="font-medium text-foreground">3 MB</span> per image — images are auto-compressed on upload.</p>
 
           {/* Primary images grid */}
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
