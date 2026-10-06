@@ -6,7 +6,6 @@ import { PERMISSIONS } from "@/lib/authz/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { AppError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { revalidatePath } from "next/cache";
-import { investmentService } from "@/server/services/investment.service";
 import { documentService } from "@/server/services/document.service";
 import type { ActionResult } from "./auth.actions";
 
@@ -213,6 +212,7 @@ export async function approveManualPaymentAction(
         investmentId: true,
         submittedBy: true,
         transactionRef: true,
+        amountBdt: true,
       },
     });
     if (!submission) throw new NotFoundError("Submission");
@@ -220,51 +220,128 @@ export async function approveManualPaymentAction(
       throw new ValidationError(`Submission is already ${submission.status}`);
     }
 
-    // Confirm the investment first — if this fails, submission stays reviewable
-    const result = await investmentService.confirmPayment(session, {
-      investmentId: submission.investmentId,
-      externalReference: submission.transactionRef,
+    const inv = await db.investment.findUnique({
+      where: { id: submission.investmentId },
+      select: {
+        id: true,
+        status: true,
+        amountBdt: true,
+        projectId: true,
+        investorProfile: {
+          select: {
+            userId: true,
+            user: { select: { id: true } },
+          },
+        },
+        project: { select: { title: true, fundingGoalBdt: true, fundedAmountBdt: true, status: true } },
+      },
+    });
+    if (!inv) throw new NotFoundError("Investment");
+    if (inv.status !== "PAYMENT_PENDING") {
+      throw new ValidationError(`Investment must be PAYMENT_PENDING to approve (current: ${inv.status})`);
+    }
+
+    const amountBdt = Number(inv.amountBdt);
+    const investorUserId = inv.investorProfile.user.id;
+    const now = new Date();
+
+    // Check project capacity
+    const remaining = Number(inv.project.fundingGoalBdt) - Number(inv.project.fundedAmountBdt);
+    if (amountBdt > remaining) {
+      throw new ValidationError("Project capacity exceeded. Cannot approve this investment.");
+    }
+
+    // Generate receipt
+    const ts = Date.now().toString(36).toUpperCase();
+    const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const receiptNumber = `BC-${ts}-${rand}`;
+
+    // Activate investment + increment project funded amount atomically
+    await db.$transaction(async (tx) => {
+      await tx.investment.update({
+        where: { id: inv.id },
+        data: { status: "ACTIVE", confirmedAt: now, activatedAt: now, receiptNumber },
+      });
+
+      const updatedProject = await tx.project.update({
+        where: { id: inv.projectId },
+        data: { fundedAmountBdt: { increment: amountBdt } },
+        select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
+      });
+      if (
+        Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
+        updatedProject.status === "FUNDRAISING"
+      ) {
+        await tx.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
+      }
+
+      // Mark the pending payment record as completed
+      await tx.payment.updateMany({
+        where: {
+          wallet: { userId: investorUserId },
+          status: "PENDING",
+          direction: "INBOUND",
+          amountBdt: inv.amountBdt,
+        },
+        data: { status: "COMPLETED", externalReference: submission.transactionRef, processedAt: now },
+      });
+
+      await tx.manualPaymentSubmission.update({
+        where: { id: submissionId },
+        data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: now },
+      });
+
+      await tx.investmentContract.upsert({
+        where: { investmentId: inv.id },
+        create: {
+          investmentId: inv.id,
+          status: "DRAFT",
+          templateVersion: "v1.0",
+          terms: {
+            amountBdt,
+            projectTitle: inv.project.title,
+            investorId: investorUserId,
+            activatedAt: now.toISOString(),
+          },
+        },
+        update: {},
+      });
+
+      await tx.notification.create({
+        data: {
+          userId: investorUserId,
+          type: "INVESTMENT_CONFIRMED",
+          title: "Payment Verified — Investment Active",
+          body: `Your manual payment has been verified. Your investment is now active. Receipt: ${receiptNumber}`,
+          data: { investmentId: inv.id, receiptNumber },
+        },
+      });
+    }, { timeout: 15000 });
+
+    // Post INVESTMENT_FUNDING ledger entry outside the transaction.
+    // For manual (external) payments the money arrives from outside the platform,
+    // so we debit PLATFORM_REVENUE (external inflow contra) and credit PLATFORM_ESCROW
+    // — the same pattern as a deposit credit, but routed to escrow since it is
+    // an investment commitment, not a wallet top-up.
+    const { ledgerService } = await import("@/server/services/ledger.service");
+    const { generateIdempotencyKey, IDEMPOTENCY_PREFIXES } = await import("@/lib/financial/idempotency");
+    await ledgerService.recordInvestmentFundingExternal(amountBdt, {
+      investmentId: inv.id,
+      idempotencyKey: generateIdempotencyKey(IDEMPOTENCY_PREFIXES.INVESTMENT),
+      projectTitle: inv.project.title,
+      metadata: { approvedBy: session.id, transactionRef: submission.transactionRef },
     });
 
-    // Mark submission approved — non-fatal if this fails (investment is already confirmed)
-    try {
-      await db.manualPaymentSubmission.update({
-        where: { id: submissionId },
-        data: { status: "APPROVED", reviewedBy: session.id, reviewedAt: new Date() },
-      });
-    } catch (updateErr) {
-      console.error("[approveManualPayment] Failed to mark submission APPROVED", updateErr);
-    }
-
-    // Notify investor — non-fatal
-    try {
-      const investment = await db.investment.findUnique({
-        where: { id: submission.investmentId },
-        select: { investorProfile: { select: { userId: true } } },
-      });
-      if (investment) {
-        await db.notification.create({
-          data: {
-            userId: investment.investorProfile.userId,
-            type: "INVESTMENT_CONFIRMED",
-            title: "Payment Verified — Investment Active",
-            body: `Your manual payment has been verified. Your investment is now active. Receipt: ${result.receiptNumber}`,
-            data: { investmentId: submission.investmentId, receiptNumber: result.receiptNumber },
-          },
-        });
-      }
-    } catch (notifyErr) {
-      console.error("[approveManualPayment] Failed to send investor notification", notifyErr);
-    }
-
-    // Generate investment receipt PDF (fire-and-forget)
+    // Generate receipt PDF (fire-and-forget)
     documentService
       .generateInvestmentReceipt(submission.investmentId)
       .catch((err) => console.error("[approveManualPayment] receipt generation failed:", err));
 
     revalidatePath("/admin/payments");
+    revalidatePath("/admin/payments/manual");
+    revalidatePath("/admin/investments");
     revalidatePath("/dashboard/investments");
-    return { success: true, data: { receiptNumber: result.receiptNumber } };
+    return { success: true, data: { receiptNumber } };
   } catch (e) { return svcErr(e); }
 }
 

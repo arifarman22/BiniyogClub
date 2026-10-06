@@ -325,6 +325,55 @@ export const ledgerService = {
   },
 
   /**
+   * INVESTMENT_FUNDING (external): Investor commits funds via external bank transfer.
+   * Money arrives from outside the platform, so the contra account is PLATFORM_REVENUE
+   * (not the investor wallet). Escrow is credited to hold the committed funds.
+   *
+   * Debit:  PLATFORM_REVENUE  (external inflow contra)
+   * Credit: PLATFORM_ESCROW   (funds held for this investment)
+   */
+  async recordInvestmentFundingExternal(
+    amountBdt: number,
+    opts: {
+      investmentId: string;
+      idempotencyKey: string;
+      projectTitle: string;
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    assertPositiveBdt(amountBdt, "Investment amount");
+
+    const existing = await ledgerRepository.findByIdempotencyKey(opts.idempotencyKey);
+    if (existing) return { ledgerTx: existing, idempotent: true };
+
+    return db.$transaction(
+      async (tx) => {
+        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+        const revenueWallet  = await getOrCreateRevenueWallet(tx);
+
+        const { ledgerTx } = await writeDoubleEntry(
+          tx,
+          "INVESTMENT_FUNDING",
+          `Investment funding (external): ${opts.projectTitle}`,
+          amountBdt,
+          revenueWallet.id, // debit revenue (external inflow contra)
+          escrowWallet.id,  // credit escrow (funds held)
+          {
+            investmentId: opts.investmentId,
+            referenceId: opts.investmentId,
+            referenceType: "Investment",
+            idempotencyKey: opts.idempotencyKey,
+            metadata: opts.metadata,
+          },
+        );
+
+        return { ledgerTx, idempotent: false };
+      },
+      { timeout: 15000 },
+    );
+  },
+
+  /**
    * INVESTMENT_FUNDING: Investor commits funds to a project.
    * Debit: investor wallet (balance decreases)
    * Credit: platform escrow (escrow holds the funds)
