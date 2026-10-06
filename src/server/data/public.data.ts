@@ -88,6 +88,8 @@ export async function getProjectBySlug(slug: string) {
       minInvestmentBdt: true,
       maxInvestmentBdt: true,
       expectedReturnPct: true,
+      returnPctMin: true,
+      returnPctMax: true,
       returnType: true,
       durationDays: true,
       fundingDeadline: true,
