@@ -32,9 +32,9 @@ type Deposit = {
   id: string;
   method: string;
   status: string;
-  amountBdt: unknown;
-  feeBdt: unknown;
-  netAmountBdt: unknown;
+  amountBdt: number | string;
+  feeBdt: number | string;
+  netAmountBdt: number | string;
   externalReference: string | null;
   description: string | null;
   processedAt: Date | string | null;

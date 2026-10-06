@@ -115,7 +115,7 @@ export const walletService = {
             netAmountBdt: input.amountBdt,
             currency: "BDT",
             idempotencyKey,
-            externalReference: input.externalReference,
+            externalReference: input.externalReference ?? undefined,
             gatewayResponse: input.gatewayResponse ? JSON.parse(JSON.stringify(input.gatewayResponse)) : undefined,
             description: input.description ?? "Wallet deposit",
             processedAt: new Date(),
@@ -128,7 +128,7 @@ export const walletService = {
           idempotencyKey,
           referenceId: payment.id,
           description: input.description ?? "Wallet deposit",
-          metadata: { paymentId: payment.id, externalReference: input.externalReference } as Record<string, string>,
+          metadata: { paymentId: payment.id, externalReference: input.externalReference ?? "" } as Record<string, string>,
         });
 
         // Notify
@@ -344,7 +344,7 @@ export const walletService = {
 
     await db.notification.create({
       data: {
-        userId: withdrawal.wallet.userId,
+        userId: withdrawal.wallet.userId ?? "",
         type: "WITHDRAWAL_APPROVED",
         title: "Withdrawal Approved",
         body: `Your withdrawal of à§³${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been approved.`,
@@ -384,7 +384,7 @@ export const walletService = {
 
     await db.notification.create({
       data: {
-        userId: withdrawal.wallet.userId,
+        userId: withdrawal.wallet.userId ?? "",
         type: "WITHDRAWAL_COMPLETED",
         title: "Withdrawal Completed",
         body: `Your withdrawal of à§³${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been sent to your account.`,
@@ -428,7 +428,7 @@ export const walletService = {
 
         // Reverse the reservation ledger entry
         const { ledgerTx } = await ledgerService.recordRefund(
-          withdrawal.wallet.userId,
+          withdrawal.wallet.userId ?? "",
           Number(withdrawal.amountBdt),
           {
             referenceId: withdrawalId,
@@ -441,7 +441,7 @@ export const walletService = {
 
         await tx.notification.create({
           data: {
-            userId: withdrawal.wallet.userId,
+            userId: withdrawal.wallet.userId ?? "",
             type: "SYSTEM",
             title: "Withdrawal Rejected",
             body: `Your withdrawal request was rejected. Reason: ${reason}. Funds have been returned to your wallet.`,
@@ -636,7 +636,7 @@ export const walletService = {
           },
         });
 
-        return { investmentId: investment.id, receiptNumber: investment.receiptNumber ?? "", ledgerTxId: ledgerTx.id };
+        return { investmentId: investment.id, receiptNumber: investment.receiptNumber ?? "", ledgerTxId: ledgerTx.id }; // receiptNumber is always set above
       },
       { timeout: 15000 },
     );

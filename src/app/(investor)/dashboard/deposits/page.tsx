@@ -156,7 +156,7 @@ export default async function DepositsPage({ searchParams }: { searchParams: Sea
               return (
                 <div key={d.id} className="flex items-center justify-between gap-4 px-5 py-4">
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold">{fmtBdt(d.amountBdt)}</p>
+                    <p className="text-sm font-semibold">{fmtBdt(Number(d.amountBdt))}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {d.method.replace(/_/g, " ")}
                       {d.externalReference ? ` · Ref: ${d.externalReference}` : ""}
@@ -229,10 +229,10 @@ export default async function DepositsPage({ searchParams }: { searchParams: Sea
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className={cn("font-semibold", d.status === "COMPLETED" ? "text-success" : "")}>
-                          {fmtBdt(d.netAmountBdt)}
+                          {fmtBdt(Number(d.netAmountBdt))}
                         </span>
                         {Number(d.feeBdt) > 0 && (
-                          <p className="text-[10px] text-muted-foreground">fee: {fmtBdt(d.feeBdt)}</p>
+                          <p className="text-[10px] text-muted-foreground">fee: {fmtBdt(Number(d.feeBdt))}</p>
                         )}
                       </td>
                       <td className="px-4 py-3 text-xs text-muted-foreground hidden sm:table-cell">

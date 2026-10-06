@@ -67,8 +67,8 @@ export default async function AdminWithdrawalsPage({ searchParams }: AsyncCompon
                 {items.map((w) => (
                   <tr key={w.id} className="hover:bg-muted/20 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-medium">{w.wallet.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{w.wallet.user.email}</p>
+                      <p className="font-medium">{w.wallet.user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{w.wallet.user?.email}</p>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-xs text-muted-foreground">{w.method.replace(/_/g, " ")}</span>
@@ -96,7 +96,7 @@ export default async function AdminWithdrawalsPage({ searchParams }: AsyncCompon
                             <AdminActionButton
                               label="Approve"
                               confirmTitle="Approve Withdrawal"
-                              confirmDescription={`Approve withdrawal of ${fmtBdt(w.amountBdt)} for ${w.wallet.user.name}?`}
+                              confirmDescription={`Approve withdrawal of ${fmtBdt(w.amountBdt)} for ${w.wallet.user?.name}?`}
                               onConfirm={() => approveWithdrawalAction(w.id)}
                             />
                             <AdminActionButton
