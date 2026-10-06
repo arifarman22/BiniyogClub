@@ -24,7 +24,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  PENDING: "Pending", PAYMENT_PENDING: "Awaiting Payment",
+  PENDING: "Draft", PAYMENT_PENDING: "Awaiting Payment",
   ACTIVE: "Active", MATURED: "Matured",
   CANCELLED: "Cancelled", COMPLETED: "Completed", REFUNDED: "Refunded",
 };
@@ -137,8 +137,8 @@ export default async function InvestmentsPage() {
     if (docId) certMap.set(inv.id, docId);
   }
 
-  const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
-  const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
+  const totalInvested = investments.filter((i) => i.status !== "PENDING").reduce((s, i) => s + Number(i.amountBdt), 0);
+  const totalExpected = investments.filter((i) => i.status !== "PENDING").reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
   const totalActual = investments
     .filter((i) => i.actualReturnBdt)
     .reduce((s, i) => s + Number(i.actualReturnBdt), 0);
@@ -209,6 +209,21 @@ export default async function InvestmentsPage() {
                     {STATUS_LABELS[inv.status] ?? inv.status}
                   </span>
                 </div>
+
+                {/* PENDING draft section */}
+                {inv.status === "PENDING" && (
+                  <div className="border-t border-border bg-muted/20 px-4 py-3 flex flex-wrap items-center gap-3">
+                    <p className="text-xs text-muted-foreground flex-1">
+                      You started this investment but haven&apos;t submitted payment proof yet. Complete it to activate your investment.
+                    </p>
+                    <Link
+                      href={`/dashboard/investments/${inv.id}/pay`}
+                      className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
+                    >
+                      Complete Investment →
+                    </Link>
+                  </div>
+                )}
 
                 {/* PAYMENT_PENDING section */}
                 {inv.status === "PAYMENT_PENDING" && (
