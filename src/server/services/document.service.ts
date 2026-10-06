@@ -182,6 +182,7 @@ async function generateInvestmentReceipt(
     where: { id: investmentId },
     select: {
       id: true,
+      status: true,
       amountBdt: true,
       expectedReturnBdt: true,
       returnType: true,
@@ -204,6 +205,12 @@ async function generateInvestmentReceipt(
   });
 
   if (!investment) throw new NotFoundError("Investment");
+
+  // Only generate receipts for ACTIVE/MATURED/COMPLETED investments that have a receipt number
+  if (!investment.receiptNumber) throw new Error(`Investment ${investmentId} has no receiptNumber yet — cannot generate receipt`);
+  if (!["ACTIVE", "MATURED", "COMPLETED"].includes(investment.status)) {
+    throw new Error(`Investment ${investmentId} is not ACTIVE (status: ${investment.status})`);
+  }
 
   // Skip if receipt already exists for this investment
   const existing = await db.document.findFirst({

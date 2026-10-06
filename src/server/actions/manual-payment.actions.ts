@@ -7,6 +7,7 @@ import { requireSession } from "@/lib/auth/session";
 import { AppError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { revalidatePath } from "next/cache";
 import { investmentService } from "@/server/services/investment.service";
+import { documentService } from "@/server/services/document.service";
 import type { ActionResult } from "./auth.actions";
 
 function svcErr<T>(e: unknown): ActionResult<T> {
@@ -255,6 +256,11 @@ export async function approveManualPaymentAction(
     } catch (notifyErr) {
       console.error("[approveManualPayment] Failed to send investor notification", notifyErr);
     }
+
+    // Generate investment receipt PDF (fire-and-forget)
+    documentService
+      .generateInvestmentReceipt(submission.investmentId)
+      .catch((err) => console.error("[approveManualPayment] receipt generation failed:", err));
 
     revalidatePath("/admin/payments");
     revalidatePath("/dashboard/investments");
