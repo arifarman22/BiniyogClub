@@ -116,7 +116,7 @@ export function AddMoneyDialog({ walletId }: Props) {
 
                 {/* Payment method */}
                 <div className="space-y-1.5">
-                  <label className="text-sm font-medium">Payment Method</label>
+                  <label className="text-sm font-medium text-foreground">Payment Method</label>
                   <div className="grid grid-cols-2 gap-2">
                     {METHODS.map(({ value, label, icon: Icon }) => (
                       <button
@@ -137,7 +137,7 @@ export function AddMoneyDialog({ walletId }: Props) {
 
                 {/* Amount */}
                 <div className="space-y-1.5">
-                  <label htmlFor="amount" className="text-sm font-medium">Amount (BDT)</label>
+                  <label htmlFor="amount" className="text-sm font-medium text-foreground">Amount (BDT)</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">৳</span>
                     <input
@@ -148,7 +148,7 @@ export function AddMoneyDialog({ walletId }: Props) {
                       placeholder="5000"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="w-full rounded-lg border border-input bg-background py-2.5 pl-7 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="w-full rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground py-2.5 pl-7 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                       required
                     />
                   </div>
@@ -156,14 +156,14 @@ export function AddMoneyDialog({ walletId }: Props) {
 
                 {/* Transaction reference */}
                 <div className="space-y-1.5">
-                  <label htmlFor="txRef" className="text-sm font-medium">Transaction Reference</label>
+                  <label htmlFor="txRef" className="text-sm font-medium text-foreground">Transaction Reference</label>
                   <input
                     id="txRef"
                     type="text"
                     placeholder="e.g. TXN123456789"
                     value={txRef}
                     onChange={(e) => setTxRef(e.target.value)}
-                    className="w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                    className="w-full rounded-lg border border-input bg-background text-foreground placeholder:text-muted-foreground px-3 py-2.5 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     required
                   />
                 </div>

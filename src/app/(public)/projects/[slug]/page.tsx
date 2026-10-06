@@ -122,13 +122,16 @@ export default async function ProjectDetailPage({ params }: Props) {
 
   let kycApproved = false;
   let existingInvestment: ExistingInvestment | null = null;
+  let walletBalance = 0;
 
   if (session) {
-    const [kyc, profile] = await Promise.all([
+    const [kyc, profile, wallet] = await Promise.all([
       db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } }),
       db.investorProfile.findUnique({ where: { userId: session.id }, select: { id: true } }),
+      db.wallet.findUnique({ where: { userId: session.id }, select: { cachedBalance: true } }),
     ]);
     kycApproved = kyc?.status === "VERIFIED";
+    walletBalance = Number(wallet?.cachedBalance ?? 0);
 
     if (profile) {
       const inv = await db.investment.findFirst({
@@ -462,6 +465,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                       isLoggedIn={!!session}
                       kycApproved={kycApproved}
                       currentPath={`/projects/${slug}`}
+                      walletBalance={walletBalance}
                     />
                   ) : isClosed ? (
                     <Button className="w-full" variant="outline" disabled>{STATUS_LABELS[project.status] ?? project.status}</Button>
