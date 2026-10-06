@@ -292,18 +292,28 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     const investorUserId = inv.investorProfile.user.id;
     const idempotencyKey = inv.idempotencyKey ?? `approve-${investmentId}`;
 
-    // Check investor has sufficient wallet balance before entering transaction
-    const { walletService } = await import("@/server/services/wallet.service");
     const { ledgerService } = await import("@/server/services/ledger.service");
     const { walletRepository } = await import("@/db/repositories/wallet.repository");
 
-    const wallet = await walletRepository.findByUserId(investorUserId);
-    if (!wallet) throw new NotFoundError("Investor wallet not found");
-    const trueBalance = await ledgerService.getTrueBalance(wallet.id);
-    if (trueBalance < amountBdt) {
-      throw new ValidationError(
-        `Investor has insufficient balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${amountBdt.toFixed(2)}`,
-      );
+    // Determine if this is a manual (external) payment investment.
+    // Manual payment investors never deposit to the platform wallet, so we
+    // must not check or debit their wallet balance.
+    const hasManualPayment = await db.manualPaymentSubmission.findFirst({
+      where: { investmentId },
+      select: { id: true },
+    });
+    const isManualPayment = !!hasManualPayment;
+
+    if (!isManualPayment) {
+      // Wallet-path: verify investor has sufficient balance
+      const wallet = await walletRepository.findByUserId(investorUserId);
+      if (!wallet) throw new NotFoundError("Investor wallet not found");
+      const trueBalance = await ledgerService.getTrueBalance(wallet.id);
+      if (trueBalance < amountBdt) {
+        throw new ValidationError(
+          `Investor has insufficient balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${amountBdt.toFixed(2)}`,
+        );
+      }
     }
 
     await db.$transaction(async (tx) => {
@@ -369,31 +379,34 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
       });
     });
 
-    // Release the INVESTMENT_RESERVATION and post INVESTMENT_FUNDING.
-    // The reservation (posted at submission time) already debited the investor
-    // wallet and credited escrow. We void it then re-post as INVESTMENT_FUNDING
-    // so the ledger type is correct and the net effect on balances is zero
-    // (escrow stays funded, investor wallet stays debited).
     const { generateIdempotencyKey: genKey, IDEMPOTENCY_PREFIXES: PREFIXES } =
       await import("@/lib/financial/idempotency");
-    const releaseKey = `${PREFIXES.REFUND}release-${investmentId}`;
-    const fundingKey = idempotencyKey;
 
-    // 1. Release the reservation (escrow -> investor, net-zero on investor)
-    await ledgerService.recordReservationRelease(investorUserId, amountBdt, {
-      investmentId,
-      idempotencyKey: releaseKey,
-      description: `Reservation released on approval: ${inv.project.title}`,
-      metadata: { approvedBy: session.id },
-    });
-
-    // 2. Post the actual INVESTMENT_FUNDING (investor -> escrow)
-    await ledgerService.recordInvestmentFunding(investorUserId, amountBdt, {
-      investmentId,
-      idempotencyKey: fundingKey,
-      projectTitle: inv.project.title,
-      metadata: { approvedBy: session.id },
-    });
+    if (isManualPayment) {
+      // External bank transfer — debit PLATFORM_REVENUE, credit PLATFORM_ESCROW.
+      // Investor wallet is untouched.
+      await ledgerService.recordInvestmentFundingExternal(amountBdt, {
+        investmentId,
+        idempotencyKey: idempotencyKey,
+        projectTitle: inv.project.title,
+        metadata: { approvedBy: session.id },
+      });
+    } else {
+      // Wallet-path: release reservation then post INVESTMENT_FUNDING.
+      const releaseKey = `${PREFIXES.REFUND}release-${investmentId}`;
+      await ledgerService.recordReservationRelease(investorUserId, amountBdt, {
+        investmentId,
+        idempotencyKey: releaseKey,
+        description: `Reservation released on approval: ${inv.project.title}`,
+        metadata: { approvedBy: session.id },
+      });
+      await ledgerService.recordInvestmentFunding(investorUserId, amountBdt, {
+        investmentId,
+        idempotencyKey: idempotencyKey,
+        projectTitle: inv.project.title,
+        metadata: { approvedBy: session.id },
+      });
+    }
 
     // Generate receipt PDF (fire-and-forget)
     const { documentService } = await import("@/server/services/document.service");
