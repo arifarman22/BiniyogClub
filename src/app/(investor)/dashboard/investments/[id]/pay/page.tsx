@@ -52,7 +52,7 @@ export default async function InvestmentPayPage({ params }: Props) {
   const fmt = (n: number | string) => `৳${Number(n).toLocaleString("en-BD")}`;
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
+    <div className="space-y-6">
 
       {/* Back */}
       <Link href="/dashboard/investments" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
