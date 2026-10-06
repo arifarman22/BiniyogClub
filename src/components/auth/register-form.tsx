@@ -55,85 +55,86 @@ export function RegisterForm() {
 
       <input type="hidden" value="INVESTOR" {...register("role")} />
 
-      {/* Full name */}
-      <div className="space-y-1.5">
-        <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Full Name <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="name"
-            type="text"
-            autoComplete="name"
-            placeholder="Mohammad Arif"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.name}
-            {...register("name")}
-          />
+      {/* Row 1: Full Name + Email */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Full Name <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="name"
+              type="text"
+              autoComplete="name"
+              placeholder="Mohammad Arif"
+              className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.name}
+              {...register("name")}
+            />
+          </div>
+          {errors.name && <p className="text-xs text-destructive font-medium">{errors.name.message}</p>}
         </div>
-        {errors.name && <p className="text-xs text-destructive font-medium">{errors.name.message}</p>}
+
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Email Address <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="email"
+              type="email"
+              autoComplete="email"
+              placeholder="investor@example.com"
+              className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.email}
+              {...register("email")}
+            />
+          </div>
+          {errors.email && <p className="text-xs text-destructive font-medium">{errors.email.message}</p>}
+        </div>
       </div>
 
-      {/* Email */}
-      <div className="space-y-1.5">
-        <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Email Address <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="investor@example.com"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.email}
-            {...register("email")}
-          />
+      {/* Row 2: Phone + NID */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Phone Number <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="01712345678"
+              className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.phone}
+              {...register("phone")}
+            />
+          </div>
+          {errors.phone && <p className="text-xs text-destructive font-medium">{errors.phone.message}</p>}
         </div>
-        {errors.email && <p className="text-xs text-destructive font-medium">{errors.email.message}</p>}
-      </div>
 
-      {/* Phone */}
-      <div className="space-y-1.5">
-        <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Phone Number <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <Phone className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="phone"
-            type="tel"
-            autoComplete="tel"
-            placeholder="01712345678"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.phone}
-            {...register("phone")}
-          />
+        <div className="space-y-1.5">
+          <label htmlFor="nidNumber" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            NID Number <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="nidNumber"
+              type="text"
+              inputMode="numeric"
+              placeholder="10 or 17 digit NID number"
+              className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.nidNumber}
+              {...register("nidNumber")}
+            />
+          </div>
+          {errors.nidNumber && <p className="text-xs text-destructive font-medium">{errors.nidNumber.message}</p>}
         </div>
-        {errors.phone && <p className="text-xs text-destructive font-medium">{errors.phone.message}</p>}
-
-      </div>
-
-      {/* NID Number */}
-      <div className="space-y-1.5">
-        <label htmlFor="nidNumber" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          NID Number <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="nidNumber"
-            type="text"
-            inputMode="numeric"
-            placeholder="10 or 17 digit NID number"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.nidNumber}
-            {...register("nidNumber")}
-          />
-        </div>
-        {errors.nidNumber && <p className="text-xs text-destructive font-medium">{errors.nidNumber.message}</p>}
       </div>
 
       {/* Nominee Section */}
@@ -144,95 +145,96 @@ export function RegisterForm() {
         </div>
         <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 -mt-2">Your nominee will receive your investment in case of an emergency.</p>
 
-        {/* Nominee NID Number */}
-        <div className="space-y-1.5">
-          <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            Nominee NID Number <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
-            <Input
-              id="nomineeNidNumber"
-              type="text"
-              inputMode="numeric"
-              placeholder="Nominee's 10 or 17 digit NID number"
-              className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
-              aria-invalid={!!errors.nomineeNidNumber}
-              {...register("nomineeNidNumber")}
-            />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              Nominee NID Number <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
+              <Input
+                id="nomineeNidNumber"
+                type="text"
+                inputMode="numeric"
+                placeholder="Nominee's NID number"
+                className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
+                aria-invalid={!!errors.nomineeNidNumber}
+                {...register("nomineeNidNumber")}
+              />
+            </div>
+            {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
           </div>
-          {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
-        </div>
 
-        {/* Nominee Relation */}
-        <div className="space-y-1.5">
-          <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-            Relation with Nominee <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
-            <Input
-              id="nomineeRelation"
-              type="text"
-              placeholder="e.g. Father, Mother, Spouse, Sibling"
-              className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
-              aria-invalid={!!errors.nomineeRelation}
-              {...register("nomineeRelation")}
-            />
+          <div className="space-y-1.5">
+            <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              Relation with Nominee <span className="text-destructive">*</span>
+            </label>
+            <div className="relative">
+              <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
+              <Input
+                id="nomineeRelation"
+                type="text"
+                placeholder="e.g. Father, Mother, Spouse"
+                className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
+                aria-invalid={!!errors.nomineeRelation}
+                {...register("nomineeRelation")}
+              />
+            </div>
+            {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
           </div>
-          {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
         </div>
       </div>
 
-      {/* Password */}
-      <div className="space-y-1.5">
-        <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Create Password <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="password"
-            type={showPassword ? "text" : "password"}
-            autoComplete="new-password"
-            placeholder="Min. 8 characters"
-            className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.password}
-            {...register("password")}
-          />
-          <button
-            type="button"
-            onClick={() => setShowPassword((v) => !v)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
-          </button>
+      {/* Row 3: Password + Confirm Password */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Create Password <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              placeholder="Min. 8 characters"
+              className="h-11 rounded-xl border-border/80 pl-10 pr-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.password}
+              {...register("password")}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors p-1"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
+          </div>
+          {errors.password && <p className="text-xs text-destructive font-medium">{errors.password.message}</p>}
+          {password.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
         </div>
-        {errors.password && <p className="text-xs text-destructive font-medium">{errors.password.message}</p>}
-        {password.length > 0 && <PasswordStrengthBar strength={passwordStrength} />}
-      </div>
 
-      {/* Confirm password */}
-      <div className="space-y-1.5">
-        <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Confirm Password <span className="text-destructive">*</span>
-        </label>
-        <div className="relative">
-          <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Repeat password"
-            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
-            aria-invalid={!!errors.confirmPassword}
-            {...register("confirmPassword")}
-          />
+        <div className="space-y-1.5">
+          <label htmlFor="confirmPassword" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Confirm Password <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <Lock className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              id="confirmPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repeat password"
+              className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30"
+              aria-invalid={!!errors.confirmPassword}
+              {...register("confirmPassword")}
+            />
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-xs text-destructive font-medium">{errors.confirmPassword.message}</p>
+          )}
         </div>
-        {errors.confirmPassword && (
-          <p className="text-xs text-destructive font-medium">{errors.confirmPassword.message}</p>
-        )}
       </div>
 
       <p className="text-xs text-muted-foreground pt-1">
