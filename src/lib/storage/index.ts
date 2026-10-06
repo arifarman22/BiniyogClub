@@ -35,6 +35,7 @@ class CloudinaryProvider implements StorageProvider {
   async upload(file: Buffer, key: string, mimeType: string): Promise<UploadResult> {
     configureCloudinary();
     const resourceType = getResourceType(mimeType);
+    const isImage = resourceType === "image";
 
     return new Promise((resolve, reject) => {
       const stream = cloudinary.uploader.upload_stream(
@@ -44,6 +45,11 @@ class CloudinaryProvider implements StorageProvider {
           type:          "authenticated",
           overwrite:     true,
           invalidate:    true,
+          ...(isImage && {
+            quality: "auto:good",
+            fetch_format: "auto",
+            transformation: [{ width: 1920, crop: "limit" }],
+          }),
         },
         (error, result) => {
           if (error || !result) return reject(error ?? new Error("Cloudinary upload failed"));
@@ -115,7 +121,7 @@ export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
 // Per-category size limits (bytes)
 const CATEGORY_SIZE_LIMITS: Record<DocumentCategory, number> = {
-  KYC:                    5  * 1024 * 1024,  // 5 MB
+  KYC:                    3  * 1024 * 1024,  // 3 MB
   PROJECT_DOCUMENT:       10 * 1024 * 1024,  // 10 MB
   INVESTMENT_AGREEMENT:   5  * 1024 * 1024,  // 5 MB — generated PDFs
   PAYMENT_RECEIPT:        5  * 1024 * 1024,

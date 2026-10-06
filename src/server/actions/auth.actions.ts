@@ -182,7 +182,7 @@ export async function updateAvatarAction(formData: FormData): Promise<ActionResu
     const session = await requireSession();
     const file = formData.get("avatar") as File | null;
     if (!file || file.size === 0) return { success: false, error: "No file provided" };
-    if (file.size > 2 * 1024 * 1024) return { success: false, error: "Image must be under 2 MB" };
+    if (file.size > 3 * 1024 * 1024) return { success: false, error: "Image must be under 3 MB" };
     if (!file.type.startsWith("image/")) return { success: false, error: "File must be an image" };
 
     const bytes = await file.arrayBuffer();
@@ -198,7 +198,7 @@ export async function updateAvatarAction(formData: FormData): Promise<ActionResu
 
     const result = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
       cloudinary.uploader.upload_stream(
-        { folder: "avatars", public_id: `avatar_${session.id}`, overwrite: true, resource_type: "image", transformation: [{ width: 256, height: 256, crop: "fill", gravity: "face" }] },
+        { folder: "avatars", public_id: `avatar_${session.id}`, overwrite: true, resource_type: "image", quality: "auto:good", fetch_format: "auto", transformation: [{ width: 256, height: 256, crop: "fill", gravity: "face" }] },
         (err, res) => err || !res ? reject(err) : resolve(res),
       ).end(buffer);
     });
