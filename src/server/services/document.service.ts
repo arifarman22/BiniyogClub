@@ -235,7 +235,7 @@ async function generateInvestmentReceipt(
   const amountBdt = Number(investment.amountBdt);
   const activatedAt = (investment.activatedAt ?? investment.createdAt).toISOString();
   const investorEmail = investment.investorProfile.user.email;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyogclub.com";
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyogclub.com").replace("http://localhost:3000", "https://biniyogclub.com");
 
   const verificationHash = signReceipt({
     receiptNumber,
