@@ -16,7 +16,7 @@
  */
 
 import PDFDocument from "pdfkit";
-import QRCode from "qrcode";
+import * as QRCode from "qrcode";
 
 export interface InvestmentCertificateData {
   receiptNumber: string;

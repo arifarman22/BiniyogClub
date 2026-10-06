@@ -26,7 +26,7 @@ async function getVerificationResult(code: string) {
       },
       investorProfile: {
         select: {
-          user: { select: { name: true, email: true } },
+          user: { select: { id: true, name: true, email: true } },
         },
       },
     },
