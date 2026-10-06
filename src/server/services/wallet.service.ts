@@ -530,16 +530,8 @@ export const walletService = {
     if (!wallet) throw new NotFoundError("Wallet");
     if (!wallet.isActive) throw new ValidationError("Wallet is not active");
 
-    const trueBalance = await ledgerService.getTrueBalance(wallet.id);
-    if (trueBalance < input.amountBdt) {
-      throw new ValidationError(
-        `Insufficient wallet balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${input.amountBdt.toFixed(2)}`,
-      );
-    }
-
     return db.$transaction(
       async (tx) => {
-        // Fetch and lock project
         const project = await tx.project.findUnique({
           where: { id: input.projectId },
           select: {
@@ -562,7 +554,6 @@ export const walletService = {
         if (remaining <= 0) throw new ConflictError("Project is fully funded");
         if (input.amountBdt > remaining) throw new ValidationError(`Only \u09F3${remaining.toLocaleString("en-BD")} remaining`);
 
-        // Duplicate check
         const profile = await tx.investorProfile.findUnique({ where: { userId: session.id }, select: { id: true } });
         if (!profile) throw new ForbiddenError("Investor profile not found");
 
@@ -573,10 +564,9 @@ export const walletService = {
         if (duplicate) throw new ConflictError("You already have an active investment in this project");
 
         const expectedReturnBdt = Math.round(input.amountBdt * (Number(project.expectedReturnPct) / 100) * 100) / 100;
-        const receiptNumber = `BC-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
-        const now = new Date();
 
-        // Create investment
+        // Create investment as PENDING — no ledger entry, no balance deduction yet.
+        // Admin approval triggers the ledger debit.
         const investment = await tx.investment.create({
           data: {
             investorProfileId: profile.id,
@@ -585,58 +575,22 @@ export const walletService = {
             expectedReturnBdt,
             returnType: project.returnType,
             idempotencyKey: input.idempotencyKey,
-            status: "ACTIVE",
-            confirmedAt: now,
-            activatedAt: now,
-            receiptNumber,
+            status: "PENDING",
           },
-          select: { id: true, receiptNumber: true },
+          select: { id: true },
         });
 
-        // Post ledger: debit investor wallet, credit escrow
-        const { ledgerTx } = await ledgerService.recordInvestmentFunding(
-          session.id,
-          input.amountBdt,
-          {
-            investmentId: investment.id,
-            idempotencyKey: input.idempotencyKey,
-            projectTitle: project.title,
-            metadata: { source: "WALLET", walletId: wallet.id },
-          },
-        );
-
-        // Update project funded amount
-        const updated = await tx.project.update({
-          where: { id: input.projectId },
-          data: { fundedAmountBdt: { increment: input.amountBdt } },
-          select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
-        });
-        if (Number(updated.fundedAmountBdt) >= Number(updated.fundingGoalBdt) && updated.status === "FUNDRAISING") {
-          await tx.project.update({ where: { id: input.projectId }, data: { status: "FUNDED" } });
-        }
-
-        // Contract
-        await tx.investmentContract.create({
-          data: {
-            investmentId: investment.id,
-            status: "DRAFT",
-            templateVersion: "v1.0",
-            terms: { amountBdt: input.amountBdt, expectedReturnBdt, returnType: project.returnType, projectId: input.projectId, projectTitle: project.title, investorId: session.id, activatedAt: now.toISOString(), source: "WALLET" },
-          },
-        });
-
-        // Notification
         await tx.notification.create({
           data: {
             userId: session.id,
             type: "INVESTMENT_CONFIRMED",
-            title: "Investment Confirmed",
-            body: `Your wallet investment of \u09F3${input.amountBdt.toLocaleString("en-BD")} has been confirmed. Receipt: ${receiptNumber}`,
-            data: { investmentId: investment.id, receiptNumber, source: "WALLET" },
+            title: "Investment Submitted",
+            body: `Your investment request of \u09F3${input.amountBdt.toLocaleString("en-BD")} in "${project.title}" is pending admin approval.`,
+            data: { investmentId: investment.id },
           },
         });
 
-        return { investmentId: investment.id, receiptNumber: investment.receiptNumber ?? "", ledgerTxId: ledgerTx.id }; // receiptNumber is always set above
+        return { investmentId: investment.id, receiptNumber: "" };
       },
       { timeout: 15000 },
     );

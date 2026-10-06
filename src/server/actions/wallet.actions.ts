@@ -1,7 +1,6 @@
 "use server";
 
 import { walletService } from "@/server/services/wallet.service";
-import { documentService } from "@/server/services/document.service";
 import {
   depositSchema,
   withdrawalRequestSchema,
@@ -214,14 +213,8 @@ export async function investFromWalletAction(
     const session = await requireSession();
     const result = await walletService.investFromWallet(session, input);
 
-    // Generate investment receipt PDF (fire-and-forget)
-    documentService
-      .generateInvestmentReceipt(result.investmentId)
-      .catch((err) => console.error("[wallet invest] receipt generation failed:", err));
-
     revalidatePath("/dashboard/investments");
-    revalidatePath("/dashboard/wallet");
-    revalidatePath("/dashboard/transactions");
+    revalidatePath("/dashboard");
     return { success: true, data: { investmentId: result.investmentId, receiptNumber: result.receiptNumber } };
   } catch (error) {
     return serviceError(error);

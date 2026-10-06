@@ -268,8 +268,8 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     const inv = await db.investment.findUnique({
       where: { id: investmentId },
       select: {
-        id: true, status: true, amountBdt: true, projectId: true,
-        investorProfile: { select: { user: { select: { id: true } } } },
+        id: true, status: true, amountBdt: true, projectId: true, idempotencyKey: true,
+        investorProfile: { select: { userId: true, user: { select: { id: true } } } },
         project: { select: { title: true, fundingGoalBdt: true, fundedAmountBdt: true, status: true } },
       },
     });
@@ -279,9 +279,24 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     const receiptNumber = generateReceiptNumber();
     const now = new Date();
     const amountBdt = Number(inv.amountBdt);
+    const investorUserId = inv.investorProfile.user.id;
+    const idempotencyKey = inv.idempotencyKey ?? `approve-${investmentId}`;
+
+    // Check investor has sufficient wallet balance before entering transaction
+    const { walletService } = await import("@/server/services/wallet.service");
+    const { ledgerService } = await import("@/server/services/ledger.service");
+    const { walletRepository } = await import("@/db/repositories/wallet.repository");
+
+    const wallet = await walletRepository.findByUserId(investorUserId);
+    if (!wallet) throw new NotFoundError("Investor wallet not found");
+    const trueBalance = await ledgerService.getTrueBalance(wallet.id);
+    if (trueBalance < amountBdt) {
+      throw new ValidationError(
+        `Investor has insufficient balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${amountBdt.toFixed(2)}`,
+      );
+    }
 
     await db.$transaction(async (tx) => {
-      // Check investment is still PENDING
       const lockedInv = await tx.investment.findUnique({
         where: { id: investmentId },
         select: { id: true, status: true },
@@ -290,7 +305,6 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
         throw new ValidationError("Investment is no longer in PENDING status");
       }
 
-      // Check project capacity
       const project = await tx.project.findUnique({
         where: { id: inv.projectId },
         select: { id: true, status: true, fundingGoalBdt: true, fundedAmountBdt: true },
@@ -314,8 +328,6 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
         data: { fundedAmountBdt: { increment: amountBdt } },
         select: { status: true, fundingGoalBdt: true, fundedAmountBdt: true },
       });
-
-      // Auto-transition project to FUNDED if goal reached
       if (
         Number(updatedProject.fundedAmountBdt) >= Number(updatedProject.fundingGoalBdt) &&
         updatedProject.status === "FUNDRAISING"
@@ -323,10 +335,22 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
         await tx.project.update({ where: { id: inv.projectId }, data: { status: "FUNDED" } });
       }
 
-      // Notify investor
+      // Create investment contract
+      const expectedReturnBdt = Number(inv.amountBdt) * 0; // already stored on investment
+      await tx.investmentContract.upsert({
+        where: { investmentId },
+        create: {
+          investmentId,
+          status: "DRAFT",
+          templateVersion: "v1.0",
+          terms: { amountBdt, projectTitle: inv.project.title, investorId: investorUserId, activatedAt: now.toISOString() },
+        },
+        update: {},
+      });
+
       await tx.notification.create({
         data: {
-          userId: inv.investorProfile.user.id,
+          userId: investorUserId,
           type: "INVESTMENT_CONFIRMED",
           title: "Investment Approved",
           body: `Your investment in "${inv.project.title}" has been approved. Receipt: ${receiptNumber}`,
@@ -335,10 +359,25 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
       });
     });
 
+    // Post ledger entry outside the main transaction (avoids nested tx / P2028)
+    // Debit investor wallet, credit escrow
+    await ledgerService.recordInvestmentFunding(investorUserId, amountBdt, {
+      investmentId,
+      idempotencyKey,
+      projectTitle: inv.project.title,
+      metadata: { approvedBy: session.id },
+    });
+
+    // Generate receipt PDF (fire-and-forget)
+    const { documentService } = await import("@/server/services/document.service");
+    documentService.generateInvestmentReceipt(investmentId)
+      .catch((err) => console.error("[approve investment] receipt generation failed:", err));
+
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
 
     revalidatePath("/admin/investments");
     revalidatePath("/dashboard/investments");
+    revalidatePath("/dashboard");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }
 }
@@ -348,7 +387,14 @@ export async function cancelInvestmentAdminAction(investmentId: string, reason: 
     const session = await requireSession();
     await requirePermission(session, PERMISSIONS.INVESTMENT_CANCEL);
 
-    const inv = await db.investment.findUnique({ where: { id: investmentId }, select: { id: true, status: true } });
+    const inv = await db.investment.findUnique({
+      where: { id: investmentId },
+      select: {
+        id: true, status: true, amountBdt: true, idempotencyKey: true,
+        investorProfile: { select: { user: { select: { id: true } } } },
+        project: { select: { title: true } },
+      },
+    });
     if (!inv) throw new NotFoundError("Investment");
     if (!["PENDING", "PAYMENT_PENDING", "ACTIVE"].includes(inv.status)) {
       throw new ValidationError(`Cannot cancel investment in status: ${inv.status}`);
@@ -358,9 +404,37 @@ export async function cancelInvestmentAdminAction(investmentId: string, reason: 
       where: { id: investmentId },
       data: { status: "CANCELLED", cancelledAt: new Date(), cancellationReason: reason },
     });
+
+    // If ACTIVE, reverse the ledger entry (refund wallet)
+    if (inv.status === "ACTIVE") {
+      const { ledgerService } = await import("@/server/services/ledger.service");
+      const { generateIdempotencyKey, IDEMPOTENCY_PREFIXES } = await import("@/lib/financial/idempotency");
+      await ledgerService.recordRefund(
+        inv.investorProfile.user.id,
+        Number(inv.amountBdt),
+        {
+          referenceId: investmentId,
+          referenceType: "Investment",
+          idempotencyKey: generateIdempotencyKey(IDEMPOTENCY_PREFIXES.REFUND),
+          description: `Investment cancelled: ${reason}`,
+          metadata: { investmentId, cancelledBy: session.id, reason },
+        },
+      );
+
+      // Decrement project funded amount
+      await db.investment.findUnique({ where: { id: investmentId }, select: { projectId: true } })
+        .then((i) => i ? db.project.update({
+          where: { id: i.projectId },
+          data: { fundedAmountBdt: { decrement: Number(inv.amountBdt) } },
+        }) : null)
+        .catch(() => { /* best-effort */ });
+    }
+
     await auditLog(session.id, "UPDATE", "Investment", investmentId, { status: inv.status }, { status: "CANCELLED", reason });
 
     revalidatePath("/admin/investments");
+    revalidatePath("/dashboard/investments");
+    revalidatePath("/dashboard");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }
 }
