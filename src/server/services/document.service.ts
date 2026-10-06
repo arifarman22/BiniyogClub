@@ -16,9 +16,17 @@ import {
 } from "@/lib/errors";
 import type { SessionUser } from "@/lib/auth/session";
 import type { DocumentCategory, DocumentEntityType } from "@/types/prisma";
-import { headers } from "next/headers";
 import { renderInvestmentCertificate } from "@/lib/pdf/investment-certificate";
 import { signReceipt } from "@/lib/pdf/verify";
+import { headers } from "next/headers";
+
+async function getRequestContext() {
+  const hdrs = await headers().catch(() => null);
+  return {
+    ip: hdrs?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? hdrs?.get("x-real-ip") ?? null,
+    ua: hdrs?.get("user-agent") ?? null,
+  };
+}
 
 // ─── Access control matrix ────────────────────────────────────────────────────
 // Defines which roles can access each document category.
@@ -42,18 +50,15 @@ async function auditDocument(
   actorId: string | null,
   action: string,
   metadata?: Record<string, unknown>,
+  requestContext?: { ip?: string | null; ua?: string | null },
 ) {
-  const hdrs = await headers().catch(() => null);
-  const ip = hdrs?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? hdrs?.get("x-real-ip") ?? null;
-  const ua = hdrs?.get("user-agent") ?? null;
-
   await db.documentAuditLog.create({
     data: {
       documentId,
       actorId,
       action,
-      ipAddress: ip,
-      userAgent: ua,
+      ipAddress: requestContext?.ip ?? null,
+      userAgent: requestContext?.ua ?? null,
       metadata: metadata ? (metadata as Prisma.InputJsonValue) : undefined,
     },
   });
@@ -110,7 +115,7 @@ async function upload(session: SessionUser, input: UploadDocumentInput) {
     },
   });
 
-  await auditDocument(doc.id, session.id, "UPLOAD", { category: input.category, sizeBytes: input.sizeBytes });
+  await auditDocument(doc.id, session.id, "UPLOAD", { category: input.category, sizeBytes: input.sizeBytes }, await getRequestContext());
   return doc;
 }
 
@@ -139,7 +144,7 @@ async function getSignedDownloadUrl(session: SessionUser, documentId: string): P
   if (!doc.storageKey) throw new ValidationError("Document has no storage key");
 
   const url = await storage.getSignedUrl(doc.storageKey, doc.mimeType, 300);
-  await auditDocument(doc.id, session.id, "DOWNLOAD");
+  await auditDocument(doc.id, session.id, "DOWNLOAD", undefined, await getRequestContext());
   return url;
 }
 
@@ -165,7 +170,7 @@ async function deleteDocument(session: SessionUser, documentId: string): Promise
     data: { deletedAt: new Date() },
   });
 
-  await auditDocument(doc.id, session.id, "DELETE");
+  await auditDocument(doc.id, session.id, "DELETE", undefined, await getRequestContext());
 }
 
 // ─── Investment Receipt Generation ───────────────────────────────────────────
