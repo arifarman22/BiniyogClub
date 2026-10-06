@@ -129,7 +129,7 @@ export async function getInvestorInvestments(session: SessionUser) {
   return db.investment.findMany({
     where: {
       investorProfileId: profileId,
-      status: { notIn: ["CANCELLED", "REFUNDED"] },
+      status: { notIn: ["CANCELLED", "REFUNDED", "PENDING"] },
     },
     select: {
       id: true,
