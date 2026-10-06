@@ -1,4 +1,4 @@
-/**
+﻿/**
  * wallet.service.ts
  *
  * User-facing wallet operations: deposit, withdrawal request/approval,
@@ -35,7 +35,7 @@ import type {
 } from "@/validations/wallet";
 import type { Prisma } from "@/types/prisma";
 
-// ─── Internal helpers ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Internal helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 async function assertWalletOwner(session: SessionUser, walletId: string): Promise<void> {
   const wallet = await walletRepository.findById(walletId);
@@ -45,7 +45,7 @@ async function assertWalletOwner(session: SessionUser, walletId: string): Promis
   }
 }
 
-// ─── Service ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const walletService = {
   /**
@@ -137,14 +137,14 @@ export const walletService = {
             userId: session.id,
             type: "PAYMENT_RECEIVED",
             title: "Deposit Confirmed",
-            body: `৳${input.amountBdt.toLocaleString("en-BD")} has been added to your wallet.`,
+            body: `à§³${input.amountBdt.toLocaleString("en-BD")} has been added to your wallet.`,
             data: { paymentId: payment.id, amountBdt: input.amountBdt },
           },
         });
 
         return { payment, ledgerTx };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -166,7 +166,7 @@ export const walletService = {
 
     if (trueBalance < totalAmount) {
       throw new ValidationError(
-        `Insufficient balance. Available: ৳${trueBalance.toFixed(2)}, Requested: ৳${totalAmount.toFixed(2)}`,
+        `Insufficient balance. Available: à§³${trueBalance.toFixed(2)}, Requested: à§³${totalAmount.toFixed(2)}`,
       );
     }
 
@@ -181,7 +181,7 @@ export const walletService = {
     const pendingTotal = Number(pendingWithdrawals._sum.amountBdt ?? 0);
     if (trueBalance - pendingTotal < totalAmount) {
       throw new ValidationError(
-        `Insufficient available balance after pending withdrawals. Available: ৳${(trueBalance - pendingTotal).toFixed(2)}`,
+        `Insufficient available balance after pending withdrawals. Available: à§³${(trueBalance - pendingTotal).toFixed(2)}`,
       );
     }
 
@@ -238,14 +238,14 @@ export const walletService = {
             userId: session.id,
             type: "WITHDRAWAL_APPROVED",
             title: "Withdrawal Requested",
-            body: `Your withdrawal of ৳${input.amountBdt.toLocaleString("en-BD")} is pending approval.`,
+            body: `Your withdrawal of à§³${input.amountBdt.toLocaleString("en-BD")} is pending approval.`,
             data: { withdrawalId: withdrawal.id },
           },
         });
 
         return { withdrawal, ledgerTx };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -306,7 +306,7 @@ export const walletService = {
 
         return { ledgerTx };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -347,7 +347,7 @@ export const walletService = {
         userId: withdrawal.wallet.userId,
         type: "WITHDRAWAL_APPROVED",
         title: "Withdrawal Approved",
-        body: `Your withdrawal of ৳${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been approved.`,
+        body: `Your withdrawal of à§³${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been approved.`,
         data: { withdrawalId: withdrawal.id },
       },
     });
@@ -357,7 +357,7 @@ export const walletService = {
 
   /**
    * Complete a withdrawal (Finance Officer marks bank transfer done).
-   * No additional ledger entry needed — funds were already reserved on request.
+   * No additional ledger entry needed â€” funds were already reserved on request.
    */
   async completeWithdrawal(session: SessionUser, withdrawalId: string) {
     await requirePermission(session, PERMISSIONS.WITHDRAWAL_APPROVE);
@@ -387,7 +387,7 @@ export const walletService = {
         userId: withdrawal.wallet.userId,
         type: "WITHDRAWAL_COMPLETED",
         title: "Withdrawal Completed",
-        body: `Your withdrawal of ৳${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been sent to your account.`,
+        body: `Your withdrawal of à§³${Number(withdrawal.amountBdt).toLocaleString("en-BD")} has been sent to your account.`,
         data: { withdrawalId },
       },
     });
@@ -451,7 +451,7 @@ export const walletService = {
 
         return { ledgerTx };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -638,7 +638,7 @@ export const walletService = {
 
         return { investmentId: investment.id, receiptNumber: investment.receiptNumber ?? "", ledgerTxId: ledgerTx.id };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -650,42 +650,67 @@ export const walletService = {
 
     const payment = await db.payment.findUnique({
       where: { id: paymentId },
-      select: {
-        id: true, status: true, amountBdt: true, walletId: true,
-        wallet: { select: { userId: true } },
-        gatewayResponse: true,
-      },
+      select: { id: true, status: true, amountBdt: true, wallet: { select: { userId: true } } },
     });
     if (!payment) throw new NotFoundError("Payment");
     if (payment.status !== "PENDING") throw new ValidationError(`Payment is already ${payment.status}`);
 
     const idempotencyKey = generateIdempotencyKey(IDEMPOTENCY_PREFIXES.DEPOSIT);
+    const amountBdt = Number(payment.amountBdt);
+    const userId = payment.wallet.userId;
 
     await db.$transaction(
       async (tx) => {
-        await tx.payment.update({
-          where: { id: paymentId },
-          data: { status: "COMPLETED", processedAt: new Date() },
+        await tx.payment.update({ where: { id: paymentId }, data: { status: "COMPLETED", processedAt: new Date() } });
+
+        const investorWallet = await walletRepository.getOrCreate(tx, userId, "INVESTOR");
+        const revenueWallet = await tx.wallet.findFirst({
+          where: { type: "PLATFORM_REVENUE" },
+          select: { id: true, cachedBalance: true, isActive: true },
+        }) ?? await tx.wallet.create({
+          data: { type: "PLATFORM_REVENUE", cachedBalance: 0, currency: "BDT" },
+          select: { id: true, cachedBalance: true, isActive: true },
         });
 
-        await ledgerService.recordDeposit(payment.wallet.userId, Number(payment.amountBdt), {
+        const [firstId, secondId] = [investorWallet.id, revenueWallet.id].sort();
+        const [first, second] = await Promise.all([
+          walletRepository.lockForUpdate(tx, firstId),
+          walletRepository.lockForUpdate(tx, secondId),
+        ]);
+        const revenueRow  = first.id === revenueWallet.id  ? first : second;
+        const investorRow = first.id === investorWallet.id ? first : second;
+        const newRevenueBalance  = Number(revenueRow.cachedBalance)  - amountBdt;
+        const newInvestorBalance = Number(investorRow.cachedBalance) + amountBdt;
+
+        await ledgerRepository.createTransaction(tx, {
+          type: "DEPOSIT",
+          description: "Wallet deposit confirmed by admin",
+          amountBdt,
+          currency: "BDT",
           idempotencyKey,
           referenceId: paymentId,
-          description: "Wallet deposit confirmed by admin",
+          referenceType: "Payment",
           metadata: { paymentId, confirmedBy: session.id },
+          entries: [
+            { walletId: revenueWallet.id,  entryType: "DEBIT",  amountBdt, balanceAfterBdt: newRevenueBalance },
+            { walletId: investorWallet.id, entryType: "CREDIT", amountBdt, balanceAfterBdt: newInvestorBalance },
+          ],
         });
 
-        await tx.notification.create({
-          data: {
-            userId: payment.wallet.userId,
-            type: "PAYMENT_RECEIVED",
-            title: "Deposit Confirmed",
-            body: `\u09F3${Number(payment.amountBdt).toLocaleString("en-BD")} has been added to your wallet.`,
-            data: { paymentId },
-          },
-        });
+        await Promise.all([
+          walletRepository.updateCachedBalance(tx, revenueWallet.id,  newRevenueBalance),
+          walletRepository.updateCachedBalance(tx, investorWallet.id, newInvestorBalance),
+        ]);
+
+        await tx.notification.create({ data: {
+          userId,
+          type: "PAYMENT_RECEIVED",
+          title: "Deposit Confirmed",
+          body: `à§³${amountBdt.toLocaleString("en-BD")} has been added to your wallet.`,
+          data: { paymentId },
+        } });
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 

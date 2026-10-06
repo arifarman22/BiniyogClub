@@ -26,9 +26,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       : (ROLE_PERMISSIONS[session.role as UserRole] as string[] ?? []);
   }
 
-  const [pendingPayments, pendingKyc] = await Promise.all([
+  const [pendingPayments, pendingKyc, pendingDeposits] = await Promise.all([
     db.manualPaymentSubmission.count({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } } }),
     db.kyc.count({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } } }),
+    db.payment.count({ where: { direction: "INBOUND", status: "PENDING" } }),
   ]);
 
   const initials = session.name
@@ -44,7 +45,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       role={session.role}
       initials={initials}
       userPermissions={userPermissions}
-      badges={{ "/admin/payments/manual": pendingPayments, "/admin/kyc": pendingKyc }}
+      badges={{ "/admin/payments/manual": pendingPayments, "/admin/kyc": pendingKyc, "/admin/deposits": pendingDeposits }}
     >
       {children}
     </AdminShell>

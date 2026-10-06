@@ -347,6 +347,35 @@ export async function getInvestorWallet(session: SessionUser) {
   };
 }
 
+// ─── Deposits ─────────────────────────────────────────────────────────────────
+
+export async function getInvestorDeposits(session: SessionUser, page = 1, limit = 20) {
+  const skip = (page - 1) * limit;
+  const [deposits, total] = await Promise.all([
+    db.payment.findMany({
+      where: { wallet: { userId: session.id }, direction: "INBOUND" },
+      select: {
+        id: true,
+        method: true,
+        status: true,
+        amountBdt: true,
+        feeBdt: true,
+        netAmountBdt: true,
+        externalReference: true,
+        description: true,
+        processedAt: true,
+        createdAt: true,
+        gatewayResponse: true,
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    db.payment.count({ where: { wallet: { userId: session.id }, direction: "INBOUND" } }),
+  ]);
+  return { deposits, total, page, limit, totalPages: Math.ceil(total / limit) };
+}
+
 // ─── Transactions ─────────────────────────────────────────────────────────────
 
 export async function getInvestorTransactions(session: SessionUser, page = 1, limit = 20) {

@@ -8,7 +8,7 @@ import {
   LayoutDashboard, FolderKanban, Users, BarChart3, Settings,
   LogOut, ShieldCheck, TrendingUp, CreditCard, ArrowDownToLine,
   Bell, ScrollText, FileText, UserCheck, PieChart, Home,
-  Building2, ChevronLeft, Menu, X,
+  Building2, ChevronLeft, Menu, X, ArrowDownLeft,
 } from "lucide-react";
 import { logoutAction } from "@/server/actions/auth.actions";
 import type { LucideIcon } from "lucide-react";
@@ -44,6 +44,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { href: "/admin/investments",   label: "Investments",  icon: TrendingUp,      permission: "investment.view" },
       { href: "/admin/groups",        label: "Group Invest", icon: Building2,       permission: "investment.view" },
       { href: "/admin/payments",      label: "Payments",     icon: CreditCard,      permission: "payment.view",   badgeHref: "/admin/payments/manual" },
+      { href: "/admin/deposits",       label: "Deposits",     icon: ArrowDownLeft,   permission: "payment.view",   badgeHref: "/admin/deposits" },
       { href: "/admin/withdrawals",   label: "Withdrawals",  icon: ArrowDownToLine, permission: "withdrawal.view" },
       { href: "/admin/distributions", label: "Distributions",icon: PieChart,        permission: "distribution.view" },
     ],

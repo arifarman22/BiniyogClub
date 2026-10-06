@@ -8,7 +8,7 @@ import { cn } from "cn";
 import {
   Menu, X,
   LayoutDashboard, TrendingUp, FolderOpen, PieChart, Wallet,
-  ArrowLeftRight, FileText, Bell, User, ShieldCheck, Building2, ExternalLink,
+  ArrowLeftRight, ArrowDownLeft, FileText, Bell, User, ShieldCheck, Building2, ExternalLink,
 } from "lucide-react";
 
 const NAV = [
@@ -19,6 +19,7 @@ const NAV = [
   { href: "/dashboard/portfolio",     label: "Portfolio",     icon: PieChart },
   { href: "/dashboard/wallet",        label: "Wallet",        icon: Wallet },
   { href: "/dashboard/transactions",  label: "Transactions",  icon: ArrowLeftRight },
+  { href: "/dashboard/deposits",      label: "Deposits",      icon: ArrowDownLeft },
   { href: "/dashboard/documents",     label: "Documents",     icon: FileText },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/profile",       label: "Profile",       icon: User },

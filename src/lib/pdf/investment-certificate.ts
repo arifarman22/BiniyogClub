@@ -78,7 +78,7 @@ function getLogoPath(): string | null {
     path.join(process.cwd(), "public", "logo.png"),
   ];
   for (const p of candidates) {
-    if (fs.existsSync(p)) return p;
+    if (fs.existsSync(/*turbopackIgnore: true*/ p)) return p;
   }
   return null;
 }

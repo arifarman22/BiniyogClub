@@ -1,4 +1,4 @@
-/**
+﻿/**
  * ledger.service.ts
  *
  * Double-entry bookkeeping engine.
@@ -9,13 +9,13 @@
  *  - No transaction may produce a negative balance on any wallet.
  *  - Idempotency: duplicate keys return the existing transaction.
  *  - All writes run inside serializable transactions with row locks.
- *  - Voiding creates a reversal pair — records are never deleted.
+ *  - Voiding creates a reversal pair â€” records are never deleted.
  *
  * Wallet types and their roles:
- *  INVESTOR        — investor's personal wallet (source of investment funds)
- *  FARMER          — farmer's wallet (receives project disbursements)
- *  PLATFORM_ESCROW — holds investor funds during active projects
- *  PLATFORM_REVENUE— receives platform fees
+ *  INVESTOR        â€” investor's personal wallet (source of investment funds)
+ *  FARMER          â€” farmer's wallet (receives project disbursements)
+ *  PLATFORM_ESCROW â€” holds investor funds during active projects
+ *  PLATFORM_REVENUEâ€” receives platform fees
  */
 
 import { db } from "@/lib/db/prisma";
@@ -25,7 +25,7 @@ import { addBdt, subtractBdt, assertPositiveBdt } from "@/lib/financial/money";
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import type { LedgerTransactionType, Prisma } from "@/types/prisma";
 
-// ─── Internal helpers ─────────────────────────────────────────────────────────
+// â”€â”€â”€ Internal helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Resolve or create the platform escrow wallet inside a transaction. */
 async function getOrCreateEscrowWallet(tx: Prisma.TransactionClient) {
@@ -80,7 +80,7 @@ async function getOrCreateRevenueWallet(tx: Prisma.TransactionClient) {
 /**
  * Core double-entry write.
  * Acquires row locks on both wallets, validates balances, writes entries,
- * and updates cached balances — all inside the caller's transaction.
+ * and updates cached balances â€” all inside the caller's transaction.
  *
  * @param tx          - Active Prisma transaction client
  * @param type        - Ledger transaction type
@@ -124,7 +124,7 @@ async function writeDoubleEntry(
   const debitBalance  = Number(debitWallet.cachedBalance);
   const creditBalance = Number(creditWallet.cachedBalance);
 
-  // Negative balance prevention — only enforced for INVESTOR wallets.
+  // Negative balance prevention â€” only enforced for INVESTOR wallets.
   // Platform-internal wallets (PLATFORM_REVENUE, PLATFORM_ESCROW) are contra
   // accounts and may legitimately go negative (e.g. revenue debited on deposit).
   const newDebitBalance = subtractBdt(debitBalance, amountBdt);
@@ -134,7 +134,7 @@ async function writeDoubleEntry(
   });
   if (newDebitBalance < 0 && isInvestorWallet?.type === "INVESTOR") {
     throw new ValidationError(
-      `Insufficient balance. Available: ৳${debitBalance.toFixed(2)}, Required: ৳${amountBdt.toFixed(2)}`,
+      `Insufficient balance. Available: à§³${debitBalance.toFixed(2)}, Required: à§³${amountBdt.toFixed(2)}`,
     );
   }
 
@@ -166,7 +166,7 @@ async function writeDoubleEntry(
   return { ledgerTx, newDebitBalance, newCreditBalance };
 }
 
-// ─── Public ledger service ────────────────────────────────────────────────────
+// â”€â”€â”€ Public ledger service â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const ledgerService = {
   /**
@@ -174,7 +174,7 @@ export const ledgerService = {
    * Real money arrives from outside (manual bank transfer confirmed by admin).
    *
    * Double-entry:
-   *   DEBIT:  PLATFORM_REVENUE  (represents external inflow — money received by platform)
+   *   DEBIT:  PLATFORM_REVENUE  (represents external inflow â€” money received by platform)
    *   CREDIT: INVESTOR wallet   (investor's balance increases)
    *
    * Escrow is NOT involved in deposits. Escrow only holds funds that have been
@@ -222,7 +222,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -269,7 +269,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -318,7 +318,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -364,7 +364,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -413,7 +413,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -462,15 +462,15 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
   /**
    * ADJUSTMENT: Manual balance correction by finance staff.
    * Direction is determined by the sign of amountBdt:
-   *   positive → credit target wallet (balance increases)
-   *   negative → debit target wallet (balance decreases)
+   *   positive â†’ credit target wallet (balance increases)
+   *   negative â†’ debit target wallet (balance decreases)
    *
    * Adjustments always use PLATFORM_REVENUE as the contra account.
    */
@@ -498,8 +498,8 @@ export const ledgerService = {
         const revenueWallet = await getOrCreateRevenueWallet(tx);
 
         const [debitId, creditId] = amountBdt > 0
-          ? [revenueWallet.id, targetWallet.id]  // positive: revenue → target
-          : [targetWallet.id, revenueWallet.id]; // negative: target → revenue
+          ? [revenueWallet.id, targetWallet.id]  // positive: revenue â†’ target
+          : [targetWallet.id, revenueWallet.id]; // negative: target â†’ revenue
 
         const { ledgerTx } = await writeDoubleEntry(
           tx,
@@ -516,7 +516,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
@@ -587,7 +587,7 @@ export const ledgerService = {
 
         return { ledgerTx, idempotent: false };
       },
-      { isolationLevel: "Serializable" },
+      { timeout: 15000 },
     );
   },
 
