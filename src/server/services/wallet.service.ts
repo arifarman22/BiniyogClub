@@ -657,7 +657,7 @@ export const walletService = {
 
     const idempotencyKey = generateIdempotencyKey(IDEMPOTENCY_PREFIXES.DEPOSIT);
     const amountBdt = Number(payment.amountBdt);
-    const userId = payment.wallet.userId;
+    const userId = payment.wallet.userId ?? "";
 
     await db.$transaction(
       async (tx) => {

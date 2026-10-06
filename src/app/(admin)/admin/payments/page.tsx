@@ -105,8 +105,8 @@ export default async function AdminPaymentsPage({ searchParams }: AsyncComponent
                 {items.map((p) => (
                   <tr key={p.id} className="hover:bg-muted/20 transition-colors">
                     <td className="px-4 py-3">
-                      <p className="font-medium">{p.wallet.user.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.wallet.user.email}</p>
+                      <p className="font-medium">{p.wallet.user?.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.wallet.user?.email}</p>
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell">
                       <span className="text-xs text-muted-foreground">{p.method.replace(/_/g, " ")}</span>

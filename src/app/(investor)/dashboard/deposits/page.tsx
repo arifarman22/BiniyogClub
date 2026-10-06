@@ -247,7 +247,7 @@ export default async function DepositsPage({ searchParams }: { searchParams: Sea
                         {fmtDate(d.createdAt)}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <DepositDetailPopup deposit={d} />
+                        <DepositDetailPopup deposit={{ ...d, amountBdt: Number(d.amountBdt), feeBdt: Number(d.feeBdt), netAmountBdt: Number(d.netAmountBdt) }} />
                       </td>
                     </tr>
                   ))}

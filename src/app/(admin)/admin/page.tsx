@@ -158,7 +158,7 @@ export default async function AdminDashboardPage() {
               {activity.recentWithdrawals.map((w) => (
                 <li key={w.id} className="flex items-center justify-between px-5 py-3">
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-medium">{w.wallet.user.name}</p>
+                    <p className="truncate text-sm font-medium">{w.wallet.user?.name}</p>
                     <p className="text-xs text-muted-foreground">{w.method.replace(/_/g, " ")}</p>
                   </div>
                   <div className="ml-3 flex flex-col items-end gap-1">

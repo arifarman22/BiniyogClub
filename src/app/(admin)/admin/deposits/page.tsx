@@ -120,8 +120,8 @@ export default async function AdminDepositsPage({ searchParams }: AsyncComponent
               return (
                 <div key={p.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
                   <div className="min-w-0">
-                    <p className="font-medium text-sm">{p.wallet.user.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.wallet.user.email}</p>
+                    <p className="font-medium text-sm">{p.wallet.user?.name}</p>
+                    <p className="text-xs text-muted-foreground">{p.wallet.user?.email}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {p.method.replace(/_/g, " ")}
                       {p.externalReference ? ` · Ref: ${p.externalReference}` : ""}
@@ -174,8 +174,8 @@ export default async function AdminDepositsPage({ searchParams }: AsyncComponent
                   {items.map((d) => (
                     <tr key={d.id} className="hover:bg-muted/20 transition-colors">
                       <td className="px-4 py-3">
-                        <p className="font-medium">{d.wallet.user.name}</p>
-                        <p className="text-xs text-muted-foreground">{d.wallet.user.email}</p>
+                        <p className="font-medium">{d.wallet.user?.name}</p>
+                        <p className="text-xs text-muted-foreground">{d.wallet.user?.email}</p>
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
                         <div className="flex items-center gap-2">
