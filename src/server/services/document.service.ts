@@ -18,6 +18,7 @@ import type { SessionUser } from "@/lib/auth/session";
 import type { DocumentCategory, DocumentEntityType } from "@/types/prisma";
 import { headers } from "next/headers";
 import { renderInvestmentCertificate } from "@/lib/pdf/investment-certificate";
+import { signReceipt } from "@/lib/pdf/verify";
 
 // ─── Access control matrix ────────────────────────────────────────────────────
 // Defines which roles can access each document category.
@@ -218,12 +219,28 @@ async function generateInvestmentReceipt(
   if (existing) return { documentId: existing.id, storageKey: existing.storageKey ?? "" };
 
   const now = new Date();
+  const receiptNumber = investment.receiptNumber ?? investment.id;
+  const amountBdt = Number(investment.amountBdt);
+  const activatedAt = (investment.activatedAt ?? investment.createdAt).toISOString();
+  const investorEmail = investment.investorProfile.user.email;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyogclub.com";
+
+  const verificationHash = signReceipt({
+    receiptNumber,
+    investmentId: investment.id,
+    amountBdt,
+    activatedAt,
+    investorEmail,
+  });
+
   const pdfContent = await renderInvestmentCertificate({
-    receiptNumber:  investment.receiptNumber ?? investment.id,
-    generatedAt:    now.toISOString(),
+    receiptNumber,
+    investmentId:    investment.id,
+    generatedAt:     now.toISOString(),
+    verificationUrl: `${appUrl}/verify/${receiptNumber}`,
     investor: {
       name:  investment.investorProfile.user.name ?? "Investor",
-      email: investment.investorProfile.user.email,
+      email: investorEmail,
       phone: investment.investorProfile.user.phone,
     },
     project: {
@@ -234,10 +251,10 @@ async function generateInvestmentReceipt(
       location:          investment.project.location,
     },
     investment: {
-      amountBdt:         Number(investment.amountBdt),
+      amountBdt,
       expectedReturnBdt: Number(investment.expectedReturnBdt),
       returnType:        investment.returnType,
-      activatedAt:       (investment.activatedAt ?? investment.createdAt).toISOString(),
+      activatedAt,
     },
   });
 
@@ -264,6 +281,7 @@ async function generateInvestmentReceipt(
       isFinalized:     true,
       templateVersion: RECEIPT_TEMPLATE_VERSION,
       generatedAt:     now,
+      verificationHash,
       ownerUserId:     investorUserId,
       allowedRoles:    CATEGORY_ACCESS.INVESTMENT_RECEIPT,
     },

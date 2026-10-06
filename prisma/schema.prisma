@@ -710,9 +710,10 @@ model Document {
   sizeBytes       Int
   isPublic        Boolean            @default(false)
   isFinalized     Boolean            @default(false)
-  templateVersion String?
-  generatedAt     DateTime?
-  expiresAt       DateTime?
+  templateVersion  String?
+  generatedAt      DateTime?
+  expiresAt        DateTime?
+  verificationHash String?
   allowedRoles    String[]           @default([])
   ownerUserId     String?
   deletedAt       DateTime?
