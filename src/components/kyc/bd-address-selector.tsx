@@ -229,8 +229,8 @@ export function BdAddressSelector({ prefix, label, value, onChange, fieldErrors 
           id={`${prefix}-postoffice`}
           label="Post Office"
           options={postOffices}
-          value={value.postOffice}
-          onChange={(v) => { const o = postOffices.find((p) => p.name === v); if (o) setByOpt("postOffice", o); }}
+          value={postOffices.find((o) => o.name === value.postOffice)?.id ?? ""}
+          onChange={(v) => { const o = postOffices.find((p) => p.id === v); if (o) setByOpt("postOffice", o); }}
           loading={loadingPo}
           disabled={disabled || !value.upazilaId}
           placeholder={value.upazilaId ? "Select Post Office" : "Select Upazila first"}
