@@ -3,11 +3,14 @@ import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
 import { documentService } from "@/server/services/document.service";
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await getSession();
   if (!session || !["SUPER_ADMIN", "ADMIN"].includes(session.role)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "true";
 
   const investments = await db.investment.findMany({
     where: { status: { in: ["ACTIVE", "MATURED", "COMPLETED"] } },
@@ -35,7 +38,15 @@ export async function POST() {
       select: { id: true },
     });
 
-    if (existing) { skipped++; continue; }
+    if (existing && !force) { skipped++; continue; }
+
+    // Force mode: soft-delete the old document so generateInvestmentReceipt creates a fresh one
+    if (existing && force) {
+      await db.document.update({
+        where: { id: existing.id },
+        data: { deletedAt: new Date() },
+      });
+    }
 
     try {
       await documentService.generateInvestmentReceipt(inv.id);
