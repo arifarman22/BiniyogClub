@@ -57,9 +57,9 @@ export const walletRepository = {
     walletId: string,
   ): Promise<{ id: string; cachedBalance: string; isActive: boolean }> {
     const [row] = await tx.$queryRaw<
-      Array<{ id: string; cached_balance: string; is_active: boolean }>
+      Array<{ id: string; cachedBalance: string; isActive: boolean }>
     >`
-      SELECT id, cached_balance, is_active
+      SELECT id, "cachedBalance", "isActive"
       FROM wallets
       WHERE id = ${walletId}
       FOR UPDATE
@@ -67,8 +67,8 @@ export const walletRepository = {
     if (!row) throw new Error(`Wallet ${walletId} not found`);
     return {
       id: row.id,
-      cachedBalance: row.cached_balance,
-      isActive: row.is_active,
+      cachedBalance: row.cachedBalance,
+      isActive: row.isActive,
     };
   },
 

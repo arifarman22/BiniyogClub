@@ -354,10 +354,18 @@ export const investmentService = {
 
     const now = new Date();
     const receiptNumber = generateReceiptNumber();
-    const investorNewBalance = Number(wallet.cachedBalance) + amountBdt;
-    const escrowNewBalance = Number(escrowWallet.cachedBalance) + amountBdt;
+    // Investor wallet is DEBITED (balance decreases — funds committed to investment)
+    // Escrow wallet is CREDITED (platform holds the funds)
+    const investorNewBalance = Number(wallet.cachedBalance) - amountBdt;
+    const escrowNewBalance   = Number(escrowWallet.cachedBalance) + amountBdt;
     const walletId = wallet.id;
     const escrowWalletId = escrowWallet.id;
+
+    if (investorNewBalance < 0) {
+      throw new ValidationError(
+        `Insufficient wallet balance. Available: ৳${Number(wallet.cachedBalance).toFixed(2)}, Required: ৳${amountBdt.toFixed(2)}`,
+      );
+    }
 
     // ── Writes: executed sequentially without an interactive transaction ─────
     // Neon PostgreSQL closes interactive transactions quickly on serverless.
@@ -370,7 +378,7 @@ export const investmentService = {
       data: { status: "COMPLETED", externalReference: input.externalReference, processedAt: now },
     });
 
-    // 2. Double-entry ledger
+    // 2. Double-entry ledger: debit investor, credit escrow
     const ledgerTx = await db.ledgerTransaction.create({
       data: {
         type: "INVESTMENT_FUNDING",
@@ -381,7 +389,7 @@ export const investmentService = {
         amountBdt,
         entries: {
           create: [
-            { walletId, entryType: "DEBIT", amountBdt, balanceAfterBdt: investorNewBalance },
+            { walletId,          entryType: "DEBIT",  amountBdt, balanceAfterBdt: investorNewBalance },
             { walletId: escrowWalletId, entryType: "CREDIT", amountBdt, balanceAfterBdt: escrowNewBalance },
           ],
         },
@@ -390,7 +398,7 @@ export const investmentService = {
     });
 
     // 3. Update wallet balances
-    await db.wallet.update({ where: { id: walletId }, data: { cachedBalance: investorNewBalance } });
+    await db.wallet.update({ where: { id: walletId },      data: { cachedBalance: investorNewBalance } });
     await db.wallet.update({ where: { id: escrowWalletId }, data: { cachedBalance: escrowNewBalance } });
 
     // 4. Activate investment

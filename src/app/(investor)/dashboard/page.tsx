@@ -436,7 +436,11 @@ export default async function DashboardPage() {
                     {/* Stats row */}
                     <div className="grid grid-cols-3 gap-2 text-center">
                       <div className="rounded-lg bg-muted/40 py-1.5">
-                        <p className="text-xs font-bold text-success">{(Number(p.expectedReturnPct) * 100).toFixed(0)}%</p>
+                        <p className="text-xs font-bold text-success">
+                          {p.returnType === "PROFIT_SHARE" && p.returnPctMin && p.returnPctMax
+                            ? `${Number(p.returnPctMin).toFixed(1)}–${Number(p.returnPctMax).toFixed(1)}%`
+                            : `${Number(p.expectedReturnPct).toFixed(1)}%`}
+                        </p>
                         <p className="text-[9px] text-muted-foreground">Return</p>
                       </div>
                       <div className="rounded-lg bg-muted/40 py-1.5">
@@ -514,9 +518,11 @@ export default async function DashboardPage() {
                         {fmt(Number(inv.amountBdt))}
                       </td>
                       <td className="px-4 py-3 text-right text-success text-xs hidden sm:table-cell">
-                        +{Number(inv.project?.expectedReturnPct ?? 0) * 100 > 0
-                          ? `${(Number(inv.project?.expectedReturnPct ?? 0) * 100).toFixed(0)}%`
-                          : "—"}
+                        {inv.project?.returnType === "PROFIT_SHARE" && inv.project?.returnPctMin && inv.project?.returnPctMax
+                          ? `${Number(inv.project.returnPctMin).toFixed(1)}–${Number(inv.project.returnPctMax).toFixed(1)}%`
+                          : Number(inv.project?.expectedReturnPct ?? 0) > 0
+                            ? `+${Number(inv.project?.expectedReturnPct ?? 0).toFixed(1)}%`
+                            : "—"}
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="inline-flex items-center gap-1.5">

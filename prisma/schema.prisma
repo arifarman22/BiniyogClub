@@ -437,7 +437,7 @@ model ProfitDistribution {
 
 model Wallet {
   id            String           @id @default(uuid())
-  userId        String           @unique
+  userId        String?          @unique
   type          WalletType
   cachedBalance Decimal          @default(0) @db.Decimal(14, 2)
   currency      String           @default("BDT")
@@ -447,7 +447,7 @@ model Wallet {
   ledgerEntries LedgerEntry[]
   payments      Payment[]
   snapshots     WalletSnapshot[]
-  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   withdrawals   Withdrawal[]
 
   @@index([type])

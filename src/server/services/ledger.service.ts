@@ -35,16 +35,21 @@ async function getOrCreateEscrowWallet(tx: Prisma.TransactionClient) {
   });
   if (existing) return existing;
 
-  const admin = await tx.user.findFirst({
-    where: { role: "SUPER_ADMIN" },
-    select: { id: true },
-  });
-  if (!admin) throw new NotFoundError("Platform SUPER_ADMIN user");
-
-  return tx.wallet.create({
-    data: { userId: admin.id, type: "PLATFORM_ESCROW", cachedBalance: 0, currency: "BDT" },
-    select: { id: true, cachedBalance: true, isActive: true },
-  });
+  try {
+    return await tx.wallet.create({
+      data: { type: "PLATFORM_ESCROW", cachedBalance: 0, currency: "BDT" },
+      select: { id: true, cachedBalance: true, isActive: true },
+    });
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === "P2002") {
+      const retry = await tx.wallet.findFirst({
+        where: { type: "PLATFORM_ESCROW" },
+        select: { id: true, cachedBalance: true, isActive: true },
+      });
+      if (retry) return retry;
+    }
+    throw e;
+  }
 }
 
 /** Resolve or create the platform revenue wallet inside a transaction. */
@@ -55,16 +60,21 @@ async function getOrCreateRevenueWallet(tx: Prisma.TransactionClient) {
   });
   if (existing) return existing;
 
-  const admin = await tx.user.findFirst({
-    where: { role: "SUPER_ADMIN" },
-    select: { id: true },
-  });
-  if (!admin) throw new NotFoundError("Platform SUPER_ADMIN user");
-
-  return tx.wallet.create({
-    data: { userId: admin.id, type: "PLATFORM_REVENUE", cachedBalance: 0, currency: "BDT" },
-    select: { id: true, cachedBalance: true, isActive: true },
-  });
+  try {
+    return await tx.wallet.create({
+      data: { type: "PLATFORM_REVENUE", cachedBalance: 0, currency: "BDT" },
+      select: { id: true, cachedBalance: true, isActive: true },
+    });
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === "P2002") {
+      const retry = await tx.wallet.findFirst({
+        where: { type: "PLATFORM_REVENUE" },
+        select: { id: true, cachedBalance: true, isActive: true },
+      });
+      if (retry) return retry;
+    }
+    throw e;
+  }
 }
 
 /**
@@ -114,9 +124,15 @@ async function writeDoubleEntry(
   const debitBalance  = Number(debitWallet.cachedBalance);
   const creditBalance = Number(creditWallet.cachedBalance);
 
-  // Negative balance prevention
+  // Negative balance prevention — only enforced for INVESTOR wallets.
+  // Platform-internal wallets (PLATFORM_REVENUE, PLATFORM_ESCROW) are contra
+  // accounts and may legitimately go negative (e.g. revenue debited on deposit).
   const newDebitBalance = subtractBdt(debitBalance, amountBdt);
-  if (newDebitBalance < 0) {
+  const isInvestorWallet = await tx.wallet.findUnique({
+    where: { id: debitWalletId },
+    select: { type: true },
+  });
+  if (newDebitBalance < 0 && isInvestorWallet?.type === "INVESTOR") {
     throw new ValidationError(
       `Insufficient balance. Available: ৳${debitBalance.toFixed(2)}, Required: ৳${amountBdt.toFixed(2)}`,
     );
@@ -155,22 +171,16 @@ async function writeDoubleEntry(
 export const ledgerService = {
   /**
    * DEPOSIT: External money enters the platform.
-   * Debit: INVESTOR wallet (investor's balance increases — they are owed this money)
+   * Real money arrives from outside (manual bank transfer confirmed by admin).
    *
-   * Wait — for a deposit, the investor's wallet CREDIT increases.
-   * Accounting convention used here:
-   *   Investor wallet is a LIABILITY from the platform's perspective.
-   *   CREDIT on investor wallet = investor balance goes up.
-   *   DEBIT on investor wallet  = investor balance goes down.
+   * Double-entry:
+   *   DEBIT:  PLATFORM_REVENUE  (represents external inflow — money received by platform)
+   *   CREDIT: INVESTOR wallet   (investor's balance increases)
    *
-   * For simplicity and user-facing clarity, we model it as:
-   *   DEPOSIT  → CREDIT investor wallet, DEBIT a virtual "external" entry
-   *
-   * Since we don't model an external bank account, we use PLATFORM_ESCROW
-   * as the contra account for deposits (money flows: external → escrow → investor).
-   * The actual deposit flow is:
-   *   1. Payment gateway confirms receipt → CREDIT investor wallet
-   *   2. Contra: DEBIT platform escrow (escrow holds the real funds)
+   * Escrow is NOT involved in deposits. Escrow only holds funds that have been
+   * committed to investments (INVESTMENT_FUNDING credits escrow).
+   * Using PLATFORM_REVENUE as the contra keeps escrow balance accurate:
+   *   escrow balance = sum of all active investment funds held by platform.
    */
   async recordDeposit(
     userId: string,
@@ -193,17 +203,14 @@ export const ledgerService = {
     return db.$transaction(
       async (tx) => {
         const investorWallet = await walletRepository.getOrCreate(tx, userId, "INVESTOR");
-        const escrowWallet   = await getOrCreateEscrowWallet(tx);
+        const revenueWallet  = await getOrCreateRevenueWallet(tx);
 
-        // For a deposit: escrow is debited (funds leave escrow), investor is credited
-        // But on initial deposit, funds come FROM outside — escrow acts as the source
-        // We credit investor, debit escrow to represent the platform receiving the funds
         const { ledgerTx } = await writeDoubleEntry(
           tx,
           "DEPOSIT",
           opts.description ?? "Wallet deposit",
           amountBdt,
-          escrowWallet.id,   // debit escrow (escrow balance decreases — funds disbursed to investor)
+          revenueWallet.id,  // debit revenue (external inflow contra account)
           investorWallet.id, // credit investor (investor balance increases)
           {
             referenceId: opts.referenceId,
