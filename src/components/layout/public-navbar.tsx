@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { cn } from "cn";
+import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import type { SessionUser } from "@/lib/auth/session";
 import { logoutAction } from "@/server/actions/auth.actions";
 
@@ -87,6 +88,8 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
               <span>Contract Act 1872 • 100% Escrow Segregated</span>
             </span>
+
+            <LanguageSwitcher />
           </div>
         </div>
       </div>
