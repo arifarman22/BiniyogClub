@@ -198,9 +198,19 @@ export const projectService = {
   // ── Hard delete ──────────────────────────────────────────────────────────────
   async delete(session: SessionUser, projectId: string) {
     await requirePermission(session, PERMISSIONS.PROJECT_DELETE);
-    const project = await projectRepository.findById(projectId);
+    const project = await db.project.findUnique({
+      where: { id: projectId },
+      select: { id: true, _count: { select: { investments: true } } },
+    });
     if (!project) throw new NotFoundError("Project");
-    await db.project.delete({ where: { id: projectId } });
+
+    if (project._count.investments > 0) {
+      // Has investments — soft delete only to preserve financial records
+      await db.project.update({ where: { id: projectId }, data: { deletedAt: new Date() } });
+    } else {
+      // No investments — safe to hard delete (cascades documents, updates, bank accounts, etc.)
+      await db.project.delete({ where: { id: projectId } });
+    }
   },
 
   // ── Get single (with auth) ───────────────────────────────────────────────────

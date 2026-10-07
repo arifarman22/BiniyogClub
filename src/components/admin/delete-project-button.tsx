@@ -34,7 +34,7 @@ export function DeleteProjectButton({ projectId, projectTitle }: { projectId: st
             </div>
             <div>
               <p className="font-semibold">Delete Project?</p>
-              <p className="text-xs text-muted-foreground mt-0.5">This will soft-delete the project and hide it from all views.</p>
+              <p className="text-xs text-muted-foreground mt-0.5">This cannot be undone. Projects with investments will be hidden; others will be permanently removed.</p>
             </div>
           </div>
           <p className="rounded-lg bg-muted/50 px-3 py-2 text-sm font-medium line-clamp-2">{projectTitle}</p>
