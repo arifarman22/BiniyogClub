@@ -97,36 +97,63 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
       where: { id: userId },
       select: {
         id: true, role: true,
-        investorProfile: { select: { id: true, investments: { select: { id: true } } } },
+        investorProfile: { select: { id: true, investments: { select: { id: true, projectId: true, amountBdt: true, status: true } } } },
       },
     });
     if (!user) throw new NotFoundError("User");
     if (user.role === "SUPER_ADMIN") throw new ForbiddenError("Cannot delete a super admin");
 
-    await db.$transaction(async (tx) => {
-      // Delete investment child records if investor
-      if (user.investorProfile) {
-        const investmentIds = user.investorProfile.investments.map((i) => i.id);
-        if (investmentIds.length > 0) {
-          await tx.manualPaymentSubmission.deleteMany({ where: { investmentId: { in: investmentIds } } });
-          await tx.profitDistribution.deleteMany({ where: { investmentId: { in: investmentIds } } });
-          await tx.distributionLineItem.deleteMany({ where: { investmentId: { in: investmentIds } } });
-          await tx.gatewayPayment.deleteMany({ where: { investmentId: { in: investmentIds } } });
-          // Must delete ledger entries before ledger transactions (FK constraint)
-          await tx.ledgerEntry.deleteMany({ where: { ledgerTransaction: { investmentId: { in: investmentIds } } } });
-          await tx.ledgerTransaction.deleteMany({ where: { investmentId: { in: investmentIds } } });
-          await tx.investment.deleteMany({ where: { id: { in: investmentIds } } });
-        }
+    // Gather all IDs outside the transaction to avoid timeout
+    const investmentIds = user.investorProfile?.investments.map((i) => i.id) ?? [];
+
+    const ledgerTxIds = investmentIds.length
+      ? (await db.ledgerTransaction.findMany({ where: { investmentId: { in: investmentIds } }, select: { id: true } })).map((t) => t.id)
+      : [];
+
+    const wallet = await db.wallet.findFirst({ where: { userId }, select: { id: true } });
+    const walletLedgerTxIds = wallet
+      ? (await db.ledgerTransaction.findMany({ where: { entries: { some: { walletId: wallet.id } }, investmentId: null }, select: { id: true } })).map((t) => t.id)
+      : [];
+
+    const allLedgerTxIds = [...new Set([...ledgerTxIds, ...walletLedgerTxIds])];
+
+    // Collect active investment amounts per project for funded amount correction
+    const projectDeductions: Record<string, number> = {};
+    for (const inv of user.investorProfile?.investments ?? []) {
+      if (["ACTIVE", "MATURED", "COMPLETED"].includes(inv.status)) {
+        projectDeductions[inv.projectId] = (projectDeductions[inv.projectId] ?? 0) + Number(inv.amountBdt);
       }
-      // Delete wallet ledger entries + snapshots (wallet itself cascades via user delete)
-      const wallet = await tx.wallet.findUnique({ where: { userId }, select: { id: true } });
-      if (wallet) {
-        await tx.walletSnapshot.deleteMany({ where: { walletId: wallet.id } });
-        await tx.ledgerEntry.deleteMany({ where: { walletId: wallet.id } });
-      }
-      // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
-      await tx.user.delete({ where: { id: userId } });
-    });
+    }
+
+    // Sequential deletes — no transaction needed, each step is idempotent
+    if (investmentIds.length) {
+      await db.distributionLineItem.deleteMany({ where: { investmentId: { in: investmentIds } } });
+      await db.profitDistribution.deleteMany({ where: { investmentId: { in: investmentIds } } });
+    }
+    if (allLedgerTxIds.length) {
+      await db.ledgerEntry.deleteMany({ where: { ledgerTransactionId: { in: allLedgerTxIds } } });
+      await db.ledgerTransaction.deleteMany({ where: { id: { in: allLedgerTxIds } } });
+    }
+    if (investmentIds.length) {
+      await db.manualPaymentSubmission.deleteMany({ where: { investmentId: { in: investmentIds } } });
+      await db.gatewayPayment.deleteMany({ where: { investmentId: { in: investmentIds } } });
+      await db.investmentContract.deleteMany({ where: { investmentId: { in: investmentIds } } });
+      await db.investment.deleteMany({ where: { id: { in: investmentIds } } });
+    }
+    for (const [projectId, amount] of Object.entries(projectDeductions)) {
+      await db.project.update({ where: { id: projectId }, data: { fundedAmountBdt: { decrement: amount } } });
+    }
+    if (wallet) {
+      await db.payment.deleteMany({ where: { walletId: wallet.id } });
+      await db.withdrawal.deleteMany({ where: { walletId: wallet.id } });
+      await db.walletSnapshot.deleteMany({ where: { walletId: wallet.id } });
+      await db.ledgerEntry.deleteMany({ where: { walletId: wallet.id } });
+    }
+    await db.documentAuditLog.deleteMany({ where: { document: { uploadedBy: userId } } });
+    await db.document.deleteMany({ where: { uploadedBy: userId } });
+    await db.auditLog.updateMany({ where: { actorId: userId }, data: { actorId: null } });
+    // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
+    await db.user.delete({ where: { id: userId } });
 
     await auditLog(session.id, "DELETE", "User", userId);
     revalidatePath("/admin/users");

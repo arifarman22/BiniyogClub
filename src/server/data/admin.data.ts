@@ -2,6 +2,7 @@ import { db } from "@/lib/db/prisma";
 import { requirePermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import { projectRepository } from "@/db/repositories/project.repository";
+import { unstable_cache } from "next/cache";
 import type { SessionUser } from "@/lib/auth/session";
 import type { ProjectFilters, ProjectSort } from "@/db/repositories/project.repository";
 
@@ -192,43 +193,82 @@ export async function getProjectStatusCounts() {
 
 // ─── Investments ──────────────────────────────────────────────────────────────
 
+// Cached — project list changes rarely, revalidate every 5 minutes
+const getProjectsForFilter = unstable_cache(
+  () => db.project.findMany({ where: { deletedAt: null }, select: { id: true, title: true }, orderBy: { title: "asc" } }),
+  ["admin-projects-filter"],
+  { revalidate: 300 },
+);
+
+// Cached — status counts across ALL investments, revalidate every 60s
+const getInvestmentStatusCounts = unstable_cache(
+  () => db.investment.groupBy({ by: ["status"], _count: { _all: true } }),
+  ["admin-investment-status-counts"],
+  { revalidate: 60 },
+);
+
 export async function getAdminInvestments(
   session: SessionUser,
-  opts: { search?: string; status?: string; page?: number },
+  opts: { search?: string; status?: string; project?: string; sort?: string; order?: string; page?: number },
 ) {
   await requirePermission(session, PERMISSIONS.INVESTMENT_VIEW);
-  const { search, status, page = 1 } = opts;
+  const { search, status, project, sort = "createdAt", order = "desc", page = 1 } = opts;
+
+  const validSorts: Record<string, object> = {
+    createdAt:   { createdAt: order },
+    amount:      { amountBdt: order },
+    investor:    { investorProfile: { user: { name: order } } },
+    project:     { project: { title: order } },
+    status:      { status: order },
+    activatedAt: { activatedAt: order },
+  };
+  const orderBy = validSorts[sort] ?? { createdAt: "desc" };
 
   const where = {
-    ...(status && { status: status as never }),
+    ...(status  && { status:  status  as never }),
+    ...(project && { projectId: project }),
     ...(search && {
       OR: [
-        { investorProfile: { user: { name: { contains: search, mode: "insensitive" as const } } } },
+        { investorProfile: { user: { name:  { contains: search, mode: "insensitive" as const } } } },
         { investorProfile: { user: { email: { contains: search, mode: "insensitive" as const } } } },
+        { investorProfile: { user: { phone: { contains: search, mode: "insensitive" as const } } } },
         { project: { title: { contains: search, mode: "insensitive" as const } } },
         { receiptNumber: { contains: search, mode: "insensitive" as const } },
       ],
     }),
   };
 
-  const [items, total] = await Promise.all([
+  const [items, total, statusCounts, projectList, amountAgg] = await Promise.all([
     db.investment.findMany({
       where,
       select: {
         id: true, status: true, amountBdt: true, expectedReturnBdt: true,
         actualReturnBdt: true, returnType: true, receiptNumber: true,
-        confirmedAt: true, maturedAt: true, cancelledAt: true, createdAt: true,
-        investorProfile: { select: { user: { select: { id: true, name: true, email: true } } } },
-        project: { select: { id: true, title: true, status: true } },
+        confirmedAt: true, activatedAt: true, maturedAt: true,
+        cancelledAt: true, paymentPendingAt: true, createdAt: true,
+        investorProfile: { select: { user: { select: { id: true, name: true, email: true, phone: true } } } },
+        project: { select: { id: true, title: true, status: true, expectedReturnPct: true } },
+        manualPayments: { select: { id: true, status: true }, take: 1, orderBy: { createdAt: "desc" } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: skip(page),
       take: PAGE_SIZE,
     }),
     db.investment.count({ where }),
+    getInvestmentStatusCounts(),  // cached
+    getProjectsForFilter(),       // cached
+    // Sum across the full filtered set (not just current page)
+    // Exclude PENDING/CANCELLED/REFUNDED from the amount total to match dashboard KPI
+    db.investment.aggregate({
+      where: { ...where, status: { notIn: ["PENDING", "PAYMENT_PENDING", "CANCELLED", "REFUNDED"] } },
+      _sum: { amountBdt: true },
+    }),
   ]);
 
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
+  const counts = Object.fromEntries(statusCounts.map((r) => [r.status, r._count._all]));
+  const totalAmountBdt = Number(amountAgg._sum.amountBdt ?? 0);
+
+  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE), counts, projectList, totalAmountBdt };
 }
 
 // ─── Payments ─────────────────────────────────────────────────────────────────
