@@ -134,7 +134,7 @@ export default async function ProjectDetailPage({ params }: Props) {
     walletBalance = Number(wallet?.cachedBalance ?? 0);
 
     if (profile) {
-      const inv = await db.investment.findFirst({
+      const invs = await db.investment.findMany({
         where: {
           investorProfileId: profile.id,
           projectId: project.id,
@@ -152,8 +152,11 @@ export default async function ProjectDetailPage({ params }: Props) {
             take: 1,
           },
         },
+        orderBy: { createdAt: "desc" },
       });
-      if (inv) {
+      if (invs.length > 0) {
+        // Use the most recent non-cancelled investment for status display
+        const inv = invs[0];
         existingInvestment = {
           id: inv.id,
           status: inv.status,
@@ -446,12 +449,13 @@ export default async function ProjectDetailPage({ params }: Props) {
                       <p className="text-xs font-medium text-harvest-600">{days > 0 ? `${days} days left to invest` : "Closing very soon"}</p>
                     </div>
                   )}
-                  {existingInvestment ? (
+                  {existingInvestment && (
                     <ProjectInvestmentStatus
                       investment={existingInvestment}
                       bankAccounts={project.bankAccounts}
                     />
-                  ) : canInvestNow ? (
+                  )}
+                  {canInvestNow ? (
                     <ProjectInvestForm
                       project={{
                         id: project.id,
