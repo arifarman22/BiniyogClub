@@ -174,21 +174,6 @@ export const investmentService = {
           );
         }
 
-        // 6b. Duplicate active investment check
-        const duplicate = await tx.investment.findFirst({
-          where: {
-            investorProfileId,
-            projectId: input.projectId,
-            status: { notIn: ["CANCELLED", "REFUNDED"] },
-          },
-          select: { id: true, status: true },
-        });
-        if (duplicate) {
-          throw new ConflictError(
-            "You already have an active investment in this project",
-          );
-        }
-
         // 7. Calculate expected return server-side
         const expectedReturnBdt = calculateExpectedReturn(
           input.amountBdt,
