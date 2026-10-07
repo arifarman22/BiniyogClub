@@ -210,6 +210,60 @@ export async function updateAvatarAction(formData: FormData): Promise<ActionResu
   }
 }
 
+export async function updateProfileAction(data: {
+  name?: string;
+  phone?: string;
+  city?: string;
+  country?: string;
+  occupation?: string;
+  annualIncomeRange?: string;
+  investmentExperience?: string;
+  riskTolerance?: string;
+  address?: string;
+}): Promise<ActionResult> {
+  try {
+    const session = await requireSession();
+    const { name, phone, city, country, occupation, annualIncomeRange, investmentExperience, riskTolerance, address } = data;
+
+    await db.$transaction(async (tx) => {
+      if (name || phone !== undefined) {
+        await tx.user.update({
+          where: { id: session.id },
+          data: {
+            ...(name ? { name: name.trim() } : {}),
+            ...(phone !== undefined ? { phone: phone.trim() || null } : {}),
+          },
+        });
+      }
+      await tx.investorProfile.upsert({
+        where: { userId: session.id },
+        create: {
+          userId: session.id,
+          city: city?.trim() || null,
+          country: country?.trim() || "BD",
+          occupation: occupation?.trim() || null,
+          annualIncomeRange: annualIncomeRange?.trim() || null,
+          investmentExperience: investmentExperience?.trim() || null,
+          riskTolerance: riskTolerance?.trim() || null,
+          address: address?.trim() || null,
+        },
+        update: {
+          ...(city !== undefined ? { city: city.trim() || null } : {}),
+          ...(country ? { country: country.trim() } : {}),
+          ...(occupation !== undefined ? { occupation: occupation.trim() || null } : {}),
+          ...(annualIncomeRange !== undefined ? { annualIncomeRange: annualIncomeRange.trim() || null } : {}),
+          ...(investmentExperience !== undefined ? { investmentExperience: investmentExperience.trim() || null } : {}),
+          ...(riskTolerance !== undefined ? { riskTolerance: riskTolerance.trim() || null } : {}),
+          ...(address !== undefined ? { address: address.trim() || null } : {}),
+        },
+      });
+    });
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
+  }
+}
+
 export async function deleteAvatarAction(): Promise<ActionResult> {
   try {
     const session = await requireSession();
