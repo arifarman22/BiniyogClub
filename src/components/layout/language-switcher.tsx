@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { cn } from "cn";
 
 const LANGUAGES = [
@@ -115,11 +115,16 @@ export function LanguageSwitcher() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2.5 py-1 text-[11px] font-medium text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/25 transition-all"
+        className={cn(
+          "inline-flex items-center gap-2 rounded-md border px-2.5 py-1 text-[11px] font-medium transition-all duration-150",
+          open
+            ? "border-emerald-500/50 bg-emerald-500/10 text-white"
+            : "border-white/15 bg-white/5 text-slate-300 hover:border-emerald-500/40 hover:bg-white/10 hover:text-white"
+        )}
         aria-label="Select language"
       >
-        <Globe className="h-3 w-3 text-emerald-400 shrink-0" />
-        <span>{current.flag} {current.label}</span>
+        <span className="text-sm leading-none">{current.flag}</span>
+        <span className="tracking-wide">{current.label}</span>
         <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform duration-150", open && "rotate-180")} />
       </button>
 
