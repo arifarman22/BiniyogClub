@@ -110,6 +110,10 @@ function InvestmentCard({
   const days = daysRemaining(maturity);
   const pct = progressPct(inv);
   const returnPct = Number(inv.project.expectedReturnPct);
+  const amountBdt = Number(inv.amountBdt);
+  const expectedReturnBdt = Number(inv.expectedReturnBdt);
+  const totalValue = amountBdt + expectedReturnBdt;
+  const distributionsTotal = inv.distributions.reduce((s, d) => s + Number(d.netAmountBdt), 0);
   const isActive = ["ACTIVE", "MATURED", "COMPLETED"].includes(inv.status);
   const canSubmitProof =
     inv.status === "PAYMENT_PENDING" &&
@@ -118,79 +122,101 @@ function InvestmentCard({
 
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
-      {/* Header row */}
-      <div className="flex flex-wrap items-start gap-4 px-4 pt-4 pb-3">
+
+      {/* ── Header ── */}
+      <div className="flex flex-wrap items-start gap-3 px-4 pt-4 pb-3">
         <div className="min-w-0 flex-1">
           <Link href={`/projects/${inv.project.slug}`} className="hover:text-primary">
-            <p className="font-semibold line-clamp-1">{inv.project.title}</p>
+            <p className="font-semibold line-clamp-1 text-base">{inv.project.title}</p>
           </Link>
-          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
             <span>{CATEGORY_LABELS[inv.project.category] ?? inv.project.category}</span>
             {inv.project.location && <><span>·</span><span>{inv.project.location}</span></>}
-            {inv.receiptNumber && <><span>·</span><span className="font-mono">{inv.receiptNumber}</span></>}
+            <span>·</span>
+            <span>{inv.project.durationDays}d term</span>
           </div>
         </div>
-        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0 mt-0.5", STATUS_COLORS[inv.status] ?? "bg-muted text-muted-foreground")}>
-          {STATUS_LABELS[inv.status] ?? inv.status}
-        </span>
+        <div className="flex flex-col items-end gap-1 shrink-0">
+          <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-semibold", STATUS_COLORS[inv.status] ?? "bg-muted text-muted-foreground")}>
+            {STATUS_LABELS[inv.status] ?? inv.status}
+          </span>
+          {inv.receiptNumber && (
+            <span className="font-mono text-[10px] text-muted-foreground">{inv.receiptNumber}</span>
+          )}
+        </div>
       </div>
 
-      {/* Detail grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border mx-4 mb-3 rounded-lg overflow-hidden border border-border">
-        <div className="bg-card px-3 py-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Invested</p>
-          <p className="text-sm font-bold text-primary">{formatBdt(inv.amountBdt.toString())}</p>
+      {/* ── Financial detail grid ── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border mx-4 mb-0 rounded-lg overflow-hidden border border-border">
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Principal</p>
+          <p className="text-sm font-bold text-primary">{formatBdt(amountBdt)}</p>
         </div>
-        <div className="bg-card px-3 py-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">
             {inv.actualReturnBdt ? "Actual Return" : "Expected Return"}
           </p>
-          <p className={cn("text-sm font-semibold", inv.actualReturnBdt ? "text-success" : "text-foreground")}>
-            {inv.actualReturnBdt
-              ? formatBdt(inv.actualReturnBdt.toString())
-              : formatBdt(inv.expectedReturnBdt.toString())}
+          <p className={cn("text-sm font-semibold", inv.actualReturnBdt ? "text-success" : "")}>
+            {inv.actualReturnBdt ? formatBdt(Number(inv.actualReturnBdt)) : formatBdt(expectedReturnBdt)}
           </p>
+          <p className="text-[10px] text-muted-foreground">{returnPct.toFixed(1)}% · {RETURN_TYPE_LABELS[inv.returnType] ?? inv.returnType}</p>
         </div>
-        <div className="bg-card px-3 py-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Return Rate</p>
-          <p className="text-sm font-semibold">{returnPct.toFixed(1)}%</p>
-          <p className="text-[10px] text-muted-foreground">{RETURN_TYPE_LABELS[inv.returnType] ?? inv.returnType}</p>
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Total Value</p>
+          <p className="text-sm font-semibold">{formatBdt(totalValue)}</p>
+          <p className="text-[10px] text-muted-foreground">Principal + return</p>
         </div>
-        <div className="bg-card px-3 py-2">
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wide">
-            {isActive ? "Maturity" : "Invested On"}
-          </p>
-          <p className="text-sm font-semibold">
-            {isActive ? fmtDate(maturity) : fmtDate(inv.createdAt)}
-          </p>
-          {isActive && days !== null && days > 0 && (
-            <p className="text-[10px] text-muted-foreground">{days}d remaining</p>
-          )}
-          {isActive && days !== null && days <= 0 && (
-            <p className="text-[10px] text-success">Matured</p>
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Invested On</p>
+          <p className="text-sm font-semibold">{fmtDate(inv.createdAt)}</p>
+          {inv.activatedAt && (
+            <p className="text-[10px] text-muted-foreground">Active {fmtDate(inv.activatedAt)}</p>
           )}
         </div>
       </div>
 
-      {/* Active: progress bar + download */}
-      {isActive && (
-        <div className="border-t border-border px-4 py-2 flex items-center gap-3">
-          <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted">
-            <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+      {/* ── Timeline row ── */}
+      <div className="mx-4 mt-px mb-3 grid grid-cols-2 sm:grid-cols-4 gap-px bg-border rounded-b-lg overflow-hidden border-x border-b border-border">
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Maturity Date</p>
+          <p className="text-sm font-semibold">{fmtDate(maturity)}</p>
+          {days !== null && days > 0 && <p className="text-[10px] text-muted-foreground">{days} days left</p>}
+          {days !== null && days <= 0 && <p className="text-[10px] text-success font-medium">Matured</p>}
+        </div>
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Duration</p>
+          <p className="text-sm font-semibold">{inv.project.durationDays} days</p>
+          {inv.activatedAt && maturity && (
+            <p className="text-[10px] text-muted-foreground">{fmtDate(inv.activatedAt)} → {fmtDate(maturity)}</p>
+          )}
+        </div>
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Distributions</p>
+          <p className={cn("text-sm font-semibold", distributionsTotal > 0 ? "text-success" : "")}>
+            {distributionsTotal > 0 ? formatBdt(distributionsTotal) : "—"}
+          </p>
+          <p className="text-[10px] text-muted-foreground">
+            {inv.distributions.length > 0 ? `${inv.distributions.length} payment${inv.distributions.length > 1 ? "s" : ""}` : "None yet"}
+          </p>
+        </div>
+        <div className="bg-card px-3 py-2.5">
+          <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Project Funded</p>
+          <p className="text-sm font-semibold">{pct}%</p>
+          <div className="mt-1 h-1 w-full overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-primary" style={{ width: `${pct}%` }} />
           </div>
-          <span className="text-xs text-muted-foreground shrink-0">{pct}% funded</span>
-          {inv.activatedAt && (
-            <span className="text-xs text-muted-foreground shrink-0 hidden sm:inline">
-              Since {fmtDate(inv.activatedAt)}
-            </span>
-          )}
-          {certificateDocId && (
-            <DownloadCertificateButton documentId={certificateDocId} />
-          )}
+        </div>
+      </div>
+
+      {/* ── Active footer: download certificate ── */}
+      {isActive && certificateDocId && (
+        <div className="border-t border-border px-4 py-2 flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">Investment certificate available</p>
+          <DownloadCertificateButton documentId={certificateDocId} />
         </div>
       )}
 
-      {/* Draft: complete CTA */}
+      {/* ── Draft: complete CTA ── */}
       {inv.status === "PENDING" && (
         <div className="border-t border-border bg-muted/20 px-4 py-3 flex flex-wrap items-center gap-3">
           <p className="text-xs text-muted-foreground flex-1">
@@ -205,7 +231,7 @@ function InvestmentCard({
         </div>
       )}
 
-      {/* Payment pending */}
+      {/* ── Payment pending ── */}
       {inv.status === "PAYMENT_PENDING" && (
         <div className="border-t border-border bg-muted/20 px-4 py-3 space-y-2">
           {submission && (
@@ -250,7 +276,7 @@ function InvestmentCard({
         </div>
       )}
 
-      {/* Cancelled */}
+      {/* ── Cancelled ── */}
       {inv.status === "CANCELLED" && inv.cancellationReason && (
         <div className="border-t border-border bg-muted/20 px-4 py-2">
           <p className="text-xs text-muted-foreground">Reason: {inv.cancellationReason}</p>
