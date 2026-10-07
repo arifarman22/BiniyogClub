@@ -7,8 +7,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { cn } from "cn";
 import {
   Menu, X, ChevronLeft, Bell, LogOut, User, ExternalLink,
-  LayoutDashboard, TrendingUp, FolderOpen, PieChart, Wallet,
-  ArrowLeftRight, ArrowDownLeft, FileText, ShieldCheck, Building2, BarChart3,
+  LayoutDashboard, TrendingUp, FolderOpen, PieChart,
+  FileText, ShieldCheck, Building2, BarChart3,
   ShieldAlert, ArrowRight, Clock, RefreshCw,
 } from "lucide-react";
 import { logoutAction } from "@/server/actions/auth.actions";
@@ -19,11 +19,8 @@ const NAV = [
   { href: "/dashboard/groups",        label: "Group Invest",  icon: Building2 },
   { href: "/dashboard/projects",      label: "My Projects",   icon: FolderOpen },
   { href: "/dashboard/portfolio",     label: "Portfolio",     icon: PieChart },
-  { href: "/dashboard/wallet",        label: "Wallet",        icon: Wallet },
-  { href: "/dashboard/transactions",  label: "Transactions",  icon: ArrowLeftRight },
-  { href: "/dashboard/deposits",      label: "Deposits",      icon: ArrowDownLeft },
   { href: "/dashboard/documents",     label: "Documents",     icon: FileText },
-  { href: "/dashboard/reports",        label: "Reports",       icon: BarChart3 },
+  { href: "/dashboard/reports",       label: "Reports",       icon: BarChart3 },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/profile",       label: "Profile",       icon: User },
   { href: "/dashboard/kyc",           label: "KYC",           icon: ShieldCheck },

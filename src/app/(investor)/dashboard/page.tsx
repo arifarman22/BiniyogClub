@@ -13,9 +13,9 @@ import {
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
-  TrendingUp, Wallet, CheckCircle2, Clock, BarChart3,
+  TrendingUp, CheckCircle2, Clock, BarChart3,
   ArrowRight, AlertCircle, Bell, ArrowUpRight, ArrowDownRight,
-  ShieldCheck, Layers, Lock, RefreshCw, X, MapPin, Target,
+  ShieldCheck, Layers, RefreshCw, X, MapPin, Target,
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 
@@ -188,7 +188,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between gap-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3.5">
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-              <Lock className="h-4 w-4 text-destructive" />
+              <X className="h-4 w-4 text-destructive" />
             </div>
             <div>
               <p className="text-sm font-semibold text-destructive">KYC verification required to invest</p>
@@ -264,46 +264,43 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Hero: Balance + quick stats ── */}
+      {/* ── Hero: summary card + stat grid ── */}
       <div className="grid gap-4 lg:grid-cols-3">
 
-        {/* Balance card */}
+        {/* Summary card */}
         <div className="relative overflow-hidden rounded-2xl gradient-brand p-6 text-white lg:col-span-1">
-          {/* decorative circles */}
           <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10" />
           <div className="pointer-events-none absolute -bottom-10 -right-4 h-28 w-28 rounded-full bg-white/5" />
-
           <div className="relative">
             <div className="flex items-center gap-2 mb-1">
-              <Wallet className="h-4 w-4 opacity-80" />
-              <span className="text-sm font-medium opacity-80">Wallet Balance</span>
+              <BarChart3 className="h-4 w-4 opacity-80" />
+              <span className="text-sm font-medium opacity-80">Portfolio Overview</span>
             </div>
-            <p className="text-4xl font-bold tracking-tight">{fmt(stats.walletBalance)}</p>
-            <p className="mt-1 text-xs opacity-60">Available to invest</p>
-
-            {stats.reservedAmount > 0 && (
-              <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/10 px-3 py-1.5">
-                <Lock className="h-3 w-3 opacity-70" />
-                <span className="text-xs opacity-80">{fmt(stats.reservedAmount)} reserved — pending approval</span>
-              </div>
-            )}
-
+            <p className="text-4xl font-bold tracking-tight">{fmt(stats.totalInvested)}</p>
+            <p className="mt-1 text-xs opacity-60">Total Invested</p>
             <div className="mt-4 grid grid-cols-2 gap-3">
               <div className="rounded-xl bg-white/10 px-3 py-2.5">
-                <p className="text-[10px] opacity-70 mb-0.5">Total Invested</p>
-                <p className="text-base font-bold">{fmt(stats.totalInvested)}</p>
+                <p className="text-[10px] opacity-70 mb-0.5">Active Projects</p>
+                <p className="text-base font-bold">{stats.activeCount}</p>
               </div>
               <div className="rounded-xl bg-white/10 px-3 py-2.5">
                 <p className="text-[10px] opacity-70 mb-0.5">Returns Earned</p>
                 <p className="text-base font-bold">{fmt(stats.distributedReturns)}</p>
               </div>
+              <div className="rounded-xl bg-white/10 px-3 py-2.5">
+                <p className="text-[10px] opacity-70 mb-0.5">Portfolio Value</p>
+                <p className="text-base font-bold">{fmt(stats.portfolioValue)}</p>
+              </div>
+              <div className="rounded-xl bg-white/10 px-3 py-2.5">
+                <p className="text-[10px] opacity-70 mb-0.5">ROI</p>
+                <p className="text-base font-bold">{roi}%</p>
+              </div>
             </div>
-
             <Link
-              href="/dashboard/wallet"
+              href="/dashboard/portfolio"
               className="mt-4 inline-flex items-center gap-1 text-xs font-medium opacity-80 hover:opacity-100 transition-opacity"
             >
-              Manage wallet <ArrowRight className="h-3 w-3" />
+              View portfolio <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
@@ -344,12 +341,12 @@ export default async function DashboardPage() {
             {
               label: "Pending",
               value: stats.pendingTransactions.toString(),
-              sub: "transactions",
+              sub: "awaiting approval",
               icon: Clock,
               color: stats.pendingTransactions > 0 ? "text-warning" : "text-muted-foreground",
               bg: stats.pendingTransactions > 0 ? "bg-warning-muted" : "bg-muted",
               trend: null,
-              href: "/dashboard/transactions",
+              href: "/dashboard/investments",
             },
           ].map(({ label, value, sub, icon: Icon, color, bg, trend, href }) => (
             <Link key={label} href={href} className="group">
@@ -608,7 +605,7 @@ export default async function DashboardPage() {
                 {
                   href: "/projects",
                   label: canInvest ? "Browse & Invest" : "Browse Projects",
-                  icon: canInvest ? TrendingUp : Lock,
+                  icon: TrendingUp,
                   color: canInvest ? "text-brand-600" : "text-muted-foreground",
                   bg: canInvest ? "bg-brand-50" : "bg-muted",
                 },
@@ -619,7 +616,6 @@ export default async function DashboardPage() {
                   color: kycVerified ? "text-success" : "text-finance-600",
                   bg: kycVerified ? "bg-success-muted" : "bg-finance-100",
                 },
-                { href: "/dashboard/wallet",      label: "Manage Wallet",   icon: Wallet,   color: "text-harvest-600", bg: "bg-harvest-100" },
                 { href: "/dashboard/investments", label: "All Investments", icon: BarChart3, color: "text-finance-600", bg: "bg-finance-100" },
               ].map(({ href, label, icon: Icon, color, bg }) => (
                 <Link

@@ -7,8 +7,8 @@ import { usePathname } from "next/navigation";
 import { cn } from "cn";
 import {
   Menu, X,
-  LayoutDashboard, TrendingUp, FolderOpen, PieChart, Wallet,
-  ArrowLeftRight, ArrowDownLeft, FileText, Bell, User, ShieldCheck, Building2, ExternalLink,
+  LayoutDashboard, TrendingUp, FolderOpen, PieChart,
+  FileText, Bell, User, ShieldCheck, Building2, ExternalLink, BarChart3,
 } from "lucide-react";
 
 const NAV = [
@@ -17,9 +17,6 @@ const NAV = [
   { href: "/dashboard/groups",        label: "Group Invest",  icon: Building2 },
   { href: "/dashboard/projects",      label: "My Projects",   icon: FolderOpen },
   { href: "/dashboard/portfolio",     label: "Portfolio",     icon: PieChart },
-  { href: "/dashboard/wallet",        label: "Wallet",        icon: Wallet },
-  { href: "/dashboard/transactions",  label: "Transactions",  icon: ArrowLeftRight },
-  { href: "/dashboard/deposits",      label: "Deposits",      icon: ArrowDownLeft },
   { href: "/dashboard/documents",     label: "Documents",     icon: FileText },
   { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
   { href: "/dashboard/profile",       label: "Profile",       icon: User },
