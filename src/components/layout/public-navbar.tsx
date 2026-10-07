@@ -23,7 +23,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/how-it-works", label: "How It Works" },
-  { href: "/projects", label: "Opportunities" },
+  { href: "/projects", label: "Projects" },
   { href: "/groups", label: "Business Groups" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
@@ -94,13 +94,13 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
         </div>
       </div>
 
-      {/* ── 2. Main Navigation Bar (Dark Emerald Frosted Glass matching the Landing Site) ── */}
+      {/* ── 2. Main Navigation Bar ── */}
       <div
         className={cn(
           "transition-all duration-300",
           scrolled
-            ? "border-b border-emerald-500/30 bg-slate-950/95 backdrop-blur-2xl shadow-[0_10px_35px_rgba(0,0,0,0.5)]"
-            : "border-b border-emerald-500/20 bg-slate-950/85 backdrop-blur-xl shadow-[0_4px_25px_-4px_rgba(0,140,100,0.15)]"
+            ? "border-b border-gray-200 bg-white shadow-sm"
+            : "border-b border-gray-100 bg-white shadow-sm"
         )}
       >
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -111,7 +111,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 src="/logo.png"
                 alt="Biniyog Club"
                 fill
-                className="object-contain object-left brightness-0 invert"
+                className="object-contain object-left"
                 priority
               />
             </div>
@@ -130,10 +130,10 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                   key={link.href}
                   href={link.href}
                   className={cn(
-                    "rounded-full px-3.5 py-1.5 text-xs lg:text-sm font-medium transition-all duration-200",
+                    "rounded-none px-3.5 py-1.5 text-xs lg:text-sm font-medium transition-all duration-200",
                     active
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold shadow-sm shadow-emerald-500/10"
-                      : "text-slate-200 hover:text-white hover:bg-white/10"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold"
+                      : "text-slate-700 hover:text-emerald-700 hover:bg-emerald-50"
                   )}
                 >
                   {link.label}
@@ -148,14 +148,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <>
                 <Link
                   href="/dashboard"
-                  className="rounded-full bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:-translate-y-0.5"
+                  className="rounded-none bg-emerald-600 px-4 py-2 text-xs sm:text-sm font-semibold text-white shadow-md shadow-emerald-600/30 transition-all hover:bg-emerald-500 hover:-translate-y-0.5"
                 >
                   Dashboard
                 </Link>
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="rounded-full border border-white/20 bg-white/5 px-4 py-2 text-xs sm:text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition-all"
+                    className="rounded-none border border-gray-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-emerald-700 hover:border-emerald-200 transition-all"
                   >
                     Sign Out
                   </button>
@@ -165,13 +165,13 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <>
                 <Link
                   href="/auth/login"
-                  className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs sm:text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10 hover:border-white/30 transition-all hover:-translate-y-0.5"
+                  className="rounded-none border border-gray-200 bg-white px-4 py-2 text-xs sm:text-sm font-medium text-slate-700 hover:text-emerald-700 hover:border-emerald-200 transition-all hover:-translate-y-0.5"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
-                  className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:shadow-emerald-500/50 hover:from-emerald-400 hover:to-teal-400 hover:-translate-y-0.5 active:translate-y-0"
+                  className="inline-flex items-center gap-1.5 rounded-none bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-5 py-2 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/30 transition-all duration-200 hover:shadow-emerald-500/50 hover:from-emerald-400 hover:to-teal-400 hover:-translate-y-0.5 active:translate-y-0"
                 >
                   Get Started <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
@@ -181,7 +181,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
 
           {/* Mobile Menu Toggle Button */}
           <button
-            className="rounded-xl p-2 text-white hover:bg-white/10 transition-colors md:hidden border border-white/10"
+            className="rounded-none p-2 text-slate-700 hover:bg-gray-100 transition-colors md:hidden border border-gray-200"
             onClick={() => setOpen(!open)}
             aria-label="Toggle menu"
           >
@@ -246,14 +246,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/dashboard"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-md shadow-emerald-600/30"
+                  className="rounded-none bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-md shadow-emerald-600/30"
                 >
                   Go to Dashboard
                 </Link>
                 <form action={logoutAction}>
                   <button
                     type="submit"
-                    className="w-full rounded-full border border-white/20 px-4 py-2 text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10"
+                    className="w-full rounded-none border border-white/20 px-4 py-2 text-sm font-medium text-slate-200 hover:text-white hover:bg-white/10"
                   >
                     Sign Out
                   </button>
@@ -264,14 +264,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
                 <Link
                   href="/auth/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-full border border-white/20 px-4 py-2.5 text-sm font-medium text-center text-slate-200 hover:bg-white/10"
+                  className="rounded-none border border-white/20 px-4 py-2.5 text-sm font-medium text-center text-slate-200 hover:bg-white/10"
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/auth/register"
                   onClick={() => setOpen(false)}
-                  className="rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-lg shadow-emerald-600/30"
+                  className="rounded-none bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 px-4 py-2.5 text-sm font-semibold text-white text-center shadow-lg shadow-emerald-600/30"
                 >
                   Get Started
                 </Link>
