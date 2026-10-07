@@ -333,7 +333,7 @@ function InvestorProfileSection({ user, onSaved }: {
 
       {editing ? (
         <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Input label="City" name="city" defaultValue={profile?.city} />
             <Input label="Country" name="country" defaultValue={profile?.country ?? "BD"} />
             <Input label="Occupation" name="occupation" defaultValue={profile?.occupation} />
@@ -350,7 +350,7 @@ function InvestorProfileSection({ user, onSaved }: {
         </form>
       ) : profile ? (
         <div className="space-y-3">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <Field label="City" value={profile.city} />
             <Field label="Country" value={profile.country} />
             <Field label="Occupation" value={profile.occupation} />
@@ -486,51 +486,59 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold">Profile</h1>
         <p className="text-sm text-muted-foreground">Manage your account and investor profile</p>
       </div>
 
-      <PersonalInfoSection
-        user={user}
-        onSaved={(patch) => setUser(u => u ? { ...u, ...patch } : u)}
-      />
-
-      {/* KYC status */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="h-4 w-4 text-primary" />
-            <h2 className="font-semibold">KYC Status</h2>
-          </div>
-          {user.kyc && (
-            <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", KYC_STATUS_COLORS[user.kyc.status] ?? "bg-muted text-muted-foreground")}>
-              {user.kyc.status.replace(/_/g, " ")}
-            </span>
-          )}
+      {/* Top row: Personal Info + KYC side by side */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <PersonalInfoSection
+            user={user}
+            onSaved={(patch) => setUser(u => u ? { ...u, ...patch } : u)}
+          />
         </div>
-        {!user.kyc ? (
-          <div className="mt-3">
-            <p className="text-sm text-muted-foreground">KYC not submitted. Complete verification to unlock investing.</p>
-            <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">Start KYC →</a>
+
+        <div className="space-y-6">
+          {/* KYC status */}
+          <div className="rounded-xl border border-border bg-card p-5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <h2 className="font-semibold">KYC Status</h2>
+              </div>
+              {user.kyc && (
+                <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", KYC_STATUS_COLORS[user.kyc.status] ?? "bg-muted text-muted-foreground")}>
+                  {user.kyc.status.replace(/_/g, " ")}
+                </span>
+              )}
+            </div>
+            {!user.kyc ? (
+              <div className="mt-3">
+                <p className="text-sm text-muted-foreground">KYC not submitted. Complete verification to unlock investing.</p>
+                <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">Start KYC →</a>
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground">
+                {user.kyc.status === "VERIFIED"
+                  ? "Your identity has been verified."
+                  : "Visit the KYC page to check your verification status."}
+                {" "}<a href="/dashboard/kyc" className="text-primary hover:underline">View KYC →</a>
+              </p>
+            )}
           </div>
-        ) : (
-          <p className="mt-2 text-xs text-muted-foreground">
-            {user.kyc.status === "VERIFIED"
-              ? "Your identity has been verified."
-              : "Visit the KYC page to check your verification status."}
-            {" "}<a href="/dashboard/kyc" className="text-primary hover:underline">View KYC →</a>
-          </p>
-        )}
+
+          <ChangePasswordSection />
+        </div>
       </div>
 
+      {/* Full-width investor profile */}
       <InvestorProfileSection
         user={user}
         onSaved={(profile) => setUser(u => u ? { ...u, investorProfile: profile } : u)}
       />
-
-      <ChangePasswordSection />
     </div>
   );
 }
