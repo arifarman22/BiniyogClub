@@ -202,7 +202,13 @@ const getProjectsForFilter = unstable_cache(
 
 // Cached — status counts across ALL investments, revalidate every 60s
 const getInvestmentStatusCounts = unstable_cache(
-  () => db.investment.groupBy({ by: ["status"], _count: { _all: true } }),
+  async () => {
+    const statuses = ["PENDING", "PAYMENT_PENDING", "ACTIVE", "MATURED", "COMPLETED", "CANCELLED", "REFUNDED"] as const;
+    const counts = await Promise.all(
+      statuses.map((s) => db.investment.count({ where: { status: s } }).then((n) => ({ status: s, count: n }))),
+    );
+    return Object.fromEntries(counts.map((r) => [r.status, r.count]));
+  },
   ["admin-investment-status-counts"],
   { revalidate: 60 },
 );
@@ -255,7 +261,7 @@ export async function getAdminInvestments(
       take: PAGE_SIZE,
     }),
     db.investment.count({ where }),
-    getInvestmentStatusCounts(),  // cached
+    getInvestmentStatusCounts(),  // cached — returns Record<status, count>
     getProjectsForFilter(),       // cached
     // Sum across the full filtered set (not just current page)
     // Exclude PENDING/CANCELLED/REFUNDED from the amount total to match dashboard KPI
@@ -265,7 +271,7 @@ export async function getAdminInvestments(
     }),
   ]);
 
-  const counts = Object.fromEntries(statusCounts.map((r) => [r.status, r._count._all]));
+  const counts = statusCounts; // already Record<string, number>
   const totalAmountBdt = Number(amountAgg._sum.amountBdt ?? 0);
 
   return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE), counts, projectList, totalAmountBdt };
