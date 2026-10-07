@@ -107,14 +107,14 @@ export function AuthCard({
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="relative flex w-full lg:w-1/2 flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-5 py-8 sm:px-12 lg:px-16 overflow-y-auto min-h-screen lg:min-h-0">
+      <div className="relative flex w-full lg:w-1/2 flex-col items-center justify-start lg:justify-center bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-5 py-6 sm:px-12 lg:px-16 h-full overflow-y-auto">
         {/* Ambient background decoration */}
         <div className="absolute top-0 right-0 -mr-24 -mt-24 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -ml-24 -mb-24 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 w-full max-w-md space-y-6">
+        <div className="relative z-10 w-full max-w-md space-y-4">
           {/* Mobile brand header */}
-          <div className="flex flex-col items-center justify-center lg:hidden space-y-3 mb-2">
+          <div className="flex flex-col items-center justify-center lg:hidden space-y-2 mb-1">
             <Link href="/" className="inline-flex items-center">
               <div className="relative h-10 w-36">
                 <Image src="/logo.png" alt="Biniyog Club" fill className="object-contain" priority />
@@ -124,20 +124,20 @@ export function AuthCard({
 
           {/* Form Header */}
           <div className="text-center sm:text-left">
-            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-0.5 text-xs font-semibold text-primary mb-2.5">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-0.5 text-xs font-semibold text-primary mb-2">
               <Lock className="h-3 w-3" />
               <span>SECURE INVESTOR ACCESS</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-foreground">
               {title}
             </h1>
-            <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
               {description}
             </p>
           </div>
 
           {/* Form Card Container */}
-          <div className="rounded-3xl border border-border/80 bg-card/95 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-slate-900/5">
+          <div className="rounded-3xl border border-border/80 bg-card/95 backdrop-blur-xl p-5 sm:p-8 shadow-xl shadow-slate-900/5">
             {children}
           </div>
 
@@ -149,7 +149,7 @@ export function AuthCard({
           )}
 
           {/* Security Assurance Badge */}
-          <div className="flex items-center justify-center gap-2 pt-2 text-xs text-muted-foreground/80">
+          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground/80 pb-2">
             <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             <span>256-Bit Bank-Grade SSL & Legal Contract Protection</span>
           </div>
