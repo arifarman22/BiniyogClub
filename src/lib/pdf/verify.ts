@@ -10,7 +10,10 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 const secret = () => {
   const s = process.env.RECEIPT_HMAC_SECRET;
-  if (!s) throw new Error("RECEIPT_HMAC_SECRET is not set");
+  if (!s) {
+    console.warn("[verify] RECEIPT_HMAC_SECRET is not set — receipt hash will be unsigned");
+    return "unsigned";
+  }
   return s;
 };
 

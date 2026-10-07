@@ -212,8 +212,12 @@ async function generateInvestmentReceipt(
   if (!investment) throw new NotFoundError("Investment");
 
   // Only generate receipts for ACTIVE/MATURED/COMPLETED investments that have a receipt number
-  if (!investment.receiptNumber) throw new Error(`Investment ${investmentId} has no receiptNumber yet — cannot generate receipt`);
+  if (!investment.receiptNumber) {
+    console.error(`[generateInvestmentReceipt] Investment ${investmentId} has no receiptNumber — skipping`);
+    throw new Error(`Investment ${investmentId} has no receiptNumber yet — cannot generate receipt`);
+  }
   if (!["ACTIVE", "MATURED", "COMPLETED"].includes(investment.status)) {
+    console.error(`[generateInvestmentReceipt] Investment ${investmentId} status is ${investment.status} — skipping`);
     throw new Error(`Investment ${investmentId} is not ACTIVE (status: ${investment.status})`);
   }
 
