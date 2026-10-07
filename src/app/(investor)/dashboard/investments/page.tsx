@@ -104,7 +104,7 @@ function InvestmentCard({
   inv: Investment;
   submission: { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date } | null;
   certificateDocId: string | null;
-  bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; branchName: string | null; mobileNumber: string | null }[];
+  bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
 }) {
   const maturity = maturityDate(inv);
   const days = daysRemaining(maturity);
