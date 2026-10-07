@@ -107,6 +107,12 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [returnMode, setReturnMode] = useState<"fixed" | "range">(
     defaultValues.returnPctMin ? "range" : "fixed"
   );
+  const [customCategory, setCustomCategory] = useState<string>(
+    defaultValues.category === "OTHER" && defaultValues.riskInfo?.startsWith("Category: ")
+      ? defaultValues.riskInfo.split("\n")[0].replace("Category: ", "")
+      : ""
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>(defaultValues.category ?? "");
   const [imageUploading, setImageUploading] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -173,7 +179,13 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       fundingDeadline: new Date(raw.fundingDeadline as string),
       startDate: raw.startDate ? new Date(raw.startDate as string) : null,
       endDate: raw.endDate ? new Date(raw.endDate as string) : null,
-      riskInfo: (raw.riskInfo as string) || null,
+      riskInfo: (raw.riskInfo as string)
+        ? (selectedCategory === "OTHER" && customCategory.trim()
+            ? `Category: ${customCategory.trim()}\n${raw.riskInfo as string}`
+            : (raw.riskInfo as string))
+        : (selectedCategory === "OTHER" && customCategory.trim()
+            ? `Category: ${customCategory.trim()}`
+            : null),
       coverImageUrl: coverImageUrl || null,
       imageUrls: [coverImageUrl, ...imageUrls].filter(Boolean),
       groupId: (raw.groupId as string) || null,
@@ -212,11 +224,25 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
           </div>
           <div>
             <Label htmlFor="category">Category *</Label>
-            <select name="category" id="category" defaultValue={defaultValues.category} className={`mt-1.5 ${sel}`}>
+            <select name="category" id="category" defaultValue={defaultValues.category} className={`mt-1.5 ${sel}`}
+              onChange={(e) => setSelectedCategory(e.target.value)}>
               <option value="">Select category</option>
               {Object.entries(CATEGORY_LABELS).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
             </select>
             <FieldError msg={fieldErrors.category} />
+            {selectedCategory === "OTHER" && (
+              <div className="mt-2">
+                <Label htmlFor="customCategory">Custom Category Name</Label>
+                <Input
+                  id="customCategory"
+                  placeholder="e.g. Agro Tourism, Fisheries, Healthcare…"
+                  value={customCategory}
+                  onChange={(e) => setCustomCategory(e.target.value)}
+                  className="mt-1.5"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">This label will be saved alongside the project for display purposes.</p>
+              </div>
+            )}
           </div>
           <div>
             <Label htmlFor="location">Location *</Label>

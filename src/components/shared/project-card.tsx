@@ -60,7 +60,7 @@ function ImageSlider({ images, title, priority }: { images: string[]; title: str
           priority={priority && i === 0}
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className={cn(
-            "object-cover object-center transition-opacity duration-700",
+            "object-contain object-center transition-opacity duration-700",
             i === idx ? "opacity-100" : "opacity-0",
           )}
         />
