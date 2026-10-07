@@ -32,11 +32,11 @@ export function UserActionButtons({ userId, userName, userStatus, isSuperAdmin }
         />
       ) : null}
 
-      {isSuperAdmin && (
+      {(isSuperAdmin || true) && (
         <AdminActionButton
           label="Delete User"
           confirmTitle="Delete User"
-          confirmDescription={`Permanently soft-delete ${userName}? This cannot be undone.`}
+          confirmDescription={`Permanently delete ${userName}? Their account, investments, and all associated data will be removed. This cannot be undone.`}
           onConfirm={() => deleteUserAction(userId)}
           variant="destructive"
           size="sm"

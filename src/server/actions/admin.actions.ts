@@ -150,6 +150,8 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
       await db.ledgerEntry.deleteMany({ where: { walletId: wallet.id } });
     }
     await db.documentAuditLog.deleteMany({ where: { document: { uploadedBy: userId } } });
+    await db.documentAuditLog.deleteMany({ where: { document: { ownerUserId: userId } } });
+    await db.document.deleteMany({ where: { ownerUserId: userId } });
     await db.document.deleteMany({ where: { uploadedBy: userId } });
     await db.auditLog.updateMany({ where: { actorId: userId }, data: { actorId: null } });
     // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
