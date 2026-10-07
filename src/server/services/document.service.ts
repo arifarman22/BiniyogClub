@@ -217,13 +217,14 @@ async function generateInvestmentReceipt(
     throw new Error(`Investment ${investmentId} is not ACTIVE (status: ${investment.status})`);
   }
 
-  // Skip if receipt already exists for this investment
+  // Skip if receipt already exists for THIS specific investment (matched by receipt number)
   const existing = await db.document.findFirst({
     where: {
       entityType: "PROJECT",
       entityId: investment.project.id,
       category: "INVESTMENT_RECEIPT",
       ownerUserId: investment.investorProfile.user.id,
+      description: `Receipt #${investment.receiptNumber}`,
       deletedAt: null,
     },
     select: { id: true, storageKey: true },

@@ -147,6 +147,7 @@ export async function getInvestorInvestments(session: SessionUser) {
       expectedReturnBdt: true,
       actualReturnBdt: true,
       returnType: true,
+      receiptNumber: true,
       createdAt: true,
       confirmedAt: true,
       activatedAt: true,
