@@ -85,6 +85,7 @@ function progressPct(inv: { project: { fundedAmountBdt: { toString(): string }; 
 type Investment = Awaited<ReturnType<typeof getInvestorInvestments>>[number];
 
 type TabKey = "all" | "active" | "payment_pending" | "pending" | "completed" | "cancelled";
+type ViewKey = "list" | "project";
 
 const TABS: { key: TabKey; label: string; statuses: string[] }[] = [
   { key: "all",             label: "All",              statuses: [] },
@@ -100,11 +101,13 @@ function InvestmentCard({
   submission,
   certificateDocId,
   bankAccounts,
+  compact = false,
 }: {
   inv: Investment;
   submission: { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date } | null;
   certificateDocId: string | null;
   bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
+  compact?: boolean;
 }) {
   const maturity = maturityDate(inv);
   const days = daysRemaining(maturity);
@@ -121,9 +124,10 @@ function InvestmentCard({
     (!submission || submission.status === "REJECTED");
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className={cn("overflow-hidden", !compact && "rounded-xl border border-border bg-card")}>
 
-      {/* ── Header ── */}
+      {/* ── Header (hidden in compact/project-grouped mode) ── */}
+      {!compact && (
       <div className="flex flex-wrap items-start gap-3 px-4 pt-4 pb-3">
         <div className="min-w-0 flex-1">
           <Link href={`/projects/${inv.project.slug}`} className="hover:text-primary">
@@ -145,6 +149,22 @@ function InvestmentCard({
           )}
         </div>
       </div>
+      )}
+
+      {/* Compact header — just status + receipt inside group */}
+      {compact && (
+        <div className="flex items-center justify-between px-4 pt-3 pb-1">
+          <div className="flex items-center gap-2">
+            <span className={cn("rounded-full border px-2.5 py-0.5 text-[10px] font-semibold", STATUS_COLORS[inv.status] ?? "bg-muted text-muted-foreground")}>
+              {STATUS_LABELS[inv.status] ?? inv.status}
+            </span>
+            {inv.receiptNumber && (
+              <span className="font-mono text-[10px] text-muted-foreground">{inv.receiptNumber}</span>
+            )}
+          </div>
+          <span className="text-xs text-muted-foreground">{fmtDate(inv.createdAt)}</span>
+        </div>
+      )}
 
       {/* ── Financial detail grid ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border mx-4 mb-0 rounded-lg overflow-hidden border border-border">
@@ -286,14 +306,85 @@ function InvestmentCard({
   );
 }
 
+function ProjectGroup({
+  projectTitle,
+  projectSlug,
+  projectCategory,
+  projectLocation,
+  investments,
+  submissionMap,
+  certMap,
+  bankAccounts,
+}: {
+  projectTitle: string;
+  projectSlug: string;
+  projectCategory: string;
+  projectLocation: string | null;
+  investments: Investment[];
+  submissionMap: Map<string, { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date }>;
+  certMap: Map<string, string>;
+  bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
+}) {
+  const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
+  const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
+  const activeCount = investments.filter((i) => ["ACTIVE", "MATURED"].includes(i.status)).length;
+
+  return (
+    <div className="rounded-xl border border-border bg-card overflow-hidden">
+      {/* Project header */}
+      <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-muted/30 border-b border-border">
+        <div className="min-w-0 flex-1">
+          <Link href={`/projects/${projectSlug}`} className="hover:text-primary">
+            <p className="font-semibold text-sm line-clamp-1">{projectTitle}</p>
+          </Link>
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+            <span>{CATEGORY_LABELS[projectCategory] ?? projectCategory}</span>
+            {projectLocation && <><span>·</span><span>{projectLocation}</span></>}
+          </div>
+        </div>
+        <div className="flex items-center gap-4 shrink-0 text-right">
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Total Invested</p>
+            <p className="text-sm font-bold text-primary">{formatBdt(totalInvested)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Exp. Return</p>
+            <p className="text-sm font-semibold">{formatBdt(totalExpected)}</p>
+          </div>
+          <div>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Investments</p>
+            <p className="text-sm font-semibold">{investments.length} <span className="text-muted-foreground font-normal">({activeCount} active)</span></p>
+          </div>
+        </div>
+      </div>
+
+      {/* Individual investment cards inside the group */}
+      <div className="divide-y divide-border">
+        {investments.map((inv) => (
+          <div key={inv.id} className="bg-card">
+            <InvestmentCard
+              inv={inv}
+              submission={submissionMap.get(inv.id) ?? null}
+              certificateDocId={certMap.get(inv.id) ?? null}
+              bankAccounts={bankAccounts}
+              compact
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default async function InvestmentsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; view?: string }>;
 }) {
   const session = await requireSession();
-  const { tab: tabParam } = await searchParams;
+  const { tab: tabParam, view: viewParam } = await searchParams;
   const activeTab: TabKey = (TABS.find((t) => t.key === tabParam)?.key) ?? "all";
+  const activeView: ViewKey = viewParam === "project" ? "project" : "list";
 
   let investments: Awaited<ReturnType<typeof getInvestorInvestments>>;
   let bankAccounts: Awaited<ReturnType<typeof getActiveBankAccounts>>;
@@ -405,45 +496,111 @@ export default async function InvestmentsPage({
         ))}
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
-        {TABS.map((t) => (
-          <Link
-            key={t.key}
-            href={t.key === "all" ? "/dashboard/investments" : `/dashboard/investments?tab=${t.key}`}
-            className={cn(
-              "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1.5",
-              activeTab === t.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground hover:bg-muted/80",
-            )}
-          >
-            {t.label}
-            {tabCounts[t.key] > 0 && (
-              <span className={cn(
-                "rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none",
-                activeTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground",
-              )}>
-                {tabCounts[t.key]}
-              </span>
-            )}
-          </Link>
-        ))}
+      {/* Tabs + View toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+          {TABS.map((t) => {
+            const params = new URLSearchParams();
+            if (t.key !== "all") params.set("tab", t.key);
+            if (activeView === "project") params.set("view", "project");
+            const href = `/dashboard/investments${params.toString() ? `?${params}` : ""}`;
+            return (
+              <Link
+                key={t.key}
+                href={href}
+                className={cn(
+                  "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1.5",
+                  activeTab === t.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {t.label}
+                {tabCounts[t.key] > 0 && (
+                  <span className={cn(
+                    "rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none",
+                    activeTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground",
+                  )}>
+                    {tabCounts[t.key]}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* View toggle */}
+        <div className="flex items-center gap-1 shrink-0">
+          {([
+            { key: "list",    label: "List" },
+            { key: "project", label: "By Project" },
+          ] as { key: ViewKey; label: string }[]).map((v) => {
+            const params = new URLSearchParams();
+            if (activeTab !== "all") params.set("tab", activeTab);
+            if (v.key === "project") params.set("view", "project");
+            const href = `/dashboard/investments${params.toString() ? `?${params}` : ""}`;
+            return (
+              <Link
+                key={v.key}
+                href={href}
+                className={cn(
+                  "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  activeView === v.key
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                )}
+              >
+                {v.label}
+              </Link>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Investment list */}
+      {/* Investment list / project-grouped view */}
       {filtered.length > 0 ? (
-        <div className="space-y-3">
-          {filtered.map((inv) => (
-            <InvestmentCard
-              key={inv.id}
-              inv={inv}
-              submission={submissionMap.get(inv.id) ?? null}
-              certificateDocId={certMap.get(inv.id) ?? null}
-              bankAccounts={bankAccounts}
-            />
-          ))}
-        </div>
+        activeView === "project" ? (
+          // Group by project
+          (() => {
+            const groups = new Map<string, { title: string; slug: string; category: string; location: string | null; items: Investment[] }>();
+            for (const inv of filtered) {
+              const pid = inv.project.id;
+              if (!groups.has(pid)) {
+                groups.set(pid, { title: inv.project.title, slug: inv.project.slug, category: inv.project.category, location: inv.project.location ?? null, items: [] });
+              }
+              groups.get(pid)!.items.push(inv);
+            }
+            return (
+              <div className="space-y-4">
+                {Array.from(groups.values()).map((g) => (
+                  <ProjectGroup
+                    key={g.slug}
+                    projectTitle={g.title}
+                    projectSlug={g.slug}
+                    projectCategory={g.category}
+                    projectLocation={g.location}
+                    investments={g.items}
+                    submissionMap={submissionMap}
+                    certMap={certMap}
+                    bankAccounts={bankAccounts}
+                  />
+                ))}
+              </div>
+            );
+          })()
+        ) : (
+          <div className="space-y-3">
+            {filtered.map((inv) => (
+              <InvestmentCard
+                key={inv.id}
+                inv={inv}
+                submission={submissionMap.get(inv.id) ?? null}
+                certificateDocId={certMap.get(inv.id) ?? null}
+                bankAccounts={bankAccounts}
+              />
+            ))}
+          </div>
+        )
       ) : (
         <div className="rounded-xl border border-dashed border-border py-16 text-center">
           <p className="text-2xl mb-2">📊</p>
