@@ -81,6 +81,20 @@ function fundingPct(funded: number | string, goal: number | string) {
   return Math.min(100, Math.round((Number(funded) / g) * 100));
 }
 
+function returnLabel(project: { expectedReturnPct: { toString(): string }; returnPctMin?: { toString(): string } | null; returnPctMax?: { toString(): string } | null }) {
+  if (project.returnPctMin && project.returnPctMax) {
+    return `${Number(project.returnPctMin).toFixed(1)}–${Number(project.returnPctMax).toFixed(1)}%`;
+  }
+  return `${Number(project.expectedReturnPct).toFixed(1)}%`;
+}
+
+function returnLabelFull(project: { expectedReturnPct: { toString(): string }; returnPctMin?: { toString(): string } | null; returnPctMax?: { toString(): string } | null }) {
+  if (project.returnPctMin && project.returnPctMax) {
+    return `${Number(project.returnPctMin).toFixed(2)}–${Number(project.returnPctMax).toFixed(2)}%`;
+  }
+  return `${Number(project.expectedReturnPct).toFixed(2)}%`;
+}
+
 function fmtDate(d: Date | string | null | undefined) {
   if (!d) return "—";
   return new Date(d).toLocaleDateString("en-BD", { day: "numeric", month: "short", year: "numeric" });
@@ -189,7 +203,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           { label: "Amount Raised", value: formatBdt(project.fundedAmountBdt.toString()), highlight: true },
           { label: "Progress", value: `${pct}%` },
           { label: "Investors", value: project._count.investments.toString() },
-          { label: "Expected Return", value: `${Number(project.expectedReturnPct).toFixed(1)}%` },
+          { label: "Expected Return", value: returnLabel(project) },
           { label: "Duration", value: `${project.durationDays} days` },
         ].map(({ label, value, highlight }) => (
           <div key={label} className="rounded-xl border border-border bg-card p-4 text-center">
@@ -240,7 +254,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                 { label: "Amount Raised", value: formatBdtFull(project.fundedAmountBdt.toString()) },
                 { label: "Min. Investment", value: formatBdtFull(project.minInvestmentBdt.toString()) },
                 ...(project.maxInvestmentBdt ? [{ label: "Max. Investment", value: formatBdtFull(project.maxInvestmentBdt.toString()) }] : []),
-                { label: "Expected Return", value: `${Number(project.expectedReturnPct).toFixed(2)}%` },
+                { label: "Expected Return", value: returnLabelFull(project) },
                 { label: "Return Type", value: RETURN_TYPE_LABELS[project.returnType] ?? project.returnType },
                 { label: "Duration", value: `${project.durationDays} days` },
               ].map(({ label, value }) => (
@@ -416,7 +430,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { label: "Return", value: `${Number(project.expectedReturnPct).toFixed(1)}%` },
+                { label: "Return", value: returnLabel(project) },
                 { label: "Duration", value: `${project.durationDays}d` },
                 { label: "Min Invest", value: formatBdt(project.minInvestmentBdt.toString()) },
                 { label: "Investors", value: project._count.investments.toString() },
