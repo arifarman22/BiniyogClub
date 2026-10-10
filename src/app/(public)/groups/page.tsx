@@ -1,61 +1,60 @@
 import type { Metadata } from "next";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { getAllGroups } from "@/server/data/groups.data";
 import {
-  ChevronRight,
-  TrendingUp,
-  Building2,
-  Users,
-  Landmark,
-  Sparkles,
-  ShieldCheck,
   ArrowRight,
-  CheckCircle2,
+  Briefcase,
+  Building,
+  ChevronRight,
+  Clock,
+  FileCheck,
+  Landmark,
+  Map as MapIcon,
+  MousePointerClick,
+  TrendingUp,
+  Upload,
+  Wallet,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 export const metadata: Metadata = {
   title: "Business Groups — Institutional Multi-Tier Syndicates | Biniyog Club",
   description:
-    "Invest directly in vetted commercial conglomerates: Mariners Group, MOHS Group, and Marinozz Group. Choose from Investor, Shareholder, Directorship, Plot Booking, and Land Sharing tiers.",
+    "Invest directly in vetted commercial groups: Mariners Group, MOHS Group, and Marinozz Group. Choose from Investor, Shareholder, Directorship, Plot Booking, and Land Sharing tiers.",
   openGraph: {
     title: "Business Groups | Biniyog Club Bangladesh",
-    description: "Multi-tier commercial co-investment syndicates across leading industrial and property groups in Bangladesh.",
+    description: "Multi-tier commercial co-investment across leading industrial and property groups in Bangladesh.",
   },
 };
 
-const TIER_ICONS: Record<string, string> = {
-  INVESTOR: "📈",
-  SHAREHOLDER: "🏦",
-  DIRECTORSHIP: "👔",
-  PLOT_BOOKING: "🏗️",
-  LAND_SHARE: "🌍",
+const TIERS: Record<string, { icon: LucideIcon; label: string; desc: string }> = {
+  INVESTOR: { icon: TrendingUp, label: "Investor", desc: "Short to medium-term returns on a fixed allocation." },
+  SHAREHOLDER: { icon: Landmark, label: "Shareholder", desc: "Long-term equity with dividend participation." },
+  DIRECTORSHIP: { icon: Briefcase, label: "Directorship", desc: "Board participation and voting rights." },
+  PLOT_BOOKING: { icon: Building, label: "Plot Booking", desc: "Allocation in commercial real estate developments." },
+  LAND_SHARE: { icon: MapIcon, label: "Land Sharing", desc: "Proportional co-ownership of land title." },
 };
 
-const TIER_COLORS: Record<string, string> = {
-  INVESTOR: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
-  SHAREHOLDER: "bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30",
-  DIRECTORSHIP: "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30",
-  PLOT_BOOKING: "bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/30",
-  LAND_SHARE: "bg-teal-500/10 text-teal-700 dark:text-teal-300 border-teal-500/30",
+const GROUP_COVER: Record<string, string> = {
+  MARINERS: "/2.png",
+  MOHS: "/3.png",
+  MARINOZZ: "/4.png",
 };
 
-const GROUP_GRADIENTS: Record<string, string> = {
-  MARINERS: "from-blue-950 via-slate-900 to-slate-950",
-  MOHS: "from-emerald-950 via-slate-900 to-slate-950",
-  MARINOZZ: "from-purple-950 via-slate-900 to-slate-950",
-};
-
-const GROUP_ICONS: Record<string, React.ReactNode> = {
-  MARINERS: <TrendingUp className="h-8 w-8 text-blue-400" />,
-  MOHS: <Building2 className="h-8 w-8 text-emerald-400" />,
-  MARINOZZ: <Landmark className="h-8 w-8 text-purple-400" />,
-};
+const STEPS = [
+  { icon: MousePointerClick, title: "Select group & tier", desc: "Compare the groups and choose the tier that fits your goals." },
+  { icon: FileCheck, title: "Submit your application", desc: "Specify the amount you intend to commit to your chosen tier." },
+  { icon: Upload, title: "Transfer & upload proof", desc: "Pay into the designated bank account and upload your receipt for verification." },
+  { icon: Wallet, title: "Deed & distributions", desc: "Receive your digital deed certificate and earn scheduled distributions." },
+];
 
 function fmtBdt(n: number | string) {
   const v = Number(n);
-  if (v >= 10000000) return `৳${(v / 10000000).toFixed(1)} Cr`;
-  if (v >= 100000) return `৳${(v / 100000).toFixed(1)}L`;
+  if (v >= 10_000_000) return `৳${(v / 10_000_000).toFixed(1).replace(/\.0$/, "")} Cr`;
+  if (v >= 100_000) return `৳${(v / 100_000).toFixed(1).replace(/\.0$/, "")} L`;
   if (v >= 1000) return `৳${(v / 1000).toFixed(0)}K`;
   return `৳${v.toLocaleString()}`;
 }
@@ -63,210 +62,293 @@ function fmtBdt(n: number | string) {
 export default async function GroupsPage() {
   const groups = await getAllGroups();
 
+  const allTiers = groups.flatMap((g) => g.entities.flatMap((e) => e.tiers));
+  const entityCount = groups.reduce((n, g) => n + g.entities.length, 0);
+  const minEntry = allTiers.length ? Math.min(...allTiers.map((t) => Number(t.minAmountBdt))) : 0;
+
+  const stats = [
+    { value: groups.length.toString(), label: "Business groups" },
+    { value: entityCount.toString(), label: "Operating entities" },
+    { value: allTiers.length.toString(), label: "Investment tiers" },
+    { value: minEntry ? fmtBdt(minEntry) : "—", label: "Lowest entry" },
+  ];
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* ── 1. Hero ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/80 to-slate-950 py-20 lg:py-24 text-white border-b border-border/40">
-        <div className="absolute top-0 right-1/4 -mt-20 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 -mb-20 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
+      <section className="relative overflow-hidden bg-[#040d09] py-20 text-white lg:py-28">
+        <div className="pointer-events-none absolute inset-0">
+          <Image src="/2.png" alt="" fill priority className="object-cover opacity-15" sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#040d09]/70 via-[#040d09]/85 to-[#040d09]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(16,185,129,0.18),transparent)]" />
+        </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <AnimatedSection animation="fade-down">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-emerald-300 backdrop-blur-md mb-6">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              <span>INSTITUTIONAL SYNDICATES • MULTI-TIER CO-INVESTMENT</span>
+        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mx-auto max-w-4xl text-center">
+            <div className="mb-6 inline-flex items-center gap-2 border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
+              <span className="h-px w-5 bg-emerald-400/70" />
+              Business groups
+              <span className="h-px w-5 bg-emerald-400/70" />
             </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-white max-w-4xl mx-auto leading-tight">
-              Institutional Business Groups in{" "}
-              <span className="font-semibold bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-light leading-[1.1] tracking-tight text-balance sm:text-5xl lg:text-6xl">
+              Institutional business groups in{" "}
+              <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text font-semibold text-transparent">
                 Bangladesh
               </span>
             </h1>
-
-            <p className="mt-5 text-base sm:text-lg font-normal text-slate-100 max-w-3xl mx-auto leading-relaxed">
-              Participate directly in established commercial conglomerates: Mariners Group, MOHS Group, and Marinozz Group. Whether as an Investor, Shareholder, Director, or Property Owner, each tier offers structured governance and quarterly yields.
+            <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+              Participate directly in established commercial groups — as an investor, shareholder, director or property
+              owner. Each tier comes with structured governance and a binding legal contract.
             </p>
+          </AnimatedSection>
 
-            <div className="mt-8 flex flex-wrap justify-center gap-2.5 text-xs sm:text-sm">
-              {[
-                { name: "Investor Tier", desc: "Short/Medium term yield" },
-                { name: "Shareholder Tier", desc: "Long-term equity dividends" },
-                { name: "Directorship Tier", desc: "Board participation & voting" },
-                { name: "Plot Booking", desc: "Commercial real estate allocation" },
-                { name: "Land Sharing", desc: "Proportional land title co-ownership" },
-              ].map((t) => (
-                <span
-                  key={t.name}
-                  className="rounded-full border border-white/20 bg-white/10 backdrop-blur-md px-4 py-1.5 text-white font-medium"
+          <AnimatedSection animation="fade-up" delay={150}>
+            <div className="mx-auto mt-12 grid max-w-5xl grid-cols-2 border border-white/10 bg-white/[0.03] backdrop-blur-md lg:grid-cols-4">
+              {stats.map((s, i) => (
+                <div
+                  key={s.label}
+                  className={`p-5 text-center sm:p-6 ${i % 2 === 1 ? "border-l border-white/10" : ""} ${i >= 2 ? "border-t border-white/10 lg:border-t-0" : ""} ${i === 2 ? "lg:border-l" : ""}`}
                 >
-                  {t.name}
-                </span>
+                  <p className="text-3xl font-semibold tabular-nums text-emerald-300 sm:text-4xl">{s.value}</p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-widest text-slate-400">{s.label}</p>
+                </div>
               ))}
             </div>
           </AnimatedSection>
         </div>
       </section>
 
-      {/* ── 2. How Group Investment Works ── */}
-      <section className="border-b border-border/60 bg-card/60 py-12">
+      {/* ── 2. Tier guide ── */}
+      <section className="bg-muted/40 py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <h2 className="text-xl sm:text-2xl font-normal tracking-tight text-slate-900 dark:text-white">
-              How Business Group Participation Works
-            </h2>
-            <p className="text-xs sm:text-sm font-normal text-slate-700 dark:text-slate-200 mt-1">
-              Four streamlined steps from selecting your desired group to receiving quarterly distributions
-            </p>
-          </div>
+          <AnimatedSection animation="fade-down" className="mb-12">
+            <SectionHeading
+              eyebrow="Participation tiers"
+              title="Five ways to"
+              highlight="participate"
+              description="Every group offers one or more of these tiers. Pick the one that matches your timeline and goals."
+            />
+          </AnimatedSection>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              { step: "01", title: "Select Group & Tier", desc: "Compare the 3 commercial conglomerates and pick the tier tailored to your financial goals." },
-              { step: "02", title: "Allocation Request", desc: "Submit your investment application and specify your intended commitment amount." },
-              { step: "03", title: "Segregated Escrow Transfer", desc: "Transfer capital to our designated project bank escrow and upload your verified receipt." },
-              { step: "04", title: "Deed Execution & Payouts", desc: "Receive countersigned digital deed certificates and earn scheduled distributions." },
-            ].map(({ step, title, desc }) => (
-              <div key={step} className="rounded-2xl border border-slate-200/90 dark:border-white/10 bg-card p-5 shadow-sm transition-all hover:border-emerald-500/40">
-                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/10 text-xs font-mono font-bold text-emerald-700 dark:text-emerald-400 mb-3">
-                  {step}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {Object.entries(TIERS).map(([key, { icon: Icon, label, desc }], i) => (
+              <AnimatedSection key={key} delay={i * 70} animation="fade-up" className="h-full">
+                <div className="group h-full border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg">
+                  <div className="mb-4 flex h-11 w-11 items-center justify-center bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="text-base font-semibold text-foreground">{label}</h3>
+                  <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>
                 </div>
-                <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-1">{title}</h3>
-                <p className="text-xs font-normal text-slate-800 dark:text-slate-200 leading-relaxed">{desc}</p>
-              </div>
+              </AnimatedSection>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── 3. Groups Showcase ── */}
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-12">
-          {groups.map((group) => (
-            <div
-              key={group.id}
-              className="overflow-hidden rounded-3xl border border-border/80 dark:border-white/10 bg-card shadow-lg transition-all"
-            >
-              {/* Group header */}
-              <div className={`bg-gradient-to-r ${GROUP_GRADIENTS[group.slug] ?? "from-slate-900 to-slate-850"} px-6 sm:px-8 py-8 sm:py-10 text-white relative overflow-hidden border-b border-white/10`}>
-                <div className="relative z-10 flex flex-col sm:flex-row sm:items-start justify-between gap-5">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-inner">
-                      {GROUP_ICONS[group.slug]}
-                    </div>
-                    <div>
-                      <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-2.5 py-0.5 text-[10px] font-bold tracking-widest text-emerald-300 uppercase mb-1">
-                        {group.slug}
-                      </div>
-                      <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-white">{group.name}</h2>
-                      {group.tagline && <p className="mt-1 text-sm text-slate-200 font-normal">{group.tagline}</p>}
-                    </div>
-                  </div>
-                  <Link
-                    href={`/groups/${group.slug.toLowerCase()}`}
-                    className="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-white/25 bg-white/10 backdrop-blur-md px-5 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-white/20 transition-all self-start"
-                  >
-                    <span>View Group Dossier</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Link>
-                </div>
-                <p className="relative z-10 mt-5 max-w-3xl text-xs sm:text-sm text-slate-100 leading-relaxed font-normal">{group.description}</p>
-              </div>
+      {/* ── 3. Groups showcase ── */}
+      <section className="bg-background py-20 lg:py-24" id="groups">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mb-12">
+            <SectionHeading
+              eyebrow="Our groups"
+              title="Explore the"
+              highlight="business groups"
+              description="Each group operates one or more entities, and each entity offers its own investment tiers."
+            />
+          </AnimatedSection>
 
-              {/* Entities & tiers */}
-              <div className="divide-y divide-border/60">
-                {group.entities.map((entity) => (
-                  <div key={entity.id} className="p-6 sm:p-8">
-                    <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{entity.name}</h3>
-                        <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 mt-0.5">{entity.description}</p>
-                      </div>
-                      <Link
-                        href={`/groups/${group.slug.toLowerCase()}/${entity.slug}`}
-                        className="text-xs sm:text-sm font-bold text-emerald-600 dark:text-emerald-400 hover:underline inline-flex items-center gap-1 shrink-0"
-                      >
-                        Explore Entity Tiers <ChevronRight className="h-3.5 w-3.5" />
-                      </Link>
-                    </div>
-                    <div className="grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
-                      {entity.tiers.map((tier) => (
-                        <div
-                          key={tier.id}
-                          className="rounded-2xl border border-slate-200/90 dark:border-white/10 bg-slate-50/70 dark:bg-slate-900/40 p-4 transition-all duration-300 hover:-translate-y-1 hover:border-emerald-500/40 hover:shadow-md"
-                        >
-                          <div className="flex items-center justify-between gap-2 mb-2.5">
-                            <span className="text-xl">{TIER_ICONS[tier.type] ?? "💼"}</span>
-                            <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${TIER_COLORS[tier.type] ?? "bg-muted text-foreground"}`}>
-                              {tier.type.replace(/_/g, " ")}
-                            </span>
-                          </div>
-                          <p className="font-bold text-sm text-slate-900 dark:text-white">{tier.name}</p>
-                          <div className="mt-2.5 flex items-center justify-between text-xs font-normal text-slate-800 dark:text-slate-200">
-                            <span>Min. Allocation</span>
-                            <span className="font-bold text-slate-900 dark:text-white font-mono">{fmtBdt(tier.minAmountBdt.toString())}</span>
-                          </div>
-                          {tier.expectedReturnPct && (
-                            <div className="mt-1 flex items-center justify-between text-xs font-normal text-slate-800 dark:text-slate-200">
-                              <span>Estimated Yield</span>
-                              <span className="font-bold text-emerald-600 dark:text-emerald-400 font-mono">{Number(tier.expectedReturnPct)}%</span>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* CTA footer */}
-              <div className="border-t border-border/60 bg-card p-6 sm:px-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-bold text-slate-900 dark:text-white">
-                    Ready to participate in {group.name}?
-                  </p>
-                  <p className="text-xs font-normal text-slate-800 dark:text-slate-200">
-                    Direct legal contracts under Contract Act 1872, verified quarterly yields, and asset collateral.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <Link
-                    href={`/groups/${group.slug.toLowerCase()}`}
-                    className="rounded-full border border-slate-300 dark:border-white/20 bg-card px-5 py-2 text-xs sm:text-sm font-semibold hover:border-emerald-500/50 transition-all"
-                  >
-                    Explore Tiers
-                  </Link>
-                  <Link
-                    href="/auth/register"
-                    className="rounded-full bg-emerald-600 px-5 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-emerald-700 transition-all shadow-md shadow-emerald-600/20"
-                  >
-                    Open Account
-                  </Link>
-                </div>
-              </div>
+          {groups.length === 0 ? (
+            <div className="border border-dashed border-border bg-card p-12 text-center text-sm text-muted-foreground">
+              Business groups will appear here once they are published.
             </div>
-          ))}
+          ) : (
+            <div className="space-y-10">
+              {groups.map((group, gi) => {
+                const groupHref = `/groups/${group.slug.toLowerCase()}`;
+                const cover = group.coverUrl ?? GROUP_COVER[group.slug] ?? "/2.png";
+                return (
+                  <AnimatedSection key={group.id} animation="fade-up">
+                    <article className="overflow-hidden border border-border bg-card shadow-sm lg:grid lg:grid-cols-12">
+                      {/* Cover + intro */}
+                      <div className="relative flex min-h-[320px] flex-col justify-end overflow-hidden bg-slate-950 p-7 text-white sm:p-8 lg:col-span-5">
+                        <Image
+                          src={cover}
+                          alt={group.name}
+                          fill
+                          priority={gi === 0}
+                          className="object-cover"
+                          sizes="(max-width: 1024px) 100vw, 40vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/10" />
+                        <div className="relative">
+                          <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-300">
+                            {group.entities.length} {group.entities.length === 1 ? "entity" : "entities"}
+                          </span>
+                          <h2 className="mt-1 text-2xl font-semibold tracking-tight text-white sm:text-3xl">
+                            {group.name}
+                          </h2>
+                          {group.tagline && <p className="mt-1 text-sm font-medium text-emerald-200">{group.tagline}</p>}
+                          <p className="mt-4 line-clamp-4 text-sm leading-relaxed text-slate-300">{group.description}</p>
+                          <div className="mt-6 flex flex-wrap gap-3">
+                            <Link
+                              href={groupHref}
+                              className="group/btn inline-flex items-center gap-2 bg-primary px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+                            >
+                              View group
+                              <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-0.5" />
+                            </Link>
+                            <Link
+                              href="/auth/register"
+                              className="inline-flex items-center border border-white/25 bg-white/5 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/10"
+                            >
+                              Open account
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Entities & tiers */}
+                      <div className="divide-y divide-border lg:col-span-7">
+                        {group.entities.length === 0 && (
+                          <p className="p-8 text-sm text-muted-foreground">Entities for this group are coming soon.</p>
+                        )}
+                        {group.entities.map((entity) => (
+                          <div key={entity.id} className="p-6 sm:p-7">
+                            <div className="mb-4 flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+                              <div>
+                                <h3 className="text-base font-semibold text-foreground">{entity.name}</h3>
+                                <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{entity.description}</p>
+                              </div>
+                              <Link
+                                href={`${groupHref}/${entity.slug}`}
+                                className="inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-primary hover:underline"
+                              >
+                                Explore tiers <ChevronRight className="h-3.5 w-3.5" />
+                              </Link>
+                            </div>
+
+                            {entity.tiers.length > 0 && (
+                              <ul className="divide-y divide-border border border-border">
+                                {entity.tiers.map((tier) => {
+                                  const meta = TIERS[tier.type];
+                                  const Icon = meta?.icon ?? Briefcase;
+                                  return (
+                                    <li
+                                      key={tier.id}
+                                      className="flex flex-wrap items-center gap-x-4 gap-y-2 bg-background px-4 py-3 transition-colors hover:bg-primary/5"
+                                    >
+                                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-primary/10 text-primary">
+                                          <Icon className="h-4 w-4" />
+                                        </span>
+                                        <div className="min-w-0">
+                                          <p className="truncate text-sm font-semibold text-foreground">{tier.name}</p>
+                                          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                            {meta?.label ?? tier.type.replace(/_/g, " ")}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <dl className="flex items-center gap-5 text-right text-xs">
+                                        <div>
+                                          <dt className="text-muted-foreground">Min.</dt>
+                                          <dd className="font-semibold tabular-nums text-foreground">
+                                            {fmtBdt(tier.minAmountBdt.toString())}
+                                          </dd>
+                                        </div>
+                                        {tier.expectedReturnPct && (
+                                          <div>
+                                            <dt className="text-muted-foreground">Est. yield</dt>
+                                            <dd className="font-semibold tabular-nums text-primary">
+                                              {Number(tier.expectedReturnPct)}%
+                                            </dd>
+                                          </div>
+                                        )}
+                                        {tier.durationMonths && (
+                                          <div className="hidden sm:block">
+                                            <dt className="text-muted-foreground">Term</dt>
+                                            <dd className="inline-flex items-center gap-1 font-semibold tabular-nums text-foreground">
+                                              <Clock className="h-3 w-3" />
+                                              {tier.durationMonths} mo
+                                            </dd>
+                                          </div>
+                                        )}
+                                      </dl>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </article>
+                  </AnimatedSection>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
-      {/* ── 4. Cross-link to Individual Projects ── */}
-      <section className="py-16 bg-card/70 border-t border-border/60">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-2xl sm:text-3xl font-normal tracking-tight text-slate-900 dark:text-white">
-            Looking for Fixed-Term Project Investment?
+      {/* ── 4. How participation works ── */}
+      <section className="bg-muted/40 py-20 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mb-12">
+            <SectionHeading
+              eyebrow="Four steps"
+              title="How group participation"
+              highlight="works"
+              description="From choosing a group to receiving scheduled distributions."
+            />
+          </AnimatedSection>
+
+          <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {STEPS.map(({ icon: Icon, title, desc }, i) => (
+              <li key={title} className="relative border border-border bg-card p-6">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="flex h-11 w-11 items-center justify-center bg-primary/10 text-primary">
+                    <Icon className="h-5 w-5" />
+                  </span>
+                  <span className="text-3xl font-light tabular-nums text-primary/40">0{i + 1}</span>
+                </div>
+                <h3 className="text-base font-semibold text-foreground">{title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{desc}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* ── 5. Cross-link CTA ── */}
+      <section className="relative overflow-hidden bg-[#030906] py-20 text-white lg:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(16,185,129,0.18),transparent)]" />
+        <AnimatedSection animation="zoom-in" className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-3xl font-light tracking-tight text-balance sm:text-5xl">
+            Looking for fixed-term{" "}
+            <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text font-semibold text-transparent">
+              project investment?
+            </span>
           </h2>
-          <p className="mt-2 text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 max-w-xl mx-auto">
-            Browse live agricultural, trade finance, and SME projects with entry thresholds starting from ৳5,000.
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-300">
+            Browse live agricultural, trade and SME projects with entry thresholds from ৳5,000.
           </p>
-          <div className="mt-6">
+          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/projects"
-              className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-6 py-3 text-xs sm:text-sm font-semibold text-white shadow-lg shadow-emerald-600/20 hover:bg-emerald-700 transition-all"
+              className="group inline-flex items-center justify-center gap-2 bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
             >
-              Browse All Opportunities <ArrowRight className="h-4 w-4" />
+              Browse projects
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/auth/register"
+              className="inline-flex items-center justify-center gap-2 border border-white/25 bg-white/5 px-8 py-3.5 text-sm font-semibold text-white transition-all hover:border-white/50 hover:bg-white/10"
+            >
+              Create account
             </Link>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </div>
   );
