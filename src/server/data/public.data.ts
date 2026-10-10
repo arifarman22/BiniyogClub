@@ -135,6 +135,42 @@ export async function getAllProjectSlugs() {
   return projects.map((p) => p.slug);
 }
 
+// ─── Hierarchy: Groups + their Projects ─────────────────────────────────────
+
+export async function getGroupsWithProjects() {
+  return db.businessGroup.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      tagline: true,
+      description: true,
+      logoUrl: true,
+      coverUrl: true,
+      projects: {
+        where: { deletedAt: null, status: { notIn: ["DRAFT", "CANCELLED"] } },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+          category: true,
+          expectedReturnPct: true,
+          returnPctMin: true,
+          returnPctMax: true,
+          durationDays: true,
+          minInvestmentBdt: true,
+          coverImageUrl: true,
+          imageUrls: true,
+        },
+        orderBy: { publishedAt: "desc" },
+      },
+    },
+    orderBy: { createdAt: "asc" },
+  });
+}
+
 // ─── Recent Project Updates ───────────────────────────────────────────────────
 
 export async function getRecentUpdates(limit = 6) {

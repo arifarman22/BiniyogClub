@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
 import { BusinessGroupCard } from "@/components/shared/business-group-card";
+import { SectionHeading } from "@/components/home/section-heading";
 
 interface BusinessGroupsSectionProps {
   groups: any[];
@@ -11,21 +12,17 @@ interface BusinessGroupsSectionProps {
 
 export function BusinessGroupsSection({ groups }: BusinessGroupsSectionProps) {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-slate-50/40 to-background dark:via-slate-900/30 border-b border-border/50" id="business-groups">
+    <section className="relative py-24 lg:py-28 bg-background" id="business-groups">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <AnimatedSection animation="fade-down" className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
-          <div>
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-              Institutional{" "}
-              <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                Business Groups
-              </span>
-            </h2>
-            <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">
-              Partner with vetted corporate enterprises and multi-sector conglomerates driving verified economic growth across Bangladesh.
-            </p>
-          </div>
+          <SectionHeading
+            align="left"
+            eyebrow="Partner enterprises"
+            title="Institutional"
+            highlight="Business Groups"
+            description="Partner with vetted corporate enterprises and multi-sector conglomerates driving verified economic growth across Bangladesh."
+          />
 
           <Link
             href="/groups"

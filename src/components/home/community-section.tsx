@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const COMMUNITY_PILLARS = [
   {
@@ -31,19 +32,15 @@ const COMMUNITY_PILLARS = [
 
 export function CommunitySection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-slate-50/50 to-background dark:via-slate-900/30 border-b border-border/50">
+    <section className="relative py-24 lg:py-28 bg-muted/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            Invest Together.{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Grow Together.
-            </span>
-          </h2>
-
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
-            By aggregating collective purchasing power, Biniyog Club enables everyday investors to participate in high-yield commercial ventures previously accessible only to major conglomerates.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Community"
+            title="Invest together."
+            highlight="Grow together."
+            description="By pooling collective purchasing power, Biniyog Club lets everyday investors participate in commercial ventures previously accessible only to major conglomerates."
+          />
         </AnimatedSection>
 
         {/* Real Community Showcase Banner */}
@@ -94,7 +91,7 @@ export function CommunitySection() {
                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
                       {pillar.title}
                     </h3>
-                    <p className="text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
+                    <p className="text-sm font-normal text-muted-foreground leading-relaxed">
                       {pillar.desc}
                     </p>
                   </div>
@@ -117,7 +114,7 @@ export function CommunitySection() {
                 Referral Network
               </span>
               <h4 className="text-xl font-semibold text-foreground">Introduce Friends & Earn Legally Verified Rewards</h4>
-              <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 mt-1 max-w-xl">
+              <p className="text-xs sm:text-sm font-normal text-muted-foreground mt-1 max-w-xl">
                 Every verified referral who funds a vetted project earns you referral allocations credited directly to your platform wallet.
               </p>
             </div>

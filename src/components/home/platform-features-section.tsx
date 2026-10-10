@@ -7,6 +7,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const PLATFORM_FEATURES = [
   {
@@ -71,19 +72,15 @@ export function PlatformFeaturesSection() {
   const current = PLATFORM_FEATURES[selectedFeature];
 
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-slate-50/60 to-background dark:via-slate-900/20 border-b border-border/50" id="features">
+    <section className="relative py-24 lg:py-28 bg-background" id="features">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="mb-16 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            Engineered for{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Precision & Scale
-            </span>
-          </h2>
-
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-            Every feature on Biniyog Club is purpose-built to deliver institutional clarity, regulatory compliance, and total control over your investments.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Platform features"
+            title="Engineered for"
+            highlight="precision & scale"
+            description="Every feature on Biniyog Club is purpose-built to deliver institutional clarity, regulatory compliance, and total control over your investments."
+          />
         </AnimatedSection>
 
         {/* Split Layout */}
@@ -129,7 +126,7 @@ export function PlatformFeaturesSection() {
                           {feature.badge}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
+                      <p className="text-xs sm:text-sm font-normal text-muted-foreground leading-relaxed">
                         {feature.desc}
                       </p>
                     </div>

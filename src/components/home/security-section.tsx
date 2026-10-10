@@ -12,6 +12,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const SECURITY_PILLARS = [
   {
@@ -58,16 +59,15 @@ export function SecuritySection() {
           {/* Left Text & Security Pillars */}
           <div className="lg:col-span-6">
             <AnimatedSection animation="fade-right" delay={50}>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-white leading-[1.15] mb-5">
-                Your Trust. <br />
-                <span className="font-semibold bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-300 bg-clip-text text-transparent">
-                  Our Responsibility.
-                </span>
-              </h2>
-
-              <p className="text-base sm:text-lg text-slate-100 font-normal leading-relaxed mb-8">
-                We believe Bangladeshi co-investors deserve uncompromised rigor. Biniyog Club pairs mathematical ledger precision with enforceable legal contracts to safeguard your capital at every step.
-              </p>
+              <SectionHeading
+                align="left"
+                tone="dark"
+                eyebrow="Security & trust"
+                title="Your trust."
+                highlight="Our responsibility."
+                description="Bangladeshi co-investors deserve uncompromising rigor. Biniyog Club pairs ledger precision with enforceable legal contracts to safeguard your capital at every step."
+                className="mb-8"
+              />
 
               <div className="grid sm:grid-cols-2 gap-4 mb-8">
                 {SECURITY_PILLARS.map((item) => {

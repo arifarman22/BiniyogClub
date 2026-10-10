@@ -36,7 +36,7 @@ export function AnimatedSection({ children, className = "", delay = 0, animation
   return (
     <div
       ref={ref}
-      className={`transition-all duration-[800ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] ${visible ? "translate-y-0 translate-x-0 scale-100 opacity-100" : hidden[animation]} ${className}`}
+      className={`transition-all duration-[800ms] ease-[cubic-bezier(0.25,0.46,0.45,0.94)] motion-reduce:transition-none motion-reduce:transform-none motion-reduce:opacity-100 ${visible ? "translate-y-0 translate-x-0 scale-100 opacity-100" : hidden[animation]} ${className}`}
       style={{ transitionDelay: visible ? `${delay}ms` : "0ms" }}
     >
       {children}

@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { getPlatformStats, getRecentUpdates, getFeaturedProjects } from "@/server/data/public.data";
+import { getPlatformStats, getRecentUpdates, getFeaturedProjects, getGroupsWithProjects } from "@/server/data/public.data";
 import { getAllGroups } from "@/server/data/groups.data";
 import { JsonLd, organizationSchema, websiteSchema, faqSchema } from "@/components/shared/json-ld";
+import { HOME_FAQS } from "@/components/shared/faq-data";
 
 import { HeroSection } from "@/components/home/hero-section";
-import { MetricsDock } from "@/components/home/metrics-dock";
+import { HierarchySection } from "@/components/home/hierarchy-section";
 import { AboutSection } from "@/components/home/about-section";
 import { WhyChooseSection } from "@/components/home/why-choose-section";
 import { HowItWorksSection } from "@/components/home/how-it-works-section";
@@ -25,94 +26,71 @@ export const metadata: Metadata = {
     "Join Bangladesh's premier investment platform. Invest directly in vetted business groups & commercial projects, earn competitive returns with complete legal security. Start from ৳5,000.",
 };
 
-const FAQS = [
-  {
-    q: "What is the minimum investment amount?",
-    a: "You can start investing from as little as ৳5,000. Each project sets its own entry threshold, which is prominently displayed on the project card.",
-  },
-  {
-    q: "How are projects verified and approved?",
-    a: "All projects are curated and vetted by our finance and compliance teams. They undergo rigorous financial due diligence, physical site checks, and risk analysis before public listing.",
-  },
-  {
-    q: "What returns can I expect?",
-    a: "Returns vary depending on the sector, duration, and tier. Expected returns typically range from 14% to 26% annually. All projected returns and formulas are presented upfront.",
-  },
-  {
-    q: "How do I withdraw my earnings?",
-    a: "Returns and principal are credited to your Biniyog Club wallet upon milestone completion or maturity. You can withdraw directly to your verified Bangladeshi bank account or mobile wallet anytime.",
-  },
-  {
-    q: "Is my investment legally protected?",
-    a: "Yes. Every investment is executed with a digital agreement signed between you and the operating entity, complete with timestamps and legal enforceability under the Contract Act of Bangladesh.",
-  },
-  {
-    q: "How does the payment and settlement process work?",
-    a: "Investments can be deposited via instant bank transfer or mobile banking (bKash/Nagad). Our finance officers verify the transaction receipt before confirming your allocation.",
-  },
-];
-
 export default async function HomePage() {
-  const [stats, rawUpdates, rawGroups, rawProjects] = await Promise.all([
+  const [stats, rawUpdates, rawGroups, rawProjects, rawHierarchy] = await Promise.all([
     getPlatformStats(),
     getRecentUpdates(3),
     getAllGroups(),
     getFeaturedProjects(6),
+    getGroupsWithProjects(),
   ]);
 
   const groups = JSON.parse(JSON.stringify(rawGroups));
   const featuredProjects = JSON.parse(JSON.stringify(rawProjects));
   const recentUpdates = JSON.parse(JSON.stringify(rawUpdates));
+  const hierarchyGroups = JSON.parse(JSON.stringify(rawHierarchy));
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyog.club";
 
+  // Section backgrounds alternate plain → tinted, with dark "anchor" sections
+  // (Security, Final CTA) breaking up the page. Keep that rhythm when reordering.
   return (
     <>
-      <JsonLd data={[organizationSchema(BASE_URL), websiteSchema(BASE_URL), faqSchema(FAQS)]} />
+      <JsonLd data={[organizationSchema(BASE_URL), websiteSchema(BASE_URL), faqSchema(HOME_FAQS)]} />
 
-      {/* ── SECTION 02 — HERO SECTION ── */}
+      {/* ── SECTION 01 — HERO VIDEO ── */}
       <HeroSection />
 
-      {/* ── SECTION 03 — TRUST / STATISTICS BAR ── */}
-      <MetricsDock stats={stats} />
+      {/* ── SECTION 02 — PLATFORM HIERARCHY (tinted) ── */}
+      <HierarchySection groups={hierarchyGroups} />
 
-      {/* ── SECTION 04 — ABOUT BINIYOGCLUB ── */}
-      <AboutSection />
-
-      {/* ── SECTION 05 — INVESTMENT PROJECTS ── */}
+      {/* ── SECTION 03 — INVESTMENT PROJECTS (plain) ── */}
       <FeaturedProjectsSection featuredProjects={featuredProjects} />
 
-      {/* ── SECTION 06 — BUSINESS GROUPS ── */}
-      <BusinessGroupsSection groups={groups} />
-
-      {/* ── SECTION 07 — WHY CHOOSE BINIYOGCLUB ── */}
-      <WhyChooseSection />
-
-      {/* ── SECTION 08 — HOW IT WORKS ── */}
+      {/* ── SECTION 04 — HOW IT WORKS (tinted) ── */}
       <HowItWorksSection />
 
-      {/* ── SECTION 08 — PLATFORM FEATURES ── */}
-      <PlatformFeaturesSection />
+      {/* ── SECTION 05 — BUSINESS GROUPS (plain) ── */}
+      <BusinessGroupsSection groups={groups} />
 
-      {/* ── SECTION 09 — SECURITY & TRUST ── */}
+      {/* ── SECTION 06 — ABOUT BINIYOGCLUB (tinted) ── */}
+      <AboutSection />
+
+      {/* ── SECTION 07 — WHY CHOOSE BINIYOGCLUB (plain) ── */}
+      <WhyChooseSection />
+
+      {/* ── SECTION 08 — SECURITY & TRUST (dark) ── */}
       <SecuritySection />
 
-      {/* ── SECTION 10 — DASHBOARD PREVIEW ── */}
+      {/* ── SECTION 09 — PLATFORM FEATURES (plain) ── */}
+      <PlatformFeaturesSection />
+
+      {/* ── SECTION 10 — DASHBOARD PREVIEW (tinted) ── */}
       <DashboardPreviewSection />
 
-      {/* ── SECTION 11 — COMMUNITY / REFERRAL / NETWORK ── */}
-      <CommunitySection />
-
-      {/* ── SECTION 12 — INTERACTIVE RETURN SIMULATOR ── */}
+      {/* ── SECTION 11 — INTERACTIVE RETURN SIMULATOR (plain) ── */}
       <CalculatorSection />
 
-      {/* ── SECTION 13 — LIVE PROJECT DISCLOSURES ── */}
+      {/* ── SECTION 12 — COMMUNITY / REFERRAL / NETWORK (tinted) ── */}
+      <CommunitySection />
+
+      {/* ── SECTION 13 — LIVE PROJECT DISCLOSURES (plain) ── */}
       <UpdatesSection recentUpdates={recentUpdates} />
 
-      {/* ── SECTION 14 — FREQUENTLY ASKED QUESTIONS ── */}
+      {/* ── SECTION 14 — FREQUENTLY ASKED QUESTIONS (tinted) ── */}
       <FaqSection />
 
-      {/* ── SECTION 15 — ENTERPRISE FINAL CTA ── */}
+      {/* ── SECTION 15 — FINAL CTA (dark) ── */}
       <FinalCtaSection totalInvestors={stats.totalInvestors} />
     </>
   );

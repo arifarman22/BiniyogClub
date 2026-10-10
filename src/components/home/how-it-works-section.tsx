@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, ChevronRight } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const HOW_IT_WORKS_STEPS = [
   {
@@ -38,18 +39,15 @@ const HOW_IT_WORKS_STEPS = [
 
 export function HowItWorksSection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-emerald-50/20 to-background dark:via-emerald-950/10 border-b border-border/50" id="how-it-works">
+    <section className="relative py-24 lg:py-28 bg-muted/40" id="how-it-works">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="mb-16 text-center max-w-3xl mx-auto">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            How Biniyog Club{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Works
-            </span>
-          </h2>
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
-            Four clear steps from registration to receiving scheduled profit payouts directly into your bank or mobile wallet.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Four simple steps"
+            title="How Biniyog Club"
+            highlight="Works"
+            description="From registration to scheduled profit payouts directly into your bank or mobile wallet."
+          />
         </AnimatedSection>
 
         {/* 4-Step Flow */}
@@ -82,7 +80,7 @@ export function HowItWorksSection() {
                   <h3 className="mb-2 text-base sm:text-lg font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
                     {stepItem.title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
+                  <p className="text-xs sm:text-sm font-normal text-muted-foreground leading-relaxed">
                     {stepItem.desc}
                   </p>
 

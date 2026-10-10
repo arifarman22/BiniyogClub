@@ -16,16 +16,20 @@ export function FinalCtaSection({ totalInvestors }: FinalCtaSectionProps) {
       <div className="absolute inset-0 pointer-events-none">
         <Image src="/images/smart-agro-farm.jpg" alt="Biniyog Club Investment In Bangladesh Real Economy" fill className="object-cover object-center opacity-25" sizes="100vw" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#030906] via-[#030906]/90 to-[#030906]/80" />
-        <div className="absolute inset-0 bg-radial-gradient from-emerald-500/15 via-transparent to-transparent pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(16,185,129,0.18),transparent)] pointer-events-none" />
       </div>
 
       <AnimatedSection animation="zoom-in" className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
         <div className="mb-6 inline-flex items-center gap-2 rounded-none border border-emerald-500/30 bg-emerald-950/80 px-4 py-1.5 text-xs sm:text-sm font-medium text-emerald-300 backdrop-blur-md shadow-lg shadow-black/40">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-none bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-none h-2 w-2 bg-emerald-400" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75 motion-reduce:hidden" />
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
           </span>
-          <span>Join {totalInvestors > 0 ? totalInvestors.toLocaleString() : "4"}+ verified investors earning scheduled returns</span>
+          <span>
+            {totalInvestors > 0
+              ? `Join ${totalInvestors.toLocaleString()} verified investors earning scheduled returns`
+              : "Now accepting verified investors"}
+          </span>
         </div>
 
         <h2 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.15]">

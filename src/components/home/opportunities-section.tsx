@@ -30,7 +30,7 @@ export function OpportunitiesSection({
                 Opportunities
               </span>
             </h2>
-            <p className="mt-3.5 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 max-w-2xl leading-relaxed">
+            <p className="mt-3.5 text-base sm:text-lg font-normal text-muted-foreground max-w-2xl leading-relaxed">
               Explore admin-vetted projects and institutional conglomerates. Tangible commercial assets with legally binding contracts.
             </p>
           </div>

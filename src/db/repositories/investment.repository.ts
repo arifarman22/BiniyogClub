@@ -112,11 +112,7 @@ export const investmentRepository = {
     });
   },
 
-  /**
-   * Atomically increment fundedAmountBdt on the project.
-   * Returns the updated project so callers can check if fully funded.
-   * Must be called inside a Prisma transaction.
-   */
+
   async incrementProjectFunding(
     tx: Prisma.TransactionClient,
     projectId: string,
@@ -134,10 +130,7 @@ export const investmentRepository = {
     });
   },
 
-  /**
-   * Atomically decrement fundedAmountBdt (for cancellations/refunds).
-   * Must be called inside a Prisma transaction.
-   */
+
   async decrementProjectFunding(
     tx: Prisma.TransactionClient,
     projectId: string,

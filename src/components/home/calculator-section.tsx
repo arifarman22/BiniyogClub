@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const PRESET_AMOUNTS = [10000, 25000, 50000, 100000, 250000, 500000];
 const DURATIONS = [
@@ -25,19 +26,15 @@ export function CalculatorSection() {
   const monthlyEquivalent = periodReturn / months;
 
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-slate-50/50 via-emerald-50/15 to-background dark:from-slate-900/40 dark:via-emerald-950/10 dark:to-background border-b border-border/50">
+    <section className="relative py-24 lg:py-28 bg-background" id="calculator">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            Estimate Your{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Projected Returns
-            </span>
-          </h2>
-
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
-            Simulate your investment growth across audited project tiers. Direct capital preservation backed by enforceable contracts.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Return simulator"
+            title="Estimate your"
+            highlight="projected returns"
+            description="Simulate how an investment could grow across typical project tiers. Actual returns are set by each project's agreement."
+          />
         </AnimatedSection>
 
         {/* Calculator Card */}
@@ -100,7 +97,7 @@ export function CalculatorSection() {
                         className={`rounded-none border py-2.5 text-xs font-semibold transition-all ${
                           months === d.months
                             ? "border-primary bg-primary text-white shadow-sm"
-                            : "border-border/80 bg-slate-50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 hover:border-primary/40"
+                            : "border-border/80 bg-slate-50 dark:bg-slate-800/50 text-muted-foreground hover:border-primary/40"
                         }`}
                       >
                         {d.label}

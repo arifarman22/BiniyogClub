@@ -8,22 +8,19 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 export function DashboardPreviewSection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-emerald-50/15 to-background dark:via-emerald-950/10 border-b border-border/50 overflow-hidden">
+    <section className="relative py-24 lg:py-28 bg-muted/40 overflow-hidden">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            A Real-Time Dashboard Built for{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              Total Transparency
-            </span>
-          </h2>
-
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-700 dark:text-slate-300 leading-relaxed">
-            Gain complete visibility over your deployed capital, scheduled profit distributions, transaction logs, and executed digital contracts.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Investor dashboard"
+            title="A real-time dashboard built for"
+            highlight="total transparency"
+            description="Gain complete visibility over your deployed capital, scheduled profit distributions, transaction logs, and executed digital contracts."
+          />
         </AnimatedSection>
 
         {/* Dashboard Mockup Container with Floating Cards */}

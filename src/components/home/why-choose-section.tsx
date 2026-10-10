@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const WHY_CHOOSE_CARDS = [
   {
@@ -59,19 +60,15 @@ const WHY_CHOOSE_CARDS = [
 
 export function WhyChooseSection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-slate-50/50 to-background dark:via-slate-900/30 border-b border-border/50">
+    <section className="relative py-24 lg:py-28 bg-background">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15]">
-            Why Choose{" "}
-            <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-              BiniyogClub?
-            </span>
-          </h2>
-
-          <p className="mt-4 text-base sm:text-lg font-normal text-slate-900 dark:text-slate-100 leading-relaxed">
-            Engineered with private equity discipline, institutional governance, and radical transparency for Bangladeshi investors.
-          </p>
+        <AnimatedSection animation="fade-down" className="mb-16">
+          <SectionHeading
+            eyebrow="Why investors choose us"
+            title="Why Choose"
+            highlight="Biniyog Club?"
+            description="Engineered with private equity discipline, institutional governance, and radical transparency for Bangladeshi investors."
+          />
         </AnimatedSection>
 
         {/* 6 Feature Cards */}
@@ -110,7 +107,7 @@ export function WhyChooseSection() {
                       {card.title}
                     </h3>
 
-                    <p className="text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
+                    <p className="text-sm font-normal text-muted-foreground leading-relaxed">
                       {card.desc}
                     </p>
                   </div>

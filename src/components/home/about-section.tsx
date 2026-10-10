@@ -8,6 +8,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 
 const ABOUT_PILLARS = [
   {
@@ -34,7 +35,7 @@ const ABOUT_PILLARS = [
 
 export function AboutSection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-gradient-to-b from-background via-emerald-50/20 to-background dark:via-emerald-950/10 border-b border-border/50 overflow-hidden" id="about">
+    <section className="relative py-24 lg:py-28 bg-muted/40 overflow-hidden" id="about">
       {/* Background ambient orbs */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
 
@@ -95,18 +96,16 @@ export function AboutSection() {
           {/* ── Right: About Copy & 4 Feature Pillars ── */}
           <div className="lg:col-span-7">
             <AnimatedSection animation="fade-left" delay={150}>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-light tracking-tight text-foreground leading-[1.15] mb-5">
-                Democratizing Direct Institutional Investments in{" "}
-                <span className="font-semibold bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
-                  Bangladesh
-                </span>
-              </h2>
+              <SectionHeading
+                align="left"
+                eyebrow="About Biniyog Club"
+                title="Democratizing direct institutional investment in"
+                highlight="Bangladesh"
+                description="Biniyog Club was established with a clear mandate: to bridge the gap between conscientious co-investors and high-potential, vetted commercial opportunities in Bangladesh."
+                className="mb-4 max-w-none"
+              />
 
-              <p className="text-base sm:text-lg text-slate-900 dark:text-slate-100 font-normal leading-relaxed mb-4">
-                Biniyog Club was established with a clear mandate: to bridge the gap between conscientious co-investors and high-potential, vetted commercial opportunities in Bangladesh.
-              </p>
-
-              <p className="text-sm sm:text-base text-slate-900 dark:text-slate-100 font-normal leading-relaxed mb-8">
+              <p className="text-sm sm:text-base text-muted-foreground font-normal leading-relaxed mb-8">
                 By combining institutional-grade financial analysis, direct legal enforceability, and an immutable double-entry ledger, we give everyday investors and institutions access to structured wealth creation previously reserved for private equity firms.
               </p>
 
@@ -129,7 +128,7 @@ export function AboutSection() {
                       </div>
                       <h4 className="text-sm font-semibold text-foreground">{pillar.title}</h4>
                     </div>
-                    <p className="text-xs font-normal text-slate-800 dark:text-slate-200 pl-14 leading-relaxed">
+                    <p className="text-xs font-normal text-muted-foreground pl-14 leading-relaxed">
                       {pillar.desc}
                     </p>
                   </div>
