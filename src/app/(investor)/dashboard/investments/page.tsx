@@ -11,6 +11,7 @@ import { SubmitPaymentProofDialog } from "@/components/shared/submit-payment-pro
 import { DownloadCertificateButton } from "@/components/investments/download-certificate-button";
 import { UserRound, BarChart3 } from "lucide-react";
 import { cn } from "cn";
+import { formatReturnPct, getExpectedReturnBdt } from "@/lib/financial/return-range";
 
 export const metadata: Metadata = { title: "Investments — Dashboard" };
 
@@ -56,6 +57,25 @@ const RETURN_TYPE_LABELS: Record<string, string> = {
 
 function formatBdt(n: number | string) {
   return `৳${Number(n).toLocaleString("en-BD")}`;
+}
+
+type BdtRange = { min: number; max: number | null };
+
+/** "৳16,000 – ৳22,000" for a range, "৳16,000" for a fixed figure. */
+function formatBdtRange(r: BdtRange) {
+  return r.max != null && r.max !== r.min ? `${formatBdt(r.min)} – ${formatBdt(r.max)}` : formatBdt(r.min);
+}
+
+/** Sum expected returns, computed from each project's rate(s) rather than the stored figure. */
+function sumExpected(list: Investment[]): BdtRange {
+  let min = 0, max = 0, hasRange = false;
+  for (const i of list) {
+    const e = getExpectedReturnBdt(i.amountBdt, i.project);
+    min += e.min;
+    max += e.max ?? e.min;
+    if (e.max != null) hasRange = true;
+  }
+  return { min, max: hasRange ? max : null };
 }
 
 function fmtDate(d: Date | string | null | undefined) {
@@ -113,10 +133,10 @@ function InvestmentCard({
   const maturity = maturityDate(inv);
   const days = daysRemaining(maturity);
   const pct = progressPct(inv);
-  const returnPct = Number(inv.project.expectedReturnPct);
+  const returnPct = formatReturnPct(inv.project);
   const amountBdt = Number(inv.amountBdt);
-  const expectedReturnBdt = Number(inv.expectedReturnBdt);
-  const totalValue = amountBdt + expectedReturnBdt;
+  const expected = getExpectedReturnBdt(amountBdt, inv.project);
+  const totalValue: BdtRange = { min: amountBdt + expected.min, max: expected.max != null ? amountBdt + expected.max : null };
   const distributionsTotal = inv.distributions.reduce((s, d) => s + Number(d.netAmountBdt), 0);
   const isActive = ["ACTIVE", "MATURED", "COMPLETED"].includes(inv.status);
   const canSubmitProof =
@@ -178,13 +198,13 @@ function InvestmentCard({
             {inv.actualReturnBdt ? "Actual Return" : "Expected Return"}
           </p>
           <p className={cn("text-sm font-semibold", inv.actualReturnBdt ? "text-success" : "")}>
-            {inv.actualReturnBdt ? formatBdt(Number(inv.actualReturnBdt)) : formatBdt(expectedReturnBdt)}
+            {inv.actualReturnBdt ? formatBdt(Number(inv.actualReturnBdt)) : formatBdtRange(expected)}
           </p>
-          <p className="text-[10px] text-muted-foreground">{returnPct.toFixed(1)}% · {RETURN_TYPE_LABELS[inv.returnType] ?? inv.returnType}</p>
+          <p className="text-[10px] text-muted-foreground">{returnPct} · {RETURN_TYPE_LABELS[inv.returnType] ?? inv.returnType}</p>
         </div>
         <div className="bg-card px-3 py-2.5">
           <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Total Value</p>
-          <p className="text-sm font-semibold">{formatBdt(totalValue)}</p>
+          <p className="text-sm font-semibold">{formatBdtRange(totalValue)}</p>
           <p className="text-[10px] text-muted-foreground">Principal + return</p>
         </div>
         <div className="bg-card px-3 py-2.5">
@@ -327,7 +347,7 @@ function ProjectGroup({
   bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
 }) {
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
-  const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
+  const totalExpected = sumExpected(investments);
   const activeCount = investments.filter((i) => ["ACTIVE", "MATURED"].includes(i.status)).length;
 
   return (
@@ -350,7 +370,7 @@ function ProjectGroup({
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Exp. Return</p>
-            <p className="text-sm font-semibold">{formatBdt(totalExpected)}</p>
+            <p className="text-sm font-semibold">{formatBdtRange(totalExpected)}</p>
           </div>
           <div>
             <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Investments</p>
@@ -455,7 +475,7 @@ export default async function InvestmentsPage({
   // KPI totals (exclude PENDING drafts from financial totals)
   const financialInvs = investments.filter((i) => !["PENDING", "CANCELLED", "REFUNDED"].includes(i.status));
   const totalInvested = financialInvs.reduce((s, i) => s + Number(i.amountBdt), 0);
-  const totalExpected = financialInvs.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
+  const totalExpected = sumExpected(financialInvs);
   const totalActual = investments.filter((i) => i.actualReturnBdt).reduce((s, i) => s + Number(i.actualReturnBdt), 0);
 
   // Tab counts
@@ -487,12 +507,12 @@ export default async function InvestmentsPage({
       <div className="grid gap-3 grid-cols-3">
         {[
           { label: "Total Invested",    value: formatBdt(totalInvested) },
-          { label: "Expected Returns",  value: formatBdt(totalExpected) },
+          { label: "Expected Returns",  value: formatBdtRange(totalExpected) },
           { label: "Returns Received",  value: formatBdt(totalActual) },
         ].map(({ label, value }) => (
           <div key={label} className="surface-card p-4">
             <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="mt-1 text-lg font-bold text-primary">{value}</p>
+            <p className="mt-1 break-words text-base font-bold text-primary sm:text-lg">{value}</p>
           </div>
         ))}
       </div>
