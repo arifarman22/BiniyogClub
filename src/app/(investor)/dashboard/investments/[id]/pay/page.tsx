@@ -6,6 +6,7 @@ import { PaymentProofForm } from "@/components/investments/payment-proof-form";
 import { ArrowLeft, CheckCircle2, Clock } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
+import { formatReturnPct, getExpectedReturnBdt } from "@/lib/financial/return-range";
 
 export const metadata: Metadata = { title: "Complete Payment — Biniyog Club" };
 
@@ -24,7 +25,7 @@ export default async function InvestmentPayPage({ params }: Props) {
       expectedReturnBdt: true,
       returnType: true,
       createdAt: true,
-      project: { select: { title: true, slug: true, durationDays: true, id: true } },
+      project: { select: { title: true, slug: true, durationDays: true, id: true, expectedReturnPct: true, returnPctMin: true, returnPctMax: true } },
       investorProfile: { select: { userId: true } },
       manualPayments: {
         select: { id: true, status: true, transactionRef: true, createdAt: true, rejectionReason: true },
@@ -50,6 +51,8 @@ export default async function InvestmentPayPage({ params }: Props) {
   const hasPendingSubmission = lastSubmission?.status === "SUBMITTED" || lastSubmission?.status === "UNDER_REVIEW";
 
   const fmt = (n: number | string) => `৳${Number(n).toLocaleString("en-BD")}`;
+  const expected = getExpectedReturnBdt(investment.amountBdt, investment.project);
+  const expectedLabel = expected.max != null ? `${fmt(expected.min)} – ${fmt(expected.max)}` : fmt(expected.min);
 
   return (
     <div className="space-y-6">
@@ -74,12 +77,13 @@ export default async function InvestmentPayPage({ params }: Props) {
           {[
             { label: "Project", value: investment.project.title },
             { label: "Amount", value: fmt(investment.amountBdt.toString()) },
-            { label: "Expected Return", value: fmt(investment.expectedReturnBdt.toString()) },
+            { label: "Expected Return", value: expectedLabel, sub: `${formatReturnPct(investment.project)} of principal` },
             { label: "Duration", value: `${investment.project.durationDays} days` },
-          ].map(({ label, value }) => (
+          ].map(({ label, value, sub }) => (
             <div key={label} className="rounded-xl bg-muted/40 p-3">
               <p className="text-[10px] text-muted-foreground">{label}</p>
-              <p className="mt-0.5 text-sm font-semibold truncate">{value}</p>
+              <p className="mt-0.5 text-sm font-semibold line-clamp-2 break-words" title={value}>{value}</p>
+              {sub && <p className="mt-0.5 text-[10px] text-muted-foreground">{sub}</p>}
             </div>
           ))}
         </div>
