@@ -65,7 +65,7 @@ export default async function AdminDocumentsPage({ searchParams }: AsyncComponen
         <AdminFilterBar paramName="entityType" options={ENTITY_OPTIONS}   allLabel="All Entities" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No documents found.</p>
         ) : (
@@ -82,9 +82,9 @@ export default async function AdminDocumentsPage({ searchParams }: AsyncComponen
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((d) => (
-                  <tr key={d.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={d.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <FileText className="h-4 w-4 text-muted-foreground shrink-0" />

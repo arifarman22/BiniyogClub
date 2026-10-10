@@ -85,7 +85,7 @@ export default async function AdminPaymentsPage({ searchParams }: AsyncComponent
         <AdminFilterBar paramName="direction" options={DIRECTION_OPTIONS} allLabel="All Directions" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No payments found.</p>
         ) : (
@@ -101,9 +101,9 @@ export default async function AdminPaymentsPage({ searchParams }: AsyncComponent
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((p) => (
-                  <tr key={p.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={p.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium">{p.wallet.user?.name}</p>
                       <p className="text-xs text-muted-foreground">{p.wallet.user?.email}</p>

@@ -35,7 +35,7 @@ export default async function KycSubmitPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Identity Verification</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Identity Verification</h1>
         <p className="text-sm text-muted-foreground mt-1">Complete all sections and upload your identity document to get verified</p>
       </div>
       <KycSubmitForm existing={kyc} prefill={prefill} />

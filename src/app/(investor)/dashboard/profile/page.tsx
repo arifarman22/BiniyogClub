@@ -73,7 +73,7 @@ function Input({ label, name, defaultValue, type = "text", required }: {
         type={type}
         defaultValue={defaultValue ?? ""}
         required={required}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all"
       />
     </div>
   );
@@ -88,7 +88,7 @@ function Select({ label, name, defaultValue, options }: {
       <select
         name={name}
         defaultValue={defaultValue ?? ""}
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all"
+        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all"
       >
         <option value="">— Select —</option>
         {options.map(o => <option key={o} value={o}>{o}</option>)}
@@ -175,7 +175,7 @@ function AvatarEditor({ user }: { user: ProfileData }) {
         <p className="text-sm font-semibold">{user.name}</p>
         <div className="flex items-center gap-2">
           <button type="button" onClick={() => inputRef.current?.click()} disabled={uploading}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50">
+            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors disabled:opacity-50">
             <Camera className="h-3 w-3" />{uploading ? "Uploading…" : "Change Photo"}
           </button>
           {avatarUrl && (
@@ -220,7 +220,7 @@ function PersonalInfoSection({ user, onSaved }: { user: ProfileData; onSaved: (p
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+    <div className="surface-card p-6 space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Personal Information</h2>
         {!editing && (
@@ -320,7 +320,7 @@ function InvestorProfileSection({ user, onSaved }: {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+    <div className="surface-card p-6 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold">Investor Profile</h2>
         {!editing && (
@@ -344,7 +344,7 @@ function InvestorProfileSection({ user, onSaved }: {
           <div className="space-y-1">
             <label className="text-xs font-medium text-muted-foreground">Address</label>
             <textarea name="address" defaultValue={profile?.address ?? ""} rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all resize-none" />
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all resize-none" />
           </div>
           <SaveBar saving={saving} error={error} success={success} onCancel={() => { setEditing(false); setError(null); }} />
         </form>
@@ -369,7 +369,7 @@ function InvestorProfileSection({ user, onSaved }: {
           )}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border p-6 text-center">
+        <div className="surface-card border-dashed p-6 text-center">
           <User className="mx-auto mb-2 h-8 w-8 text-muted-foreground/40" />
           <p className="text-sm text-muted-foreground">Investor profile not set up yet.</p>
         </div>
@@ -409,7 +409,7 @@ function ChangePasswordSection() {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+    <div className="surface-card p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Lock className="h-4 w-4 text-primary" />
@@ -431,7 +431,7 @@ function ChangePasswordSection() {
             <label className="text-xs font-medium text-muted-foreground">Current Password<span className="text-destructive ml-0.5">*</span></label>
             <div className="relative">
               <input name="currentPassword" type={showCurrent ? "text" : "password"} required
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
               <button type="button" onClick={() => setShowCurrent(v => !v)}
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 {showCurrent ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -443,7 +443,7 @@ function ChangePasswordSection() {
               <label className="text-xs font-medium text-muted-foreground">New Password<span className="text-destructive ml-0.5">*</span></label>
               <div className="relative">
                 <input name="newPassword" type={showNew ? "text" : "password"} required minLength={8}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
                 <button type="button" onClick={() => setShowNew(v => !v)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                   {showNew ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -453,7 +453,7 @@ function ChangePasswordSection() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Confirm New Password<span className="text-destructive ml-0.5">*</span></label>
               <input name="confirmPassword" type="password" required minLength={8}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all" />
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
             </div>
           </div>
           <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
@@ -488,7 +488,7 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">Profile</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Profile</h1>
         <p className="text-sm text-muted-foreground">Manage your account and investor profile</p>
       </div>
 
@@ -503,7 +503,7 @@ export default function ProfilePage() {
 
         <div className="space-y-6">
           {/* KYC status */}
-          <div className="rounded-xl border border-border bg-card p-5">
+          <div className="surface-card p-5">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-primary" />

@@ -28,7 +28,7 @@ export function ProjectFilterSelect({ projects }: ProjectFilterSelectProps) {
       value={current}
       onChange={handleChange}
       disabled={isPending}
-      className="h-8 rounded-lg border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:opacity-60"
+      className="h-8 rounded-xl border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:opacity-60"
     >
       <option value="">All Projects</option>
       {projects.map((p) => (

@@ -28,7 +28,7 @@ function fmtK(n: number) {
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-md text-xs space-y-1">
+    <div className="surface-card px-3 py-2 shadow-md text-xs space-y-1">
       <p className="font-semibold mb-1">{label}</p>
       {payload.map((p: { name: string; value: number; color: string }) => (
         <p key={p.name} style={{ color: p.color }}>{p.name}: {fmtK(p.value)}</p>
@@ -42,7 +42,7 @@ function PieTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-md text-xs">
+    <div className="surface-card px-3 py-2 shadow-md text-xs">
       <p className="font-semibold">{d.name}</p>
       <p className="text-muted-foreground">{fmtK(d.value)}</p>
     </div>
@@ -51,7 +51,7 @@ function PieTooltip({ active, payload }: any) {
 
 function ChartCard({ title, sub, children }: { title: string; sub?: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5">
+    <div className="rounded-2xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] sm:p-6">
       <div className="mb-4">
         <p className="font-semibold text-sm">{title}</p>
         {sub && <p className="text-[11px] text-muted-foreground">{sub}</p>}

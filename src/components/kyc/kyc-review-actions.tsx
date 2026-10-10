@@ -66,7 +66,7 @@ export function KycReviewActions({ kycId, currentStatus }: Props) {
   const canConfirm = activeAction === "verify" || (needsNote && reviewNote.trim().length >= 10);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+    <div className="surface-card p-6 space-y-4">
       <h2 className="font-semibold">Review Actions</h2>
 
       {error && (

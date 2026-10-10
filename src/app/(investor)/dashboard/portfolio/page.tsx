@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorPortfolio } from "@/server/data/investor.data";
+import { TrendingUp } from "lucide-react";
 import { cn } from "cn";
 
 export const metadata: Metadata = { title: "Portfolio — Dashboard" };
@@ -53,16 +54,16 @@ export default async function PortfolioPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-bold">Portfolio</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Portfolio</h1>
           <p className="text-sm text-muted-foreground">Your investment portfolio</p>
         </div>
-        <div className="rounded-xl border border-dashed border-border py-20 text-center">
-          <p className="text-2xl mb-2">📈</p>
+        <div className="surface-card border-dashed py-20 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><TrendingUp className="h-6 w-6" /></span>
           <p className="font-medium">Profile setup required</p>
           <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
             Complete your investor profile to view your portfolio.
           </p>
-          <a href="/dashboard/profile" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <a href="/dashboard/profile" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
             Complete Profile
           </a>
         </div>
@@ -84,7 +85,7 @@ export default async function PortfolioPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold">Portfolio</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Portfolio</h1>
         <p className="text-sm text-muted-foreground">{investments.length} investments across {categoryEntries.length} categories</p>
       </div>
 
@@ -95,7 +96,7 @@ export default async function PortfolioPage() {
           { label: "Expected Returns", value: formatBdt(totalExpected), sub: "At maturity" },
           { label: "Returns Received", value: formatBdt(totalReturned), sub: "Distributed so far" },
         ].map(({ label, value, sub }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-5">
+          <div key={label} className="surface-card p-5">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="mt-1 text-2xl font-bold text-primary">{value}</p>
             <p className="text-xs text-muted-foreground">{sub}</p>
@@ -105,7 +106,7 @@ export default async function PortfolioPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Category allocation */}
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="surface-card p-6">
           <h2 className="mb-5 font-semibold">Allocation by Category</h2>
           {categoryEntries.length > 0 ? (
             <div className="space-y-3">
@@ -133,7 +134,7 @@ export default async function PortfolioPage() {
         </div>
 
         {/* Status distribution */}
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="surface-card p-6">
           <h2 className="mb-5 font-semibold">Investment Status Distribution</h2>
           {statusEntries.length > 0 ? (
             <div className="space-y-3">
@@ -162,7 +163,7 @@ export default async function PortfolioPage() {
       </div>
 
       {/* Monthly history chart (bar chart using CSS) */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="surface-card p-6">
         <h2 className="mb-2 font-semibold">Investment & Return History</h2>
         <p className="mb-5 text-xs text-muted-foreground">Last 12 months</p>
         <div className="flex items-end gap-1.5 h-40">
@@ -191,7 +192,7 @@ export default async function PortfolioPage() {
       </div>
 
       {/* Investment history table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="border-b border-border px-5 py-4">
           <h2 className="font-semibold">Investment History</h2>
         </div>
@@ -206,11 +207,11 @@ export default async function PortfolioPage() {
                 <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {investments.map((inv) => {
                 const received = inv.distributions.reduce((s, d) => s + Number(d.netAmountBdt), 0);
                 return (
-                  <tr key={inv.id} className="hover:bg-muted/20">
+                  <tr key={inv.id} className="hover:bg-primary/[0.03]">
                     <td className="px-4 py-3">
                       <p className="font-medium line-clamp-1">{inv.project.title}</p>
                       <p className="text-xs text-muted-foreground">

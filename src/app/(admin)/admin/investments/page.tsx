@@ -65,7 +65,7 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
           { label: "Pending / Payment", value: pendingCount },
           { label: "Total records", value: total },
         ].map((k) => (
-          <div key={k.label} className="rounded-xl border border-border bg-card px-4 py-3">
+          <div key={k.label} className="surface-card px-4 py-3">
             <p className="text-xs text-muted-foreground">{k.label}</p>
             <p className="mt-0.5 text-lg font-semibold">{k.value}</p>
           </div>
@@ -80,7 +80,7 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
       <AdminFilterBar options={STATUS_OPTIONS} allLabel="All Statuses" />
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No investments found.</p>
         ) : (
@@ -120,14 +120,14 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((inv) => {
                   const hasManual = inv.manualPayments.length > 0;
                   const manualStatus = inv.manualPayments[0]?.status;
                   const returnPct = Number(inv.project.expectedReturnPct) * 100;
 
                   return (
-                    <tr key={inv.id} className="hover:bg-muted/20 transition-colors">
+                    <tr key={inv.id} className="hover:bg-primary/[0.03] transition-colors">
                       {/* Investor */}
                       <td className="px-4 py-3">
                         <p className="font-medium leading-tight">{inv.investorProfile.user.name}</p>

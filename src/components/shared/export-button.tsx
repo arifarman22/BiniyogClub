@@ -41,7 +41,7 @@ export function ExportButton({
       <button
         onClick={() => handleExport(formats[0])}
         disabled={!!loading}
-        className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50"
+        className="flex items-center gap-1.5 surface-card px-3 py-1.5 text-sm font-medium transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50"
       >
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
         {label}
@@ -54,7 +54,7 @@ export function ExportButton({
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={!!loading}
-        className="flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-sm font-medium transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50"
+        className="flex items-center gap-1.5 surface-card px-3 py-1.5 text-sm font-medium transition-all hover:border-primary/50 hover:text-primary disabled:opacity-50"
       >
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
         {label}
@@ -64,7 +64,7 @@ export function ExportButton({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full z-20 mt-1 min-w-[120px] rounded-lg border border-border bg-card shadow-lg overflow-hidden">
+          <div className="absolute right-0 top-full z-20 mt-1 min-w-[120px] surface-card shadow-lg overflow-hidden">
             {formats.map((fmt) => (
               <button
                 key={fmt}

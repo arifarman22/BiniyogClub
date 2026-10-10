@@ -115,7 +115,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
         {/* Left column */}
         <div className="space-y-6">
           {/* User info */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold">User</h2>
@@ -135,7 +135,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
           </div>
 
           {/* Personal info */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold">Personal Information</h2>
@@ -157,7 +157,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
           </div>
 
           {/* Address */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <MapPin className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold">Present Address</h2>
@@ -171,7 +171,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
           </div>
 
           {(kyc.permanentAddress || kyc.permanentDivision) && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <div className="mb-4 flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <h2 className="font-semibold">Permanent Address</h2>
@@ -189,7 +189,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
         {/* Right column */}
         <div className="space-y-6">
           {/* Identity document */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <div className="mb-4 flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
               <h2 className="font-semibold">Identity Document</h2>
@@ -237,7 +237,7 @@ export default async function AdminKycDetailPage({ params }: AsyncComponentProps
 
           {/* Bank / MFS */}
           {(kyc.bankName || kyc.bankAccountNumber || kyc.mobileProvider || kyc.mobileNumber) && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <div className="mb-4 flex items-center gap-2">
                 <Landmark className="h-4 w-4 text-muted-foreground" />
                 <h2 className="font-semibold">Payment Information</h2>

@@ -32,7 +32,7 @@ function fmtK(n: number) {
 function AreaTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-md text-xs">
+    <div className="surface-card px-3 py-2 shadow-md text-xs">
       <p className="font-semibold mb-1">{label}</p>
       {payload.map((p: { name: string; value: number; color: string }) => (
         <p key={p.name} style={{ color: p.color }}>
@@ -48,7 +48,7 @@ function DonutTooltip({ active, payload }: any) {
   if (!active || !payload?.length) return null;
   const d = payload[0];
   return (
-    <div className="rounded-xl border border-border bg-card px-3 py-2 shadow-md text-xs">
+    <div className="surface-card px-3 py-2 shadow-md text-xs">
       <p className="font-semibold">{d.name}</p>
       <p className="text-muted-foreground">{fmtK(d.value)}</p>
     </div>
@@ -63,7 +63,7 @@ export function DashboardCharts({ monthlyHistory, categoryData }: Props) {
     <div className="grid gap-4 lg:grid-cols-3">
 
       {/* Area chart — 2/3 width */}
-      <div className="rounded-2xl border border-border bg-card p-5 lg:col-span-2">
+      <div className="surface-card p-5 lg:col-span-2">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="font-semibold text-sm">Investment Activity</p>
@@ -134,7 +134,7 @@ export function DashboardCharts({ monthlyHistory, categoryData }: Props) {
       </div>
 
       {/* Donut chart — 1/3 width */}
-      <div className="rounded-2xl border border-border bg-card p-5">
+      <div className="surface-card p-5">
         <div className="mb-4">
           <p className="font-semibold text-sm">Allocation</p>
           <p className="text-[11px] text-muted-foreground">By category</p>

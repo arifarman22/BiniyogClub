@@ -14,10 +14,11 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
   TrendingUp, CheckCircle2, Clock, BarChart3,
-  ArrowRight, AlertCircle, Bell, ArrowUpRight, ArrowDownRight,
-  ShieldCheck, Layers, RefreshCw, X, MapPin, Target,
+  ArrowRight, AlertCircle, Bell, ArrowUpRight,
+  ShieldCheck, Layers, MapPin, Sparkles,
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
+import { StatCard } from "@/components/ui/stat-card";
 
 export const metadata: Metadata = { title: "Dashboard — Biniyog Club" };
 
@@ -79,8 +80,8 @@ export default async function DashboardPage() {
 
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4 space-y-4">
-        <p className="text-4xl">{kycVerified ? "🎉" : "👋"}</p>
-        <h1 className="text-xl font-bold">Welcome, {session.name.split(" ")[0]}!</h1>
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">{kycVerified ? <CheckCircle2 className="h-7 w-7" /> : <Sparkles className="h-7 w-7" />}</span>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Welcome, {session.name.split(" ")[0]}!</h1>
 
         {!kycVerified && kycStatus === "NOT_STARTED" && (
           <>
@@ -169,303 +170,199 @@ export default async function DashboardPage() {
     color: CAT_COLORS[name] ?? "#6B7280",
   }));
 
-  return (
-    <div className="space-y-6">
 
-      {/* ── Email verification warning ── */}
+  return (
+    <div className="space-y-8">
+
+      {/* ── Email verification warning (KYC reminders live in the shell banner) ── */}
       {!session.emailVerified && (
-        <div className="flex items-center gap-3 rounded-xl border border-warning/40 bg-warning-muted px-4 py-3">
-          <AlertCircle className="h-4 w-4 shrink-0 text-warning" />
-          <p className="text-sm font-medium">
-            Verify your email to unlock investing —{" "}
-            <span className="text-muted-foreground font-normal">check your inbox.</span>
+        <div className="flex items-center gap-3 rounded-2xl border border-amber-500/25 bg-amber-500/[0.07] px-4 py-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+            <AlertCircle className="h-4 w-4" />
+          </span>
+          <p className="text-sm">
+            <span className="font-semibold">Verify your email to unlock investing.</span>{" "}
+            <span className="text-muted-foreground">Check your inbox for the verification link.</span>
           </p>
         </div>
       )}
 
-      {/* ── KYC banner ── */}
-      {kycStatus === "NOT_STARTED" && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-              <X className="h-4 w-4 text-destructive" />
+      {/* ── Portfolio hero ── */}
+      <section className="relative overflow-hidden rounded-3xl bg-[#06140f] p-6 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgba(16,185,129,0.3),transparent_60%)]" />
+        <div className="pointer-events-none absolute inset-0 fintech-grid-pattern opacity-30" />
+        <div className="relative grid gap-8 lg:grid-cols-12 lg:items-end">
+          <div className="lg:col-span-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">Total invested</p>
+            <div className="mt-2 flex flex-wrap items-end gap-3">
+              <p className="text-4xl font-semibold tabular-nums tracking-tight sm:text-5xl">{fmt(stats.totalInvested)}</p>
+              <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/20">
+                <ArrowUpRight className="h-3.5 w-3.5" /> {roi}% ROI
+              </span>
             </div>
-            <div>
-              <p className="text-sm font-semibold text-destructive">KYC verification required to invest</p>
-              <p className="text-xs text-muted-foreground">Complete identity verification to unlock all investment features.</p>
-            </div>
-          </div>
-          <Link
-            href="/dashboard/kyc"
-            className={cn(buttonVariants({ size: "sm" }), "btn-arc shrink-0 bg-destructive text-white hover:bg-destructive/90")}
-          >
-            Verify Now <ArrowRight className="ml-1 h-3.5 w-3.5" />
-          </Link>
-        </div>
-      )}
-
-      {(kycStatus === "SUBMITTED" || kycStatus === "UNDER_REVIEW") && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-warning/40 bg-warning-muted px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/20">
-              <Clock className="h-4 w-4 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">KYC under review</p>
-              <p className="text-xs text-muted-foreground">Your documents have been submitted. We&apos;ll notify you once verified — usually within 1–2 business days.</p>
-            </div>
-          </div>
-          <Link
-            href="/dashboard/kyc"
-            className={cn(buttonVariants({ size: "sm", variant: "outline" }), "shrink-0")}
-          >
-            View Status
-          </Link>
-        </div>
-      )}
-
-      {kycStatus === "REJECTED" && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/10">
-              <X className="h-4 w-4 text-destructive" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-destructive">KYC rejected — action required</p>
-              <p className="text-xs text-muted-foreground">Your verification was rejected. Please resubmit with the correct documents.</p>
+            <p className="mt-2 text-sm text-white/60">
+              {stats.activeCount} active investment{stats.activeCount !== 1 ? "s" : ""} ·{" "}
+              {fmt(stats.distributedReturns)} returns received
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link
+                href="/projects"
+                className="group inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/25 transition-colors hover:bg-emerald-400"
+              >
+                {canInvest ? "Invest in a project" : "Browse projects"}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+              <Link
+                href="/dashboard/portfolio"
+                className="inline-flex items-center gap-2 rounded-xl bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 transition-colors hover:bg-white/[0.12]"
+              >
+                View portfolio
+              </Link>
             </div>
           </div>
-          <Link
-            href="/dashboard/kyc"
-            className={cn(buttonVariants({ size: "sm" }), "btn-arc shrink-0 bg-destructive text-white hover:bg-destructive/90")}
-          >
-            Resubmit <RefreshCw className="ml-1 h-3.5 w-3.5" />
-          </Link>
-        </div>
-      )}
 
-      {kycStatus === "RESUBMISSION_REQUIRED" && (
-        <div className="flex items-center justify-between gap-4 rounded-xl border border-warning/40 bg-warning-muted px-4 py-3.5">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-warning/20">
-              <RefreshCw className="h-4 w-4 text-warning" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold">Additional information needed</p>
-              <p className="text-xs text-muted-foreground">Our team requires updated documents or corrections before approving your KYC.</p>
-            </div>
-          </div>
-          <Link
-            href="/dashboard/kyc"
-            className={cn(buttonVariants({ size: "sm" }), "btn-arc shrink-0")}
-          >
-            Update KYC <ArrowRight className="ml-1 h-3.5 w-3.5" />
-          </Link>
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/10 lg:col-span-6">
+            {[
+              { label: "Portfolio value", value: fmt(stats.portfolioValue) },
+              { label: "Returns earned", value: fmt(stats.distributedReturns) },
+              { label: "Active projects", value: stats.activeCount.toString() },
+              { label: "Completed", value: stats.completedCount.toString() },
+            ].map((s) => (
+              <div key={s.label} className="bg-[#06140f]/80 px-5 py-4">
+                <dt className="text-[11px] text-white/50">{s.label}</dt>
+                <dd className="mt-0.5 text-xl font-semibold tabular-nums">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-      )}
+      </section>
 
-      {/* ── Hero: summary card + stat grid ── */}
-      <div className="grid gap-4 lg:grid-cols-3">
-
-        {/* Summary card */}
-        <div className="relative overflow-hidden rounded-2xl gradient-brand p-6 text-white lg:col-span-1">
-          <div className="pointer-events-none absolute -right-8 -top-8 h-40 w-40 rounded-full bg-white/10" />
-          <div className="pointer-events-none absolute -bottom-10 -right-4 h-28 w-28 rounded-full bg-white/5" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-1">
-              <BarChart3 className="h-4 w-4 opacity-80" />
-              <span className="text-sm font-medium opacity-80">Portfolio Overview</span>
-            </div>
-            <p className="text-4xl font-bold tracking-tight">{fmt(stats.totalInvested)}</p>
-            <p className="mt-1 text-xs opacity-60">Total Invested</p>
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="rounded-xl bg-white/10 px-3 py-2.5">
-                <p className="text-[10px] opacity-70 mb-0.5">Active Projects</p>
-                <p className="text-base font-bold">{stats.activeCount}</p>
-              </div>
-              <div className="rounded-xl bg-white/10 px-3 py-2.5">
-                <p className="text-[10px] opacity-70 mb-0.5">Returns Earned</p>
-                <p className="text-base font-bold">{fmt(stats.distributedReturns)}</p>
-              </div>
-              <div className="rounded-xl bg-white/10 px-3 py-2.5">
-                <p className="text-[10px] opacity-70 mb-0.5">Portfolio Value</p>
-                <p className="text-base font-bold">{fmt(stats.portfolioValue)}</p>
-              </div>
-              <div className="rounded-xl bg-white/10 px-3 py-2.5">
-                <p className="text-[10px] opacity-70 mb-0.5">ROI</p>
-                <p className="text-base font-bold">{roi}%</p>
-              </div>
-            </div>
-            <Link
-              href="/dashboard/portfolio"
-              className="mt-4 inline-flex items-center gap-1 text-xs font-medium opacity-80 hover:opacity-100 transition-opacity"
-            >
-              View portfolio <ArrowRight className="h-3 w-3" />
-            </Link>
-          </div>
-        </div>
-
-        {/* Stat grid */}
-        <div className="grid grid-cols-2 gap-4 lg:col-span-2">
-          {[
-            {
-              label: "Portfolio Value",
-              value: fmt(stats.portfolioValue),
-              sub: `${stats.activeCount} active`,
-              icon: BarChart3,
-              color: "text-brand-600",
-              bg: "bg-brand-50",
-              trend: stats.portfolioValue > stats.totalInvested ? "up" : null,
-              href: "/dashboard/portfolio",
-            },
-            {
-              label: "ROI",
-              value: `${roi}%`,
-              sub: "distributed returns",
-              icon: TrendingUp,
-              color: "text-success",
-              bg: "bg-success-muted",
-              trend: Number(roi) > 0 ? "up" : null,
-              href: "/dashboard/portfolio",
-            },
-            {
-              label: "Completed",
-              value: stats.completedCount.toString(),
-              sub: "matured investments",
-              icon: CheckCircle2,
-              color: "text-finance-600",
-              bg: "bg-finance-100",
-              trend: null,
-              href: "/dashboard/investments",
-            },
-            {
-              label: "Pending",
-              value: stats.pendingTransactions.toString(),
-              sub: "awaiting approval",
-              icon: Clock,
-              color: stats.pendingTransactions > 0 ? "text-warning" : "text-muted-foreground",
-              bg: stats.pendingTransactions > 0 ? "bg-warning-muted" : "bg-muted",
-              trend: null,
-              href: "/dashboard/investments",
-            },
-          ].map(({ label, value, sub, icon: Icon, color, bg, trend, href }) => (
-            <Link key={label} href={href} className="group">
-              <div className="rounded-2xl border border-border bg-card p-4 transition-shadow hover:shadow-md h-full">
-                <div className="flex items-start justify-between">
-                  <div className={cn("flex h-9 w-9 items-center justify-center rounded-xl", bg, color)}>
-                    <Icon className="h-4 w-4" />
-                  </div>
-                  {trend === "up" && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-success">
-                      <ArrowUpRight className="h-3 w-3" /> Up
-                    </span>
-                  )}
-                  {trend === "down" && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-medium text-destructive">
-                      <ArrowDownRight className="h-3 w-3" /> Down
-                    </span>
-                  )}
-                </div>
-                <p className={cn("mt-3 text-2xl font-bold", color)}>{value}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
-                <p className="text-[10px] text-muted-foreground/60 mt-0.5">{sub}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+      {/* ── Stat cards ── */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Link href="/dashboard/portfolio" className="block">
+          <StatCard
+            title="Portfolio value"
+            value={fmt(stats.portfolioValue)}
+            description={`${stats.activeCount} active`}
+            icon={<BarChart3 />}
+            variant="brand"
+            className="h-full"
+          />
+        </Link>
+        <Link href="/dashboard/portfolio" className="block">
+          <StatCard title="ROI" value={`${roi}%`} description="From distributed returns" icon={<TrendingUp />} variant="finance" className="h-full" />
+        </Link>
+        <Link href="/dashboard/investments" className="block">
+          <StatCard
+            title="Completed"
+            value={stats.completedCount.toString()}
+            description="Matured investments"
+            icon={<CheckCircle2 />}
+            variant="harvest"
+            className="h-full"
+          />
+        </Link>
+        <Link href="/dashboard/investments" className="block">
+          <StatCard
+            title="Pending"
+            value={stats.pendingTransactions.toString()}
+            description="Awaiting approval"
+            icon={<Clock />}
+            className="h-full"
+          />
+        </Link>
       </div>
 
       {/* ── Available projects ── */}
       {availableProjects.length > 0 && (
-        <div>
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-sm">Open for Investment</h2>
+        <section>
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">Open for investment</h2>
+              <p className="text-sm text-muted-foreground">Vetted projects currently raising capital.</p>
             </div>
-            <Link href="/projects" className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "text-xs h-7 px-2")}>
-              View all <ArrowRight className="ml-1 h-3 w-3" />
+            <Link href="/projects" className="group inline-flex items-center gap-1 text-sm font-semibold text-primary">
+              View all <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
             {availableProjects.map((p) => {
               const pct = Math.min(100, Math.round((Number(p.fundedAmountBdt) / Number(p.fundingGoalBdt)) * 100));
-              const daysLeft = Math.max(0, Math.ceil((new Date(p.fundingDeadline).getTime() - Date.now()) / 86400000));
+              const daysLeft = Math.max(0, Math.ceil((new Date(p.fundingDeadline).getTime() - now.getTime()) / 86400000));
               return (
                 <Link
                   key={p.id}
                   href={`/projects/${p.slug}`}
-                  className="group rounded-2xl border border-border bg-card overflow-hidden hover:shadow-md transition-shadow"
+                  className="group overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_16px_40px_-16px_rgba(16,24,40,0.25)]"
                 >
-                  {/* Cover */}
-                  <div className="relative h-32 bg-gradient-to-br from-brand-700 to-brand-500">
+                  <div className="relative h-40 overflow-hidden bg-gradient-to-br from-brand-700 to-brand-500">
                     {p.coverImageUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={p.coverImageUrl} alt={p.title} className="h-full w-full object-cover" />
+                      <img
+                        src={p.coverImageUrl}
+                        alt={p.title}
+                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <TrendingUp className="h-8 w-8 text-white/40" />
                       </div>
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                    <span className="absolute bottom-2 left-3 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5 text-[10px] font-medium text-white">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                    <span className="absolute left-3 top-3 rounded-full bg-white/90 px-2.5 py-0.5 text-[10px] font-semibold text-slate-800 backdrop-blur">
                       {p.category.replace(/_/g, " ")}
                     </span>
-                    <span className="absolute bottom-2 right-3 flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5 text-[10px] text-white">
+                    <span className="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-black/40 px-2.5 py-0.5 text-[10px] font-medium text-white backdrop-blur">
                       <Clock className="h-2.5 w-2.5" /> {daysLeft}d left
                     </span>
+                    <p className="absolute inset-x-4 bottom-3 line-clamp-1 text-sm font-semibold text-white">{p.title}</p>
                   </div>
 
-                  <div className="p-4 space-y-3">
+                  <div className="space-y-4 p-4">
+                    {p.location && (
+                      <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <MapPin className="h-3 w-3" /> {p.location}
+                      </p>
+                    )}
                     <div>
-                      <p className="font-semibold text-sm line-clamp-1 group-hover:text-primary transition-colors">{p.title}</p>
-                      {p.location && (
-                        <p className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-                          <MapPin className="h-3 w-3" /> {p.location}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Funding bar */}
-                    <div>
-                      <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                        <span>{pct}% funded</span>
-                        <span>৳{Number(p.fundingGoalBdt).toLocaleString("en-BD")} goal</span>
+                      <div className="mb-1.5 flex justify-between text-xs">
+                        <span className="font-semibold text-foreground">{pct}% funded</span>
+                        <span className="text-muted-foreground">৳{Number(p.fundingGoalBdt).toLocaleString("en-BD")} goal</span>
                       </div>
-                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                        <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+                        <div className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500" style={{ width: `${pct}%` }} />
                       </div>
                     </div>
-
-                    {/* Stats row */}
-                    <div className="grid grid-cols-3 gap-2 text-center">
-                      <div className="rounded-lg bg-muted/40 py-1.5">
-                        <p className="text-xs font-bold text-success">
+                    <dl className="grid grid-cols-3 divide-x divide-border/70 rounded-xl border border-border/70 text-center">
+                      <div className="py-2">
+                        <dd className="text-sm font-semibold text-success">
                           {p.returnType === "PROFIT_SHARE" && p.returnPctMin && p.returnPctMax
                             ? `${Number(p.returnPctMin).toFixed(1)}–${Number(p.returnPctMax).toFixed(1)}%`
                             : `${Number(p.expectedReturnPct).toFixed(1)}%`}
-                        </p>
-                        <p className="text-[9px] text-muted-foreground">Return</p>
+                        </dd>
+                        <dt className="text-[10px] text-muted-foreground">Return</dt>
                       </div>
-                      <div className="rounded-lg bg-muted/40 py-1.5">
-                        <p className="text-xs font-bold">{p.durationDays}d</p>
-                        <p className="text-[9px] text-muted-foreground">Duration</p>
+                      <div className="py-2">
+                        <dd className="text-sm font-semibold">{p.durationDays}d</dd>
+                        <dt className="text-[10px] text-muted-foreground">Duration</dt>
                       </div>
-                      <div className="rounded-lg bg-muted/40 py-1.5">
-                        <p className="text-xs font-bold">{p._count.investments}</p>
-                        <p className="text-[9px] text-muted-foreground">Investors</p>
+                      <div className="py-2">
+                        <dd className="text-sm font-semibold">{p._count.investments}</dd>
+                        <dt className="text-[10px] text-muted-foreground">Investors</dt>
                       </div>
-                    </div>
-
-                    <p className="text-[10px] text-muted-foreground">
-                      Min ৳{Number(p.minInvestmentBdt).toLocaleString("en-BD")}
+                    </dl>
+                    <p className="flex items-center justify-between text-xs text-muted-foreground">
+                      <span>Min ৳{Number(p.minInvestmentBdt).toLocaleString("en-BD")}</span>
+                      <span className="inline-flex items-center gap-1 font-semibold text-primary">
+                        Details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+                      </span>
                     </p>
                   </div>
                 </Link>
               );
             })}
           </div>
-        </div>
+        </section>
       )}
 
       {/* ── Analytics charts ── */}
@@ -479,61 +376,50 @@ export default async function DashboardPage() {
       {/* ── Bottom grid: investments + updates ── */}
       <div className="grid gap-6 lg:grid-cols-5">
 
-        {/* Recent investments — wider */}
-        <div className="lg:col-span-3">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Layers className="h-4 w-4 text-muted-foreground" />
-              <h2 className="font-semibold text-sm">Recent Investments</h2>
+        {/* Recent investments */}
+        <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)] lg:col-span-3">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Layers className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-semibold">Recent investments</h2>
             </div>
-            <Link
-              href="/dashboard/investments"
-              className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "text-xs h-7 px-2")}
-            >
-              View all <ArrowRight className="ml-1 h-3 w-3" />
+            <Link href="/dashboard/investments" className="group inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
             </Link>
           </div>
 
           {recent.length > 0 ? (
-            <div className="rounded-2xl border border-border bg-card overflow-hidden">
+            <div className="overflow-x-auto border-t border-border/70">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-muted-foreground">Project</th>
-                    <th className="px-4 py-2.5 text-right text-[11px] font-medium text-muted-foreground">Amount</th>
-                    <th className="px-4 py-2.5 text-right text-[11px] font-medium text-muted-foreground hidden sm:table-cell">Return</th>
-                    <th className="px-4 py-2.5 text-right text-[11px] font-medium text-muted-foreground">Status</th>
+                  <tr className="bg-muted/40">
+                    <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Project</th>
+                    <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount</th>
+                    <th className="hidden px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">Return</th>
+                    <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {recent.map((inv, i) => (
-                    <tr
-                      key={inv.id}
-                      className={cn(
-                        "transition-colors hover:bg-muted/30",
-                        i < recent.length - 1 && "border-b border-border/60",
-                      )}
-                    >
-                      <td className="px-4 py-3">
-                        <p className="font-medium truncate max-w-[160px]">{inv.project?.title ?? "—"}</p>
-                        <p className="text-[10px] text-muted-foreground">{fmtDate(inv.createdAt)}</p>
+                <tbody className="divide-y divide-border/60">
+                  {recent.map((inv) => (
+                    <tr key={inv.id} className="transition-colors hover:bg-muted/30">
+                      <td className="px-5 py-3.5">
+                        <p className="max-w-[200px] truncate font-medium">{inv.project?.title ?? "—"}</p>
+                        <p className="text-[11px] text-muted-foreground">{fmtDate(inv.createdAt)}</p>
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold tabular-nums">
-                        {fmt(Number(inv.amountBdt))}
-                      </td>
-                      <td className="px-4 py-3 text-right text-success text-xs hidden sm:table-cell">
+                      <td className="px-5 py-3.5 text-right font-semibold tabular-nums">{fmt(Number(inv.amountBdt))}</td>
+                      <td className="hidden px-5 py-3.5 text-right text-xs font-semibold text-success sm:table-cell">
                         {inv.project?.returnType === "PROFIT_SHARE" && inv.project?.returnPctMin && inv.project?.returnPctMax
                           ? `${Number(inv.project.returnPctMin).toFixed(1)}–${Number(inv.project.returnPctMax).toFixed(1)}%`
                           : Number(inv.project?.expectedReturnPct ?? 0) > 0
                             ? `+${Number(inv.project?.expectedReturnPct ?? 0).toFixed(1)}%`
                             : "—"}
                       </td>
-                      <td className="px-4 py-3 text-right">
-                        <span className="inline-flex items-center gap-1.5">
+                      <td className="px-5 py-3.5 text-right">
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1">
                           <span className={cn("h-1.5 w-1.5 rounded-full", STATUS_DOT[inv.status] ?? "bg-muted-foreground")} />
-                          <span className="text-[10px] font-medium text-muted-foreground">
-                            {STATUS_LABEL[inv.status] ?? inv.status}
-                          </span>
+                          <span className="text-[11px] font-medium text-foreground/80">{STATUS_LABEL[inv.status] ?? inv.status}</span>
                         </span>
                       </td>
                     </tr>
@@ -542,97 +428,87 @@ export default async function DashboardPage() {
               </table>
             </div>
           ) : (
-            <div className="rounded-2xl border border-dashed border-border py-12 text-center">
-              <p className="text-sm text-muted-foreground mb-3">No investments yet.</p>
-              <Link href="/projects" className={cn(buttonVariants({ size: "sm" }))}>
-                Browse Projects
+            <div className="flex flex-col items-center gap-3 border-t border-border/70 px-5 py-14 text-center">
+              <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <TrendingUp className="h-5 w-5" />
+              </span>
+              <p className="text-sm text-muted-foreground">You haven&apos;t invested yet.</p>
+              <Link href="/projects" className={cn(buttonVariants({ size: "sm" }), "rounded-xl")}>
+                Browse projects
               </Link>
             </div>
           )}
-        </div>
+        </section>
 
         {/* Right column: updates + quick actions */}
-        <div className="lg:col-span-2 space-y-4">
-
-          {/* Project updates */}
-          <div>
-            <div className="mb-3 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Bell className="h-4 w-4 text-muted-foreground" />
-                <h2 className="font-semibold text-sm">Project Updates</h2>
+        <div className="space-y-6 lg:col-span-2">
+          <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <div className="flex items-center justify-between px-5 py-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <Bell className="h-4 w-4" />
+                </span>
+                <h2 className="text-sm font-semibold">Project updates</h2>
               </div>
-              <Link
-                href="/dashboard/notifications"
-                className={cn(buttonVariants({ size: "sm", variant: "ghost" }), "text-xs h-7 px-2")}
-              >
-                All <ArrowRight className="ml-1 h-3 w-3" />
+              <Link href="/dashboard/notifications" className="group inline-flex items-center gap-1 text-xs font-semibold text-primary">
+                All <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
               </Link>
             </div>
-
             {recentUpdates.length > 0 ? (
-              <div className="space-y-2">
+              <ul className="divide-y divide-border/60 border-t border-border/70">
                 {recentUpdates.map((u) => (
-                  <Link
-                    key={u.id}
-                    href={`/projects/${u.project.slug}`}
-                    className="flex items-start gap-3 rounded-xl border border-border bg-card px-3 py-2.5 transition-colors hover:bg-muted/30"
-                  >
-                    <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-50">
-                      <Bell className="h-3.5 w-3.5 text-brand-600" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium">{u.title}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{u.project.title}</p>
-                    </div>
-                    {u.publishedAt && (
-                      <span className="shrink-0 text-[10px] text-muted-foreground">{fmtDate(u.publishedAt)}</span>
-                    )}
-                  </Link>
+                  <li key={u.id}>
+                    <Link
+                      href={`/projects/${u.project.slug}`}
+                      className="flex items-start gap-3 px-5 py-3 transition-colors hover:bg-muted/30"
+                    >
+                      <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500 ring-4 ring-emerald-500/15" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{u.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{u.project.title}</p>
+                      </div>
+                      {u.publishedAt && (
+                        <span className="shrink-0 text-[11px] text-muted-foreground">{fmtDate(u.publishedAt)}</span>
+                      )}
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             ) : (
-              <div className="rounded-xl border border-dashed border-border py-8 text-center">
-                <p className="text-xs text-muted-foreground">No updates yet.</p>
-              </div>
+              <p className="border-t border-border/70 px-5 py-10 text-center text-sm text-muted-foreground">No updates yet.</p>
             )}
-          </div>
+          </section>
 
-          {/* Quick actions */}
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="text-xs font-semibold text-muted-foreground mb-3 uppercase tracking-wide">Quick Actions</p>
-            <div className="space-y-1.5">
-              {[
-                {
-                  href: "/projects",
-                  label: canInvest ? "Browse & Invest" : "Browse Projects",
-                  icon: TrendingUp,
-                  color: canInvest ? "text-brand-600" : "text-muted-foreground",
-                  bg: canInvest ? "bg-brand-50" : "bg-muted",
-                },
-                {
-                  href: "/dashboard/kyc",
-                  label: kycVerified ? "KYC Verified ✓" : "Complete KYC",
-                  icon: ShieldCheck,
-                  color: kycVerified ? "text-success" : "text-finance-600",
-                  bg: kycVerified ? "bg-success-muted" : "bg-finance-100",
-                },
-                { href: "/dashboard/investments", label: "All Investments", icon: BarChart3, color: "text-finance-600", bg: "bg-finance-100" },
-              ].map(({ href, label, icon: Icon, color, bg }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="flex items-center gap-3 rounded-xl px-3 py-2 transition-colors hover:bg-muted/50"
-                >
-                  <div className={cn("flex h-7 w-7 items-center justify-center rounded-lg", bg, color)}>
-                    <Icon className="h-3.5 w-3.5" />
-                  </div>
-                  <span className="text-sm font-medium">{label}</span>
-                  <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/50" />
-                </Link>
-              ))}
-            </div>
-          </div>
-
+          <section className="rounded-2xl border border-border/70 bg-card p-2 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+            <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Quick actions</p>
+            {[
+              {
+                href: "/projects",
+                label: canInvest ? "Browse & invest" : "Browse projects",
+                icon: TrendingUp,
+                tone: "from-emerald-500 to-teal-600",
+              },
+              {
+                href: "/dashboard/kyc",
+                label: kycVerified ? "KYC verified" : "Complete KYC",
+                icon: ShieldCheck,
+                tone: kycVerified ? "from-emerald-500 to-teal-600" : "from-amber-400 to-orange-500",
+              },
+              { href: "/dashboard/investments", label: "All investments", icon: BarChart3, tone: "from-sky-500 to-indigo-600" },
+            ].map(({ href, label, icon: Icon, tone }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted/50"
+              >
+                <span className={cn("flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br text-white shadow-sm", tone)}>
+                  <Icon className="h-4 w-4" />
+                </span>
+                <span className="text-sm font-medium">{label}</span>
+                <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:text-primary" />
+              </Link>
+            ))}
+          </section>
         </div>
       </div>
     </div>

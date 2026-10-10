@@ -49,7 +49,7 @@ export function StatusBadge({ status, children, className, dot = true }: StatusB
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-[11px] font-semibold capitalize",
         variantStyles[status] ?? variantStyles.default,
         className,
       )}

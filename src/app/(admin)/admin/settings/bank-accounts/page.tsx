@@ -27,7 +27,7 @@ function BankForm({
   onCancel: () => void;
   isPending: boolean;
 }) {
-  const inp = "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inp = "mt-1 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
   const f = (name: keyof typeof EMPTY, label: string, required = false) => (
     <div>
       <Label htmlFor={`gbf-${name}`}>{label}{required && " *"}</Label>
@@ -104,7 +104,7 @@ export default function BankAccountsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Platform Bank Accounts</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Platform Bank Accounts</h1>
           <p className="text-sm text-muted-foreground">These accounts appear as a quick-add dropdown when creating or editing projects.</p>
         </div>
         <Button size="sm" onClick={() => { setForm(EMPTY); setEditing("new"); setError(null); setFieldErrors({}); }}>
@@ -128,7 +128,7 @@ export default function BankAccountsPage() {
           {[...Array(5)].map((_, i) => <div key={i} className="h-16 rounded-xl bg-muted" />)}
         </div>
       ) : (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/40">
               <tr className="text-xs text-muted-foreground">
@@ -140,9 +140,9 @@ export default function BankAccountsPage() {
                 <th className="px-4 py-3 text-right font-medium">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {accounts.map((acc, i) => (
-                <tr key={acc.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={acc.id} className="hover:bg-primary/[0.03] transition-colors">
                   {editing === acc.id ? (
                     <td colSpan={6} className="px-4 py-4">
                       <BankForm form={form} setField={setField} fieldErrors={fieldErrors}

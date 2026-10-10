@@ -61,14 +61,14 @@ export default async function InvestmentPayPage({ params }: Props) {
 
       {/* Header */}
       <div>
-        <h1 className="text-xl font-bold">Complete Your Payment</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Complete Your Payment</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Transfer the investment amount to one of the bank accounts below, then upload your payment proof.
         </p>
       </div>
 
       {/* Investment summary */}
-      <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+      <div className="surface-card p-5 space-y-3">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Investment Summary</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[

@@ -6,6 +6,8 @@ import { getMyGroupInvestments } from "@/server/data/groups.data";
 import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
 import { GroupPaymentProofButton } from "@/components/groups/group-payment-proof-button";
 import { cn } from "cn";
+import { Building2 } from "lucide-react";
+import { TierIcon } from "@/components/groups/tier-icon";
 
 export const metadata: Metadata = { title: "Group Investments — Dashboard" };
 
@@ -29,10 +31,6 @@ const SUBMISSION_COLORS: Record<string, string> = {
   REJECTED:     "bg-destructive/10 text-destructive border-destructive/30",
 };
 
-const TIER_ICONS: Record<string, string> = {
-  INVESTOR: "📈", SHAREHOLDER: "🏦", DIRECTORSHIP: "👔",
-  PLOT_BOOKING: "🏗️", LAND_SHARE: "🌍",
-};
 
 function fmtBdt(n: number | string) {
   return `৳${Number(n).toLocaleString("en-BD")}`;
@@ -54,7 +52,7 @@ export default async function DashboardGroupsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Group Investments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Group Investments</h1>
           <p className="text-sm text-muted-foreground">{investments.length} total group investments</p>
         </div>
         <Link href="/groups" className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors">
@@ -63,11 +61,13 @@ export default async function DashboardGroupsPage() {
       </div>
 
       {investments.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border py-20 text-center">
-          <p className="text-3xl mb-3">🏢</p>
+        <div className="surface-card border-dashed py-20 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Building2 className="h-6 w-6" />
+          </span>
           <p className="font-semibold">No group investments yet</p>
           <p className="mt-1 text-sm text-muted-foreground">Explore Mariners, MOHS, and Marinozz groups to get started.</p>
-          <Link href="/groups" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <Link href="/groups" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
             Explore Groups →
           </Link>
         </div>
@@ -80,10 +80,10 @@ export default async function DashboardGroupsPage() {
               (!latestPayment || latestPayment.status === "REJECTED");
 
             return (
-              <div key={inv.id} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div key={inv.id} className="surface-card overflow-hidden">
                 <div className="flex flex-wrap items-center gap-4 px-4 py-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="text-2xl shrink-0">{TIER_ICONS[inv.tier.type] ?? "💼"}</span>
+                    <TierIcon type={inv.tier.type} />
                     <div className="min-w-0">
                       <p className="font-semibold line-clamp-1">
                         {inv.tier.entity.group.name} — {inv.tier.entity.name}

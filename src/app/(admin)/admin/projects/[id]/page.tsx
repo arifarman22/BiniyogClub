@@ -147,7 +147,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
       </div>
 
       {/* Hero banner */}
-      <div className="relative overflow-hidden rounded-xl border border-border bg-card">
+      <div className="relative overflow-hidden surface-card">
         {project.coverImageUrl ? (
           <div className="relative h-56 w-full">
             <Image src={project.coverImageUrl} alt={project.title} fill className="object-cover" sizes="100vw" />
@@ -161,7 +161,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                   {CATEGORY_LABELS[project.category] ?? project.category}
                 </Badge>
               </div>
-              <h1 className="text-2xl font-bold text-white">{project.title}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight text-white sm:text-3xl">{project.title}</h1>
               <div className="mt-1.5 flex flex-wrap gap-4 text-sm text-white/70">
                 {project.location && (
                   <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{project.location}</span>
@@ -186,7 +186,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                 {CATEGORY_LABELS[project.category] ?? project.category}
               </Badge>
             </div>
-            <h1 className="text-2xl font-bold">{project.title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{project.title}</h1>
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-muted-foreground">
               {project.location && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{project.location}</span>}
               <span className="flex items-center gap-1"><Clock className="h-3.5 w-3.5" />Deadline: {fmtDate(project.fundingDeadline)}</span>
@@ -206,7 +206,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           { label: "Expected Return", value: returnLabel(project) },
           { label: "Duration", value: `${project.durationDays} days` },
         ].map(({ label, value, highlight }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-4 text-center">
+          <div key={label} className="surface-card p-4 text-center">
             <p className={cn("text-lg font-bold", highlight ? "text-primary" : "text-foreground")}>{value}</p>
             <p className="text-xs text-muted-foreground mt-0.5">{label}</p>
           </div>
@@ -220,14 +220,14 @@ export default async function AdminProjectDetailPage({ params }: Props) {
         <div className="lg:col-span-2 space-y-6">
 
           {/* Description */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-3 font-semibold">Description</h2>
             <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{project.description}</p>
           </div>
 
           {/* Image gallery */}
           {project.imageUrls.length > 0 && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 font-semibold flex items-center gap-2">
                 <ImageIcon className="h-4 w-4 text-muted-foreground" /> Media ({project.imageUrls.length})
               </h2>
@@ -245,7 +245,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           )}
 
           {/* Financial details */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-4 font-semibold">Financial Details</h2>
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {[
@@ -278,7 +278,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           </div>
 
           {/* Timeline */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-4 font-semibold flex items-center gap-2">
               <Calendar className="h-4 w-4 text-muted-foreground" /> Timeline
             </h2>
@@ -308,7 +308,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           )}
 
           {/* Investments table */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-semibold flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-muted-foreground" />
@@ -330,7 +330,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
                       <th className="pb-2 text-right font-medium hidden md:table-cell">Date</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y divide-border/60">
                     {investments.map((inv) => (
                       <tr key={inv.id} className="hover:bg-muted/30 transition-colors">
                         <td className="py-2.5 pr-3">
@@ -370,7 +370,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
           {/* Bank accounts */}
           {project.bankAccounts.length > 0 && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 font-semibold flex items-center gap-2">
                 <CreditCard className="h-4 w-4 text-muted-foreground" /> Bank Accounts ({project.bankAccounts.length})
               </h2>
@@ -391,7 +391,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
 
           {/* Updates */}
           {project.updates.length > 0 && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 font-semibold">Project Updates</h2>
               <div className="space-y-3">
                 {project.updates.map((u) => (
@@ -416,7 +416,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           <ProjectStatusTransition projectId={project.id} currentStatus={project.status as ProjectStatus} />
 
           {/* Funding summary */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+          <div className="surface-card p-5 space-y-4">
             <h3 className="text-sm font-semibold">Funding Summary</h3>
             <div>
               <div className="mb-1.5 flex justify-between text-xs">
@@ -444,7 +444,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           </div>
 
           {/* Project info */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="surface-card p-5 space-y-3">
             <h3 className="text-sm font-semibold">Project Info</h3>
             <div className="space-y-2 text-xs">
               {[
@@ -463,7 +463,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           </div>
 
           {/* Audit trail */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="surface-card p-5 space-y-3">
             <h3 className="text-sm font-semibold">Audit Trail</h3>
             <div className="space-y-2 text-xs text-muted-foreground">
               {[
@@ -489,7 +489,7 @@ export default async function AdminProjectDetailPage({ params }: Props) {
           </div>
 
           {/* Quick links */}
-          <div className="rounded-xl border border-border bg-card p-5 space-y-2">
+          <div className="surface-card p-5 space-y-2">
             <h3 className="text-sm font-semibold mb-3">Quick Links</h3>
             <Link href={`/admin/investments?project=${id}`} className={cn(buttonVariants({ variant: "outline", size: "sm" }), "w-full justify-start gap-2")}>
               <TrendingUp className="h-3.5 w-3.5" /> View Investments

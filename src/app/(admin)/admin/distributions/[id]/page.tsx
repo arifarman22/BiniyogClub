@@ -49,7 +49,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
       </Link>
 
       {/* Header */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="surface-card p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -58,7 +58,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
               </span>
               <span className="text-xs text-muted-foreground">Batch {batch.id.slice(0, 8).toUpperCase()}</span>
             </div>
-            <h1 className="text-xl font-bold">{batch.project.title}</h1>
+            <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{batch.project.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
               {batch.lineItems.length} investors · Created {fmtDate(batch.createdAt)}
             </p>
@@ -71,7 +71,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
         <div className="lg:col-span-2 space-y-6">
 
           {/* Financial summary */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-4 text-sm font-semibold">Financial Summary</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
@@ -96,7 +96,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
           </div>
 
           {/* Rule snapshot */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-3 text-sm font-semibold">Distribution Rule Snapshot</h2>
             <p className="mb-3 text-xs text-muted-foreground">
               Captured at calculation time — immutable for this batch.
@@ -118,7 +118,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
           </div>
 
           {/* Line items */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="surface-card overflow-hidden">
             <div className="px-5 py-4 border-b border-border">
               <h2 className="text-sm font-semibold">Investor Entitlements ({batch.lineItems.length})</h2>
             </div>
@@ -135,9 +135,9 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
                     <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border">
+                <tbody className="divide-y divide-border/60">
                   {batch.lineItems.map((line) => (
-                    <tr key={line.id} className="hover:bg-muted/20">
+                    <tr key={line.id} className="hover:bg-primary/[0.03]">
                       <td className="px-4 py-3">
                         <p className="font-medium text-sm">{line.investment.investorProfile.user.name}</p>
                         <p className="text-xs text-muted-foreground">{line.investment.investorProfile.user.email}</p>
@@ -171,7 +171,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
 
           {/* Audit trail */}
           {auditLogs.length > 0 && (
-            <div className="rounded-xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 text-sm font-semibold">Audit Trail</h2>
               <div className="space-y-3">
                 {auditLogs.map((log) => (
@@ -201,7 +201,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
 
         {/* Sidebar */}
         <div className="space-y-5">
-          <div className="rounded-xl border border-border bg-card p-5">
+          <div className="surface-card p-5">
             <h3 className="mb-4 text-sm font-semibold">Actions</h3>
             <DistributionBatchActions
               batchId={batch.id}
@@ -211,7 +211,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
             />
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-5 space-y-3">
+          <div className="surface-card p-5 space-y-3">
             <h3 className="text-sm font-semibold">Timeline</h3>
             <div className="space-y-2 text-xs">
               {[
@@ -234,7 +234,7 @@ export default async function DistributionBatchDetailPage({ params }: Props) {
 
           <Link
             href={`/admin/projects/${batch.project.id}`}
-            className="block rounded-xl border border-border bg-card px-5 py-4 text-sm font-medium hover:bg-muted/30 transition-colors"
+            className="block surface-card px-5 py-4 text-sm font-medium hover:bg-muted/30 transition-colors"
           >
             View Project →
           </Link>

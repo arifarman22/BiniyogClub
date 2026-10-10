@@ -12,18 +12,19 @@ interface StatCardProps {
   variant?: "default" | "brand" | "finance" | "harvest";
 }
 
-const variantStyles = {
-  default: "bg-card border-border",
-  brand:   "bg-brand-50 border-brand-200 dark:bg-brand-900/20 dark:border-brand-800",
-  finance: "bg-finance-50 border-finance-100 dark:bg-finance-700/10 dark:border-finance-700/30",
-  harvest: "bg-harvest-50 border-harvest-100 dark:bg-harvest-600/10 dark:border-harvest-600/30",
+// Soft corner wash + accent chip per variant; the card surface itself stays neutral.
+const washStyles = {
+  default: "from-slate-500/[0.06]",
+  brand:   "from-emerald-500/[0.10]",
+  finance: "from-sky-500/[0.10]",
+  harvest: "from-amber-500/[0.12]",
 };
 
 const iconVariantStyles = {
-  default: "bg-muted text-muted-foreground",
-  brand:   "bg-brand-100 text-brand-700 dark:bg-brand-800/40 dark:text-brand-300",
-  finance: "bg-finance-100 text-finance-700 dark:bg-finance-700/20 dark:text-finance-100",
-  harvest: "bg-harvest-100 text-harvest-600 dark:bg-harvest-600/20 dark:text-harvest-400",
+  default: "bg-muted text-muted-foreground ring-border",
+  brand:   "bg-gradient-to-br from-emerald-500 to-teal-600 text-white ring-emerald-500/20 shadow-emerald-500/25",
+  finance: "bg-gradient-to-br from-sky-500 to-indigo-600 text-white ring-sky-500/20 shadow-sky-500/25",
+  harvest: "bg-gradient-to-br from-amber-400 to-orange-500 text-white ring-amber-500/20 shadow-amber-500/25",
 };
 
 export function StatCard({
@@ -41,23 +42,29 @@ export function StatCard({
   return (
     <div
       className={cn(
-        "rounded-xl border p-5 shadow-xs transition-shadow hover:shadow-sm",
-        variantStyles[variant],
+        "group relative overflow-hidden rounded-2xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(16,24,40,0.18)]",
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div
+        className={cn(
+          "pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br to-transparent blur-2xl transition-transform duration-500 group-hover:scale-125",
+          washStyles[variant],
+        )}
+        aria-hidden="true"
+      />
+      <div className="relative flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium text-muted-foreground">{title}</p>
-          <p className="mt-1.5 text-2xl font-bold tracking-tight text-foreground">{value}</p>
+          <p className="truncate text-xs font-semibold uppercase tracking-wider text-muted-foreground">{title}</p>
+          <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight text-foreground sm:text-[1.65rem]">{value}</p>
           {(description || trend) && (
-            <div className="mt-1.5 flex items-center gap-2">
+            <div className="mt-2 flex flex-wrap items-center gap-2">
               {trend && (
                 <span
-                  className={cn("inline-flex items-center gap-0.5 text-xs font-medium", {
-                    "text-success": isPositive,
-                    "text-destructive": isNegative,
-                    "text-muted-foreground": !isPositive && !isNegative,
+                  className={cn("inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[11px] font-semibold", {
+                    "bg-success/10 text-success": isPositive,
+                    "bg-destructive/10 text-destructive": isNegative,
+                    "bg-muted text-muted-foreground": !isPositive && !isNegative,
                   })}
                 >
                   {isPositive ? (
@@ -70,16 +77,14 @@ export function StatCard({
                   {Math.abs(trend.value)}%
                 </span>
               )}
-              {description && (
-                <span className="text-xs text-muted-foreground">{description}</span>
-              )}
+              {description && <span className="text-xs text-muted-foreground">{description}</span>}
             </div>
           )}
         </div>
         {icon && (
           <div
             className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-lg",
+              "flex size-11 shrink-0 items-center justify-center rounded-xl shadow-lg ring-1 [&_svg]:size-5",
               iconVariantStyles[variant],
             )}
           >

@@ -329,7 +329,7 @@ async function OperationalTab({ session, filters }: { session: SessionUser; filt
 
 function ReportTable({ title, headers, rows }: { title: string; headers: string[]; rows: string[][] }) {
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="surface-card overflow-hidden">
       <div className="border-b border-border px-5 py-3">
         <h3 className="text-sm font-semibold">{title}</h3>
       </div>
@@ -345,9 +345,9 @@ function ReportTable({ title, headers, rows }: { title: string; headers: string[
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {rows.map((row, i) => (
-                <tr key={i} className="hover:bg-muted/20 transition-colors">
+                <tr key={i} className="hover:bg-primary/[0.03] transition-colors">
                   {row.map((cell, j) => (
                     <td key={j} className="px-4 py-2.5 text-sm">{cell}</td>
                   ))}

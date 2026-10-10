@@ -65,8 +65,8 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
       </div>
 
       {/* ── Hero card ── */}
-      <div className="rounded-2xl border border-border bg-card overflow-hidden">
-        <div className="h-24 gradient-brand" />
+      <div className="surface-card overflow-hidden">
+        <div className="relative h-28 overflow-hidden bg-[#06140f]"><div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_100%_at_100%_0%,rgba(16,185,129,0.35),transparent_60%)]" /><div className="absolute inset-0 fintech-grid-pattern opacity-30" /></div>
         <div className="px-6 pb-6">
           <div className="flex items-end justify-between -mt-10 mb-4">
             <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-card bg-brand-600 text-white text-2xl font-bold shadow-md">
@@ -80,7 +80,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
               {user.deletedAt && <StatusBadge status="rejected">DELETED</StatusBadge>}
             </div>
           </div>
-          <h1 className="text-xl font-bold">{user.name}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{user.name}</h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
@@ -103,7 +103,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
         <div className="lg:col-span-2 space-y-6">
 
           {/* Account details */}
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-4 font-semibold flex items-center gap-2">
               <User className="h-4 w-4 text-muted-foreground" /> Account Details
             </h2>
@@ -131,7 +131,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
 
           {/* Investor profile */}
           {user.investorProfile && (
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 font-semibold flex items-center gap-2">
                 <Briefcase className="h-4 w-4 text-muted-foreground" /> Investor Profile
               </h2>
@@ -147,7 +147,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
         <div className="space-y-6">
 
           {/* KYC */}
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-4 font-semibold flex items-center gap-2">
               <Shield className="h-4 w-4 text-muted-foreground" /> KYC
             </h2>
@@ -176,7 +176,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
 
           {/* Actions */}
           {!user.deletedAt && (
-            <div className="rounded-2xl border border-border bg-card p-6">
+            <div className="surface-card p-6">
               <h2 className="mb-4 font-semibold">Actions</h2>
               <UserActionButtons
                 userId={user.id}
@@ -188,7 +188,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
           )}
 
           {/* Quick links */}
-          <div className="rounded-2xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-3 font-semibold text-sm">Quick Links</h2>
             <div className="space-y-1">
               {[

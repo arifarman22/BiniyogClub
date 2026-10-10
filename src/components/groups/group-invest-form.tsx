@@ -192,7 +192,7 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
               min={tier.minAmountBdt}
               max={tier.maxAmountBdt}
               required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
             />
             <p className="mt-0.5 text-[10px] text-muted-foreground">
               Min: ৳{tier.minAmountBdt.toLocaleString("en-BD")}
@@ -208,7 +208,7 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
                 value={plotNumber}
                 onChange={(e) => setPlotNumber(e.target.value)}
                 placeholder="e.g. A-12"
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
               />
             </div>
           )}
@@ -219,7 +219,7 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
             />
           </div>
 
@@ -246,7 +246,7 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">Bank Account</label>
               <select value={selectedBank} onChange={(e) => setSelectedBank(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring">
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10">
                 {bankAccounts.map((b) => (
                   <option key={b.id} value={b.id}>{b.bankName} — {b.accountNumber}</option>
                 ))}
@@ -267,20 +267,20 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Transaction Reference <span className="text-destructive">*</span></label>
             <input type="text" value={txRef} onChange={(e) => setTxRef(e.target.value)} required placeholder="e.g. TXN123456"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring" />
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10" />
           </div>
 
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Payment Screenshot / Receipt <span className="text-destructive">*</span></label>
             <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-xs file:text-primary-foreground" />
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm file:mr-2 file:rounded file:border-0 file:bg-primary file:px-2 file:py-1 file:text-xs file:text-primary-foreground" />
           </div>
 
           <div>
             <label className="mb-1 block text-xs font-medium text-muted-foreground">Notes (optional)</label>
             <textarea value={paymentNotes} onChange={(e) => setPaymentNotes(e.target.value)} rows={2}
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring" />
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10" />
           </div>
 
           <div className="flex gap-2">

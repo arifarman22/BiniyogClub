@@ -72,7 +72,7 @@ export function ProjectStatusTransition({ projectId, currentStatus }: Props) {
   if (nextStatuses.length === 0 && !archiveable) return null;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-5 space-y-4">
+    <div className="surface-card p-5 space-y-4">
       <h3 className="text-sm font-semibold">Lifecycle Actions</h3>
 
       {error && <p className="text-xs text-destructive">{error}</p>}
@@ -88,7 +88,7 @@ export function ProjectStatusTransition({ projectId, currentStatus }: Props) {
             onChange={(e) => setReason(e.target.value)}
             rows={2}
             placeholder="Provide a reason..."
-            className="mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring resize-none"
+            className="mt-1 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 resize-none"
           />
         </div>
       )}

@@ -90,7 +90,7 @@ function FieldError({ msg }: { msg?: string }) {
 
 function SectionCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-6 space-y-5">
+    <div className="surface-card p-6 space-y-5">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h2>
       {children}
     </div>
@@ -215,7 +215,7 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
     });
   }
 
-  const sel = "w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const sel = "w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -605,7 +605,7 @@ function BankForm({ form, setField, fieldErrors, onSave, onCancel, isPending }: 
   onCancel: () => void;
   isPending: boolean;
 }) {
-  const inp = "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inp = "mt-1 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
   const f = (name: keyof typeof BANK_EMPTY, label: string, required = false, mono = false) => (
     <div>
       <Label htmlFor={`bf-${name}`}>{label}{required && " *"}</Label>

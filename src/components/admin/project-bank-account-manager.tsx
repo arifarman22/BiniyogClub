@@ -116,7 +116,7 @@ export function ProjectBankAccountManager({ projectId, bankAccounts: initial }: 
     });
   }
 
-  const inp = "mt-1 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring";
+  const inp = "mt-1 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
 
   return (
     <div className="space-y-4">

@@ -25,7 +25,7 @@ export function DownloadCertificateButton({ documentId }: DownloadCertificateBut
     <button
       onClick={handleDownload}
       disabled={loading}
-      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted/40 disabled:opacity-60 transition-colors"
+      className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium hover:bg-muted/40 disabled:opacity-60 transition-colors"
     >
       {loading ? (
         <span className="h-3 w-3 animate-spin rounded-full border border-current border-t-transparent" />

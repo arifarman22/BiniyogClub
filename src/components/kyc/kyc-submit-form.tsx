@@ -350,7 +350,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         )}
 
         {/* Personal — pre-filled, read-only */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Personal Information</p>
             <p className="text-xs text-muted-foreground mt-0.5">Pre-filled from your registration — edit if needed</p>
@@ -383,7 +383,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Address */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Address</p>
             <p className="text-xs text-muted-foreground mt-0.5">Your present and permanent address in Bangladesh</p>
@@ -424,7 +424,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Identity */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Identity Document</p>
             <p className="text-xs text-muted-foreground mt-0.5">Select your document type and enter the number</p>
@@ -460,7 +460,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Nominee info — read-only from registration */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Nominee Information</p>
             <p className="text-xs text-muted-foreground mt-0.5">Pre-filled from your registration</p>
@@ -500,7 +500,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Payment */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-6 py-4">
             <p className="text-sm font-semibold">Payment Information</p>
             <p className="text-xs text-muted-foreground mt-0.5">At least one method required for receiving returns</p>
@@ -556,7 +556,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
       <div className="space-y-5 lg:sticky lg:top-6 lg:self-start">
 
         {/* Investor document upload */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
             <p className="text-sm font-semibold">Your ID Photos</p>
             <p className="text-xs text-muted-foreground mt-0.5">JPEG, PNG, WebP or PDF · max 3 MB each</p>
@@ -602,7 +602,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Nominee NID upload */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
             <p className="text-sm font-semibold">Nominee&apos;s NID Photos</p>
             <p className="text-xs text-muted-foreground mt-0.5">Upload front &amp; back of nominee&apos;s National ID</p>
@@ -639,7 +639,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         </div>
 
         {/* Submit card */}
-        <div className="rounded-xl border border-border bg-card">
+        <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
             <p className="text-sm font-semibold">Submit Application</p>
           </div>

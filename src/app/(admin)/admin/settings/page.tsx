@@ -25,7 +25,7 @@ export default async function AdminSettingsPage() {
         description="Platform configuration and role permissions"
       />
 
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="surface-card p-6">
         <div className="mb-5 flex items-start justify-between gap-4">
           <div>
             <h2 className="font-semibold">Role Permission Matrix</h2>

@@ -42,7 +42,7 @@ export default async function AdminNotificationsPage({ searchParams }: AsyncComp
         <AdminFilterBar paramName="type" options={TYPE_OPTIONS} allLabel="All Types" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No notifications found.</p>
         ) : (
@@ -57,9 +57,9 @@ export default async function AdminNotificationsPage({ searchParams }: AsyncComp
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Sent</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((n) => (
-                  <tr key={n.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={n.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium">{n.user.name}</p>
                       <p className="text-xs text-muted-foreground">{n.user.email}</p>

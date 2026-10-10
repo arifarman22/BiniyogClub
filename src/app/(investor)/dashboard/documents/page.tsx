@@ -62,7 +62,7 @@ export default async function DocumentsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold">Documents</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Documents</h1>
         <p className="text-sm text-muted-foreground">Your investment agreements, receipts, KYC documents, and more</p>
       </div>
 
@@ -74,7 +74,7 @@ export default async function DocumentsPage() {
         {contracts.length > 0 ? (
           <div className="space-y-3">
             {contracts.map((c) => (
-              <div key={c.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4">
+              <div key={c.id} className="flex items-center justify-between surface-card px-5 py-4">
                 <div className="min-w-0 flex-1">
                   <p className="font-medium truncate">{c.investment.project.title}</p>
                   <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
@@ -105,7 +105,7 @@ export default async function DocumentsPage() {
         </h2>
         {kyc ? (
           <div className="space-y-3">
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-5 py-4">
+            <div className="flex items-center gap-3 surface-card px-5 py-4">
               <div className="flex-1">
                 <p className="font-medium">KYC Verification</p>
                 <p className="text-xs text-muted-foreground">
@@ -118,7 +118,7 @@ export default async function DocumentsPage() {
               </span>
             </div>
             {kyc.documents.map((doc) => (
-              <div key={doc.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3">
+              <div key={doc.id} className="flex items-center justify-between surface-card px-5 py-3">
                 <div>
                   <p className="text-sm font-medium">{KYC_DOC_LABELS[doc.documentType] ?? doc.documentType}</p>
                   <p className="text-xs text-muted-foreground">
@@ -153,7 +153,7 @@ export default async function DocumentsPage() {
             {docs.length > 0 ? (
               <div className="space-y-2">
                 {docs.map((doc) => (
-                  <div key={doc.id} className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-3">
+                  <div key={doc.id} className="flex items-center justify-between surface-card px-5 py-3">
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium truncate">{doc.name}</p>
                       <p className="text-xs text-muted-foreground">
@@ -176,7 +176,7 @@ export default async function DocumentsPage() {
         <h2 className="mb-4 flex items-center gap-2 font-semibold">
           <FolderOpen className="h-4 w-4 text-primary" /> Upload a Document
         </h2>
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="surface-card p-6">
           <DocumentUpload
             category="PAYMENT_RECEIPT"
             entityType="USER"
@@ -191,7 +191,7 @@ export default async function DocumentsPage() {
 
 function EmptyState({ message, children }: { message: string; children?: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-dashed border-border py-10 text-center">
+    <div className="surface-card border-dashed py-10 text-center">
       <p className="text-sm text-muted-foreground">{message}</p>
       {children}
     </div>

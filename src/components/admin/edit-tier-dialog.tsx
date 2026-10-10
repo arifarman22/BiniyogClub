@@ -79,7 +79,7 @@ export function EditTierDialog({ tier }: Props) {
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl max-h-[90vh] flex flex-col"
+            className="w-full max-w-lg surface-card shadow-xl max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -102,7 +102,7 @@ export function EditTierDialog({ tier }: Props) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
 
@@ -113,7 +113,7 @@ export function EditTierDialog({ tier }: Props) {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={2}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
 
@@ -125,7 +125,7 @@ export function EditTierDialog({ tier }: Props) {
                   onChange={(e) => setBenefits(e.target.value)}
                   rows={3}
                   placeholder="e.g. Annual profit sharing&#10;Priority allocation&#10;Certificate of membership"
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                 />
               </div>
 
@@ -142,7 +142,7 @@ export function EditTierDialog({ tier }: Props) {
                       min={1}
                       step="0.01"
                       required
-                      className="w-full rounded-lg border border-border bg-background pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="w-full rounded-xl border border-border bg-background pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export function EditTierDialog({ tier }: Props) {
                       min={1}
                       step="0.01"
                       placeholder="No limit"
-                      className="w-full rounded-lg border border-border bg-background pl-7 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                      className="w-full rounded-xl border border-border bg-background pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                     />
                   </div>
                 </div>
@@ -175,7 +175,7 @@ export function EditTierDialog({ tier }: Props) {
                     max={100}
                     step="0.0001"
                     placeholder="e.g. 12.5"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -187,7 +187,7 @@ export function EditTierDialog({ tier }: Props) {
                     min={1}
                     step={1}
                     placeholder="e.g. 24"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                   />
                 </div>
               </div>
@@ -203,7 +203,7 @@ export function EditTierDialog({ tier }: Props) {
                     min={0}
                     step={1}
                     placeholder="Leave blank if N/A"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -215,7 +215,7 @@ export function EditTierDialog({ tier }: Props) {
                     min={0}
                     step={1}
                     placeholder="Leave blank if N/A"
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                   />
                 </div>
               </div>

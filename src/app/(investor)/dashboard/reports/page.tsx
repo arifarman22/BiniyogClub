@@ -61,7 +61,7 @@ export default async function InvestorReportsPage({ searchParams }: AsyncCompone
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Reports</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Reports</h1>
         <p className="text-sm text-muted-foreground">Your investment analytics and statements</p>
       </div>
 
@@ -117,7 +117,7 @@ async function PortfolioTab({ session }: { session: SessionUser }) {
 
       {/* Allocation by category */}
       <div className="grid gap-5 sm:grid-cols-2">
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="surface-card p-5">
           <h3 className="mb-4 text-sm font-semibold">Allocation by Category</h3>
           <div className="space-y-3">
             {Object.entries(data.byCategory).map(([cat, amt]) => {
@@ -137,7 +137,7 @@ async function PortfolioTab({ session }: { session: SessionUser }) {
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="surface-card p-5">
           <h3 className="mb-4 text-sm font-semibold">Investments by Status</h3>
           <div className="space-y-2">
             {Object.entries(data.byStatus).map(([status, count]) => (
@@ -174,7 +174,7 @@ async function HistoryTab({ session, filters }: { session: SessionUser; filters:
 
       <p className="text-xs text-muted-foreground">{filtered.length} investments</p>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -184,11 +184,11 @@ async function HistoryTab({ session, filters }: { session: SessionUser; filters:
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {filtered.length === 0 ? (
                 <tr><td colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No investments found.</td></tr>
               ) : filtered.map((i) => (
-                <tr key={i.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={i.id} className="hover:bg-primary/[0.03] transition-colors">
                   <td className="px-4 py-3">
                     <p className="font-medium line-clamp-1">{i.project.title}</p>
                     <p className="text-xs text-muted-foreground">{i.project.category.replace(/_/g, " ")}</p>
@@ -231,7 +231,7 @@ async function TransactionsTab({ session, filters }: { session: SessionUser; fil
         <KpiCard label="Transactions" value={String(data.payments.length)} sub="all time" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -241,11 +241,11 @@ async function TransactionsTab({ session, filters }: { session: SessionUser; fil
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {data.payments.length === 0 ? (
                 <tr><td colSpan={7} className="py-10 text-center text-sm text-muted-foreground">No transactions found.</td></tr>
               ) : data.payments.map((p) => (
-                <tr key={p.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={p.id} className="hover:bg-primary/[0.03] transition-colors">
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
                       {p.direction === "INBOUND"
@@ -294,7 +294,7 @@ async function DistributionsTab({ session, filters }: { session: SessionUser; fi
         <KpiCard label="Net Received"      value={fmtBdt(totalNet)}   sub="to your wallet" />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
@@ -304,11 +304,11 @@ async function DistributionsTab({ session, filters }: { session: SessionUser; fi
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {distributions.length === 0 ? (
                 <tr><td colSpan={6} className="py-10 text-center text-sm text-muted-foreground">No distributions yet.</td></tr>
               ) : distributions.map((d) => (
-                <tr key={d.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={d.id} className="hover:bg-primary/[0.03] transition-colors">
                   <td className="px-4 py-3">
                     <p className="font-medium line-clamp-1">{d.project.title}</p>
                     <p className="text-xs text-muted-foreground">{d.project.category.replace(/_/g, " ")}</p>
@@ -332,7 +332,7 @@ async function DistributionsTab({ session, filters }: { session: SessionUser; fi
 
 function KpiCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card px-5 py-4">
+    <div className="surface-card px-5 py-4">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="mt-1 text-xl font-bold">{value}</p>
       {sub && <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p>}

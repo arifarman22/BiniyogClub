@@ -9,6 +9,7 @@ import { db } from "@/lib/db/prisma";
 import { PaymentVerifier } from "@/components/shared/payment-verifier";
 import { SubmitPaymentProofDialog } from "@/components/shared/submit-payment-proof-dialog";
 import { DownloadCertificateButton } from "@/components/investments/download-certificate-button";
+import { UserRound, BarChart3 } from "lucide-react";
 import { cn } from "cn";
 
 export const metadata: Metadata = { title: "Investments — Dashboard" };
@@ -124,7 +125,7 @@ function InvestmentCard({
     (!submission || submission.status === "REJECTED");
 
   return (
-    <div className={cn("overflow-hidden", !compact && "rounded-xl border border-border bg-card")}>
+    <div className={cn("overflow-hidden", !compact && "surface-card")}>
 
       {/* ── Header (hidden in compact/project-grouped mode) ── */}
       {!compact && (
@@ -330,7 +331,7 @@ function ProjectGroup({
   const activeCount = investments.filter((i) => ["ACTIVE", "MATURED"].includes(i.status)).length;
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="surface-card overflow-hidden">
       {/* Project header */}
       <div className="flex flex-wrap items-center gap-4 px-4 py-3 bg-muted/30 border-b border-border">
         <div className="min-w-0 flex-1">
@@ -359,7 +360,7 @@ function ProjectGroup({
       </div>
 
       {/* Individual investment cards inside the group */}
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-border/60">
         {investments.map((inv) => (
           <div key={inv.id} className="bg-card">
             <InvestmentCard
@@ -398,16 +399,16 @@ export default async function InvestmentsPage({
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-bold">Investments</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Investments</h1>
           <p className="text-sm text-muted-foreground">Your investment portfolio</p>
         </div>
-        <div className="rounded-xl border border-dashed border-border py-20 text-center">
-          <p className="text-2xl mb-2">👤</p>
+        <div className="surface-card border-dashed py-20 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><UserRound className="h-6 w-6" /></span>
           <p className="font-medium">Profile setup required</p>
           <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
             Complete your investor profile to start making investments.
           </p>
-          <Link href="/dashboard/profile" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <Link href="/dashboard/profile" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
             Complete Profile
           </Link>
         </div>
@@ -478,7 +479,7 @@ export default async function InvestmentsPage({
       </Suspense>
 
       <div>
-        <h1 className="text-xl font-bold">Investments</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Investments</h1>
         <p className="text-sm text-muted-foreground">{investments.length} total investment{investments.length !== 1 ? "s" : ""}</p>
       </div>
 
@@ -489,7 +490,7 @@ export default async function InvestmentsPage({
           { label: "Expected Returns",  value: formatBdt(totalExpected) },
           { label: "Returns Received",  value: formatBdt(totalActual) },
         ].map(({ label, value }) => (
-          <div key={label} className="rounded-xl border border-border bg-card p-4">
+          <div key={label} className="surface-card p-4">
             <p className="text-xs text-muted-foreground">{label}</p>
             <p className="mt-1 text-lg font-bold text-primary">{value}</p>
           </div>
@@ -498,7 +499,7 @@ export default async function InvestmentsPage({
 
       {/* Tabs + View toggle */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex max-w-full gap-1 overflow-x-auto rounded-xl border border-border/70 bg-muted/50 p-1 scrollbar-none">
           {TABS.map((t) => {
             const params = new URLSearchParams();
             if (t.key !== "all") params.set("tab", t.key);
@@ -509,17 +510,17 @@ export default async function InvestmentsPage({
                 key={t.key}
                 href={href}
                 className={cn(
-                  "shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors flex items-center gap-1.5",
+                  "flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
                   activeTab === t.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/70"
+                    : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
                 )}
               >
                 {t.label}
                 {tabCounts[t.key] > 0 && (
                   <span className={cn(
                     "rounded-full px-1.5 py-0.5 text-[10px] font-semibold leading-none",
-                    activeTab === t.key ? "bg-white/20 text-white" : "bg-border text-muted-foreground",
+                    activeTab === t.key ? "bg-primary/10 text-primary" : "bg-background/80 text-muted-foreground",
                   )}>
                     {tabCounts[t.key]}
                   </span>
@@ -530,7 +531,7 @@ export default async function InvestmentsPage({
         </div>
 
         {/* View toggle */}
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex shrink-0 items-center gap-1 rounded-xl border border-border/70 bg-muted/50 p-1">
           {([
             { key: "list",    label: "List" },
             { key: "project", label: "By Project" },
@@ -544,10 +545,10 @@ export default async function InvestmentsPage({
                 key={v.key}
                 href={href}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-xs font-medium transition-colors",
+                  "rounded-lg px-3 py-1.5 text-xs font-semibold transition-all",
                   activeView === v.key
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    ? "bg-card text-foreground shadow-sm ring-1 ring-border/70"
+                    : "text-muted-foreground hover:bg-card/60 hover:text-foreground",
                 )}
               >
                 {v.label}
@@ -602,13 +603,13 @@ export default async function InvestmentsPage({
           </div>
         )
       ) : (
-        <div className="rounded-xl border border-dashed border-border py-16 text-center">
-          <p className="text-2xl mb-2">📊</p>
+        <div className="surface-card border-dashed py-16 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><BarChart3 className="h-6 w-6" /></span>
           <p className="font-medium">No {activeTab === "all" ? "" : activeTabDef.label.toLowerCase() + " "}investments</p>
           {activeTab === "all" && (
             <>
               <p className="mt-1 text-sm text-muted-foreground">Browse projects to make your first investment.</p>
-              <Link href="/projects" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+              <Link href="/projects" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
                 Browse Projects
               </Link>
             </>

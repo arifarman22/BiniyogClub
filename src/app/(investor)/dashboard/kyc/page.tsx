@@ -167,7 +167,7 @@ export default async function KycPage() {
       </div>
 
       {/* Progress steps */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="surface-card p-6">
         <h2 className="mb-5 font-semibold">Verification Progress</h2>
         <ol className="space-y-4">
           {steps.map(({ label, done, date }, i) => (
@@ -201,7 +201,7 @@ export default async function KycPage() {
 
       {/* Submitted info summary */}
       {kyc && status !== "NOT_STARTED" && (
-        <div className="rounded-xl border border-border bg-card p-6 space-y-4">
+        <div className="surface-card p-6 space-y-4">
           <h2 className="font-semibold">Submitted Information</h2>
 
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -276,7 +276,7 @@ export default async function KycPage() {
 
       {/* What's needed (first time) */}
       {status === "NOT_STARTED" && (
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="surface-card p-6">
           <h2 className="mb-4 font-semibold">What you&apos;ll need</h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             {[

@@ -57,7 +57,7 @@ export default async function AdminDistributionsPage({ searchParams }: AsyncComp
         <AdminFilterBar paramName="status" options={STATUS_OPTIONS} />
       </div>
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No distribution batches found.</p>
         ) : (
@@ -74,9 +74,9 @@ export default async function AdminDistributionsPage({ searchParams }: AsyncComp
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((b) => (
-                  <tr key={b.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={b.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium line-clamp-1">{b.project.title}</p>
                       <p className="text-xs text-muted-foreground">{b.project.status}</p>

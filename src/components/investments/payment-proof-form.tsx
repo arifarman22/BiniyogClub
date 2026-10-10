@@ -154,7 +154,7 @@ export function PaymentProofForm({ investmentId, bankAccounts, amountBdt }: Prop
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 rounded-2xl border border-border bg-card p-5">
+    <form onSubmit={handleSubmit} className="space-y-5 surface-card p-5">
       <div>
         <h2 className="font-semibold text-sm">Submit Payment Proof</h2>
         <p className="text-xs text-muted-foreground mt-0.5">
@@ -261,7 +261,7 @@ export function PaymentProofForm({ investmentId, bankAccounts, amountBdt }: Prop
           onChange={(e) => setTransactionRef(e.target.value)}
           placeholder="e.g. TXN123456789"
           required
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
         />
       </div>
 
@@ -312,7 +312,7 @@ export function PaymentProofForm({ investmentId, bankAccounts, amountBdt }: Prop
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Any additional information for the reviewer..."
           rows={2}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
         />
       </div>
 

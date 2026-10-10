@@ -18,7 +18,7 @@ export default async function NewProjectPage() {
         <Link href="/admin/projects" className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ChevronLeft className="h-4 w-4" /> Back to Projects
         </Link>
-        <h1 className="text-xl font-bold">Create New Project</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Create New Project</h1>
         <p className="text-sm text-muted-foreground">New projects start in DRAFT status.</p>
       </div>
       <ProjectForm mode="create" managers={managers} groups={groups} />

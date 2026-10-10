@@ -4,7 +4,7 @@ import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorProjects } from "@/server/data/investor.data";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Bell } from "lucide-react";
+import { Sprout, MapPin, Clock, Bell } from "lucide-react";
 import { cn } from "cn";
 
 export const metadata: Metadata = { title: "My Projects — Dashboard" };
@@ -66,16 +66,16 @@ export default async function MyProjectsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-xl font-bold">My Projects</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">My Projects</h1>
           <p className="text-sm text-muted-foreground">Projects you&apos;ve invested in</p>
         </div>
-        <div className="rounded-xl border border-dashed border-border py-20 text-center">
-          <p className="text-2xl mb-2">🌾</p>
+        <div className="surface-card border-dashed py-20 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Sprout className="h-6 w-6" /></span>
           <p className="font-medium">Profile setup required</p>
           <p className="mt-1 text-sm text-muted-foreground max-w-xs mx-auto">
             Complete your investor profile to view your projects.
           </p>
-          <a href="/dashboard/profile" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <a href="/dashboard/profile" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
             Complete Profile
           </a>
         </div>
@@ -94,7 +94,7 @@ export default async function MyProjectsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold">My Projects</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">My Projects</h1>
         <p className="text-sm text-muted-foreground">
           {unique.length} project{unique.length !== 1 ? "s" : ""} you&apos;ve invested in
         </p>
@@ -106,7 +106,7 @@ export default async function MyProjectsPage() {
             const p = inv.project;
             const pct = fundingPct(p.fundedAmountBdt.toString(), p.fundingGoalBdt.toString());
             return (
-              <div key={p.id} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div key={p.id} className="surface-card overflow-hidden">
                 {/* Project header */}
                 <div className="p-5 border-b border-border">
                   <div className="flex flex-wrap items-start justify-between gap-3">
@@ -207,11 +207,11 @@ export default async function MyProjectsPage() {
           })}
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border py-20 text-center">
-          <p className="text-2xl mb-2">🌾</p>
+        <div className="surface-card border-dashed py-20 text-center">
+          <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary"><Sprout className="h-6 w-6" /></span>
           <p className="font-medium">No projects yet</p>
           <p className="mt-1 text-sm text-muted-foreground">Invest in a project to see it here.</p>
-          <Link href="/projects" className="mt-4 inline-flex items-center gap-1 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80">
+          <Link href="/projects" className="mt-5 inline-flex items-center gap-1 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm shadow-primary/25 hover:bg-primary/90">
             Browse Projects
           </Link>
         </div>

@@ -29,7 +29,7 @@ export default async function EditProjectPage({ params }: Props) {
         <Link href={`/admin/projects/${id}`} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ChevronLeft className="h-4 w-4" /> Back to Project
         </Link>
-        <h1 className="text-xl font-bold">Edit Project</h1>
+        <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Edit Project</h1>
       </div>
 
       <ProjectForm

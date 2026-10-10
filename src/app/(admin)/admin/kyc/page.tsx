@@ -85,7 +85,7 @@ export default async function AdminKycPage({ searchParams }: AsyncComponentProps
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <div className="py-16 text-center text-sm text-muted-foreground">
             No KYC submissions found.
@@ -101,9 +101,9 @@ export default async function AdminKycPage({ searchParams }: AsyncComponentProps
                 <th className="px-4 py-3 text-right font-medium text-muted-foreground">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {items.map((kyc) => (
-                <tr key={kyc.id} className="hover:bg-muted/20 transition-colors">
+                <tr key={kyc.id} className="hover:bg-primary/[0.03] transition-colors">
                   <td className="px-4 py-3">
                     <p className="font-medium">{(kyc as typeof kyc & { user?: { name: string; email: string } }).user?.name ?? "—"}</p>
                     <p className="text-xs text-muted-foreground">{(kyc as typeof kyc & { user?: { name: string; email: string } }).user?.email}</p>

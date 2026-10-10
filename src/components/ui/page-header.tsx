@@ -11,16 +11,16 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action, breadcrumb, className }: PageHeaderProps) {
   return (
-    <div className={cn("mb-6 space-y-1", className)}>
-      {breadcrumb && <div className="mb-2">{breadcrumb}</div>}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className={cn("mb-8 space-y-1", className)}>
+      {breadcrumb && <div className="mb-3">{breadcrumb}</div>}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0">
-          <h1 className="truncate text-2xl font-bold tracking-tight text-foreground">{title}</h1>
+          <h1 className="truncate text-2xl font-semibold tracking-tight text-foreground sm:text-[1.75rem]">{title}</h1>
           {description && (
-            <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
-        {action && <div className="shrink-0">{action}</div>}
+        {action && <div className="flex shrink-0 flex-wrap items-center gap-2">{action}</div>}
       </div>
     </div>
   );
@@ -37,7 +37,7 @@ export function SectionHeader({ title, description, action, className }: Section
   return (
     <div className={cn("flex items-center justify-between gap-3", className)}>
       <div>
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
+        <h2 className="text-base font-semibold tracking-tight text-foreground">{title}</h2>
         {description && <p className="text-sm text-muted-foreground">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}

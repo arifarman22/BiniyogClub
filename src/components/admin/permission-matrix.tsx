@@ -153,12 +153,12 @@ export function PermissionMatrix({ initialPermissions, currentRole }: Props) {
                   </tr>
                 )}
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {group.keys.map((permKey) => {
                   const permValue = PERMISSIONS[permKey as keyof typeof PERMISSIONS];
                   const desc = PERMISSION_DESCRIPTIONS[permValue];
                   return (
-                    <tr key={permKey} className="hover:bg-muted/20">
+                    <tr key={permKey} className="hover:bg-primary/[0.03]">
                       <td className="py-2 pl-4 pr-3">
                         <span className="font-mono text-muted-foreground">{permValue}</span>
                         {desc && <p className="text-[10px] text-muted-foreground/60 mt-0.5">{desc}</p>}

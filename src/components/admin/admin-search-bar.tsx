@@ -47,14 +47,14 @@ export function AdminSearchBar({
 
   return (
     <form onSubmit={handleSubmit} className={cn("relative", className)}>
-      <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+      <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
       <input
         ref={inputRef}
         defaultValue={current}
         placeholder={placeholder}
         className={cn(
-          "h-8 w-full rounded-lg border border-input bg-background pl-9 pr-8 text-sm outline-none",
-          "focus:border-ring focus:ring-2 focus:ring-ring/30 transition-colors",
+          "h-10 w-full rounded-xl border border-border/70 bg-card pl-10 pr-9 text-sm shadow-[0_1px_2px_rgba(16,24,40,0.04)] outline-none placeholder:text-muted-foreground/70",
+          "focus:border-primary/50 focus:ring-4 focus:ring-primary/10 transition-all",
           isPending && "opacity-70",
         )}
       />
@@ -62,7 +62,8 @@ export function AdminSearchBar({
         <button
           type="button"
           onClick={handleClear}
-          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          aria-label="Clear search"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
         >
           <X className="h-3.5 w-3.5" />
         </button>

@@ -27,7 +27,7 @@ export function DeleteProjectButton({ projectId, projectTitle }: { projectId: st
   if (confirm) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirm(false)}>
-        <div className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
+        <div className="w-full max-w-sm surface-card p-5 shadow-xl space-y-4" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10">
               <Trash2 className="h-5 w-5 text-destructive" />

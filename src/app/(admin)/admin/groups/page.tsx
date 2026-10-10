@@ -13,6 +13,7 @@ import { EditGroupDialog } from "@/components/admin/edit-group-dialog";
 import { EditEntityDialog } from "@/components/admin/edit-entity-dialog";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/utils";
+import { TierIcon } from "@/components/groups/tier-icon";
 import type { AsyncComponentProps } from "@/types";
 
 export const metadata: Metadata = { title: "Group Investments — Admin" };
@@ -33,10 +34,6 @@ const STATUS_COLORS: Record<string, string> = {
   COMPLETED:       "bg-brand-100 text-brand-700 border-brand-300/40",
 };
 
-const TIER_ICONS: Record<string, string> = {
-  INVESTOR: "📈", SHAREHOLDER: "🏦", DIRECTORSHIP: "👔",
-  PLOT_BOOKING: "🏗️", LAND_SHARE: "🌍",
-};
 
 export default async function AdminGroupsPage({ searchParams }: AsyncComponentProps) {
   const session = await requireSession();
@@ -71,7 +68,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
         /* Group structure overview */
         <div className="space-y-4">
           {groups.map((group) => (
-            <div key={group.id} className="rounded-xl border border-border bg-card overflow-hidden">
+            <div key={group.id} className="surface-card overflow-hidden">
               <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="font-semibold">{group.name}</span>
@@ -89,7 +86,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
                   isActive: group.isActive,
                 }} />
               </div>
-              <div className="divide-y divide-border">
+              <div className="divide-y divide-border/60">
                 {group.entities.map((entity) => (
                   <div key={entity.id} className="px-4 py-3">
                     <div className="flex items-center justify-between mb-2">
@@ -112,7 +109,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
                         <div key={tier.id} className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs">
                           <div className="flex items-center justify-between gap-3">
                             <div>
-                              <span className="mr-1">{TIER_ICONS[tier.type] ?? "💼"}</span>
+                              <TierIcon type={tier.type} size="sm" className="mr-1.5 align-middle" />
                               <span className="font-medium">{tier.name}</span>
                               <span className="ml-2 text-muted-foreground">
                                 {fmtBdt(tier.minAmountBdt)} min · {tier._count.investments} investors
@@ -151,7 +148,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
             <AdminFilterBar options={STATUS_OPTIONS} allLabel="All Statuses" />
           </div>
 
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="surface-card overflow-hidden">
             {items.length === 0 ? (
               <p className="py-16 text-center text-sm text-muted-foreground">No group investments found.</p>
             ) : (
@@ -167,19 +164,19 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y divide-border/60">
                     {items.map((inv) => {
                       const payment = inv.manualPayments[0];
                       return (
-                        <tr key={inv.id} className="hover:bg-muted/20 transition-colors">
+                        <tr key={inv.id} className="hover:bg-primary/[0.03] transition-colors">
                           <td className="px-4 py-3">
                             <p className="font-medium">{inv.investor.name}</p>
                             <p className="text-xs text-muted-foreground">{inv.investor.email}</p>
                           </td>
                           <td className="px-4 py-3 hidden md:table-cell">
                             <p className="text-xs font-medium">{inv.tier.entity.group.name}</p>
-                            <p className="text-xs text-muted-foreground">
-                              {TIER_ICONS[inv.tier.type]} {inv.tier.name}
+                            <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                              <TierIcon type={inv.tier.type} size="sm" /> {inv.tier.name}
                             </p>
                           </td>
                           <td className="px-4 py-3 text-right font-mono font-medium">{fmtBdt(inv.amountBdt)}</td>

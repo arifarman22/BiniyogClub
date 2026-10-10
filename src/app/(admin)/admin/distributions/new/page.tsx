@@ -27,14 +27,14 @@ export default async function NewDistributionPage() {
       <PageHeader title="New Distribution Batch" description="Calculate and preview profit distribution for a project." />
 
       {projects.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-8 text-center">
+        <div className="surface-card p-8 text-center">
           <p className="text-sm text-muted-foreground">No eligible projects found.</p>
           <p className="mt-1 text-xs text-muted-foreground">Projects must be ACTIVE or COMPLETED with at least one active investment.</p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Step 1: Configure rule */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-1 text-base font-semibold">Step 1 — Distribution Rule</h2>
             <p className="mb-4 text-xs text-muted-foreground">
               Configure how revenue is split between investors and the platform. Rules are snapshotted at calculation time.
@@ -61,7 +61,7 @@ export default async function NewDistributionPage() {
           </div>
 
           {/* Step 2: Enter financials */}
-          <div className="rounded-xl border border-border bg-card p-6">
+          <div className="surface-card p-6">
             <h2 className="mb-1 text-base font-semibold">Step 2 — Enter Financial Data</h2>
             <p className="mb-4 text-xs text-muted-foreground">
               Enter the project&apos;s total revenue and eligible expenses. The system will calculate each investor&apos;s entitlement proportionally.

@@ -149,7 +149,7 @@ export function BankAccountManager({ accounts: initial }: Props) {
     });
   }
 
-  const inp = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
+  const inp = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10";
 
   return (
     <>
@@ -274,7 +274,7 @@ export function BankAccountManager({ accounts: initial }: Props) {
       {/* Create / Edit modal */}
       {formOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 pt-10">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-card shadow-xl">
+          <div className="w-full max-w-lg surface-card shadow-xl">
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
               <h2 className="text-sm font-semibold">{editing ? "Edit Bank Account" : "Add Bank Account"}</h2>
               <button onClick={closeForm} className="text-muted-foreground hover:text-foreground">
@@ -334,7 +334,7 @@ export function BankAccountManager({ accounts: initial }: Props) {
                     onChange={(e) => f("instructions", e.target.value)}
                     rows={2}
                     placeholder='e.g. "Use your investment ID as the transfer reference"'
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
                   />
                 </div>
                 <div>

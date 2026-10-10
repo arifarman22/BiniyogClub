@@ -77,7 +77,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold">Projects</h1>
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Projects</h1>
           <p className="text-sm text-muted-foreground">{totalAll} total projects</p>
         </div>
         <Link href="/admin/projects/new" className={cn(buttonVariants({ size: "sm" }))}>
@@ -122,7 +122,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
             name="search"
             defaultValue={search}
             placeholder="Search projects..."
-            className="w-full rounded-lg border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="w-full rounded-xl border border-input bg-background py-2 pl-9 pr-3 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
           />
         </form>
         <form method="get">
@@ -131,7 +131,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
           <select
             name="sort"
             defaultValue={sort}
-            className="rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+            className="rounded-xl border border-input bg-background px-3 py-2 text-sm outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10"
           >
           <option value="newest">Newest first</option>
           <option value="oldest">Oldest first</option>
@@ -140,13 +140,13 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
           <option value="goal_desc">Largest goal</option>
           <option value="goal_asc">Smallest goal</option>
           </select>
-          <button type="submit" className="rounded-lg border border-input bg-background px-3 py-2 text-sm hover:bg-muted/40">Sort</button>
+          <button type="submit" className="rounded-xl border border-input bg-background px-3 py-2 text-sm hover:bg-muted/40">Sort</button>
         </form>
       </div>
 
       {/* Table */}
       {items.length > 0 ? (
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <table className="w-full text-sm">
             <thead className="border-b border-border bg-muted/30">
               <tr>
@@ -158,11 +158,11 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
                 <th className="px-4 py-3 text-right text-xs font-medium text-muted-foreground">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/60">
               {items.map((p) => {
                 const pct = fundingPct(p.fundedAmountBdt.toString(), p.fundingGoalBdt.toString());
                 return (
-                  <tr key={p.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={p.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium line-clamp-1">{p.title}</p>
                       <p className="text-xs text-muted-foreground">{p.location ?? p.category}</p>
@@ -209,7 +209,7 @@ export default async function AdminProjectsPage({ searchParams }: { searchParams
           </table>
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border py-16 text-center">
+        <div className="surface-card border-dashed py-16 text-center">
           <p className="text-muted-foreground">No projects found.</p>
           <Link href="/admin/projects/new" className={cn(buttonVariants({ size: "sm" }), "mt-4")}>
             Create First Project

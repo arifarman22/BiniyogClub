@@ -26,7 +26,7 @@ export function AdminPagination({ page, totalPages, total, limit = 20 }: AdminPa
   const to = Math.min(page * limit, total);
 
   return (
-    <div className="flex items-center justify-between text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
       <span>
         Showing <span className="font-medium text-foreground">{from}–{to}</span> of{" "}
         <span className="font-medium text-foreground">{total}</span>
@@ -36,21 +36,23 @@ export function AdminPagination({ page, totalPages, total, limit = 20 }: AdminPa
           <Link
             href={href(page - 1)}
             aria-disabled={page <= 1}
+            aria-label="Previous page"
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded border border-border bg-card hover:bg-muted transition-colors",
+              "flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-primary/40 hover:text-primary",
               page <= 1 && "pointer-events-none opacity-40",
             )}
           >
             <ChevronLeft className="h-3.5 w-3.5" />
           </Link>
-          <span className="px-2 text-xs">
-            {page} / {totalPages}
+          <span className="rounded-xl bg-muted/60 px-3 py-2 text-xs font-semibold tabular-nums text-foreground">
+            Page {page} of {totalPages}
           </span>
           <Link
             href={href(page + 1)}
             aria-disabled={page >= totalPages}
+            aria-label="Next page"
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded border border-border bg-card hover:bg-muted transition-colors",
+              "flex h-9 w-9 items-center justify-center rounded-xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)] transition-colors hover:border-primary/40 hover:text-primary",
               page >= totalPages && "pointer-events-none opacity-40",
             )}
           >

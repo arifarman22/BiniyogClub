@@ -25,7 +25,7 @@ export default async function AdminInvestorsPage({ searchParams }: AsyncComponen
       <PageHeader title="Investors" description={`${total} registered investors`} />
       <AdminSearchBar placeholder="Search name or email..." className="w-64" />
 
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {items.length === 0 ? (
           <p className="py-16 text-center text-sm text-muted-foreground">No investors found.</p>
         ) : (
@@ -41,9 +41,9 @@ export default async function AdminInvestorsPage({ searchParams }: AsyncComponen
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-border/60">
                 {items.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-muted/20 transition-colors">
+                  <tr key={inv.id} className="hover:bg-primary/[0.03] transition-colors">
                     <td className="px-4 py-3">
                       <p className="font-medium">{inv.user.name}</p>
                       <p className="text-xs text-muted-foreground">{inv.user.email}</p>
