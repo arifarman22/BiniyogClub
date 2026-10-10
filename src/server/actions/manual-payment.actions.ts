@@ -6,6 +6,7 @@ import { PERMISSIONS } from "@/lib/authz/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { AppError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { documentService } from "@/server/services/document.service";
 import type { ActionResult } from "./auth.actions";
 
@@ -332,10 +333,13 @@ export async function approveManualPaymentAction(
       metadata: { approvedBy: session.id, transactionRef: submission.transactionRef },
     });
 
-    // Generate receipt PDF (fire-and-forget)
-    documentService
-      .generateInvestmentReceipt(submission.investmentId)
-      .catch((err) => console.error("[approveManualPayment] receipt generation failed:", err));
+    // Generate receipt PDF after the response is sent. A bare un-awaited promise
+    // gets killed when the serverless function freezes, so use after().
+    after(() =>
+      documentService
+        .generateInvestmentReceipt(submission.investmentId)
+        .catch((err) => console.error("[approveManualPayment] receipt generation failed:", err)),
+    );
 
     revalidatePath("/admin/payments");
     revalidatePath("/admin/payments/manual");

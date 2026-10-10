@@ -6,6 +6,7 @@ import { PERMISSIONS } from "@/lib/authz/permissions";
 import { requireSession } from "@/lib/auth/session";
 import { AppError, NotFoundError, ForbiddenError, ValidationError } from "@/lib/errors";
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import type { ActionResult } from "./auth.actions";
 
 function svcErr<T>(e: unknown): ActionResult<T> {
@@ -437,10 +438,12 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
       });
     }
 
-    // Generate receipt PDF (fire-and-forget)
+    // Generate receipt PDF after the response is sent (see after() note in manual-payment.actions).
     const { documentService } = await import("@/server/services/document.service");
-    documentService.generateInvestmentReceipt(investmentId)
-      .catch((err) => console.error("[approve investment] receipt generation failed:", err));
+    after(() =>
+      documentService.generateInvestmentReceipt(investmentId)
+        .catch((err) => console.error("[approve investment] receipt generation failed:", err)),
+    );
 
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
 
