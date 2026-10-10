@@ -2,38 +2,30 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ShieldCheck,
-  ChevronRight,
   ArrowRight,
-  Lock,
-  FileCheck,
-  Scale,
-  Sparkles,
+  ArrowDown,
   Building2,
-  TrendingUp,
-  Coins,
   CheckCircle2,
-  UserCheck,
-  Search,
-  Wallet,
-  Landmark,
-  FileText,
-  BadgePercent,
-  Clock,
-  HelpCircle,
-  Layers,
   CircleDollarSign,
-  ArrowDownRight,
+  FileCheck,
+  Landmark,
+  Lock,
+  Scale,
+  ShieldCheck,
+  Wallet,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { FaqAccordion } from "@/components/shared/faq-accordion";
+import { SectionHeading } from "@/components/home/section-heading";
 
 export const metadata: Metadata = {
   title: "How It Works — Institutional Co-Investment Framework | Biniyog Club",
   description:
-    "A comprehensive, step-by-step visual guide to how Biniyog Club works — from biometric KYC verification and legal contracts to funding verified business groups and receiving automated milestone payouts.",
+    "A step-by-step guide to how Biniyog Club works — from KYC verification and legal contracts to funding verified business groups and receiving milestone payouts.",
   openGraph: {
     title: "How Biniyog Club Works | Step-by-Step Investment Protocol",
-    description: "Learn how everyday investors and corporate groups participate in direct, asset-backed commercial syndicates across Bangladesh.",
+    description:
+      "Learn how everyday investors and corporate groups participate in direct, asset-backed commercial projects across Bangladesh.",
   },
 };
 
@@ -41,334 +33,313 @@ const HOW_IT_WORKS_STEPS = [
   {
     step: "01",
     image: "/images/digital-kyc-verify.jpg",
-    tag: "INSTANT ONBOARDING",
-    title: "Digital Account & Instant KYC",
-    desc: "Register in under 2 minutes. Submit your National ID (NID) or Passport for rapid cryptographic identity verification. Your individual investor wallet is provisioned instantly.",
-    highlights: ["2-Minute Paperless Setup", "Automated NID/Passport Check", "Secure Dedicated Wallet"],
+    tag: "Onboarding",
+    title: "Create account & verify KYC",
+    desc: "Register in minutes and submit your National ID (NID) or Passport. Once our team verifies your identity, your investor wallet is ready to use.",
+    highlights: ["Paperless sign-up", "NID / Passport verification", "Dedicated investor wallet"],
   },
   {
     step: "02",
     image: "/images/smart-agro-farm.jpg",
-    tag: "RIGOROUS DILIGENCE",
-    title: "Explore Vetted Opportunities",
-    desc: "Browse audited agricultural, SME, trade finance, and commercial business groups. Review physical asset collateral, audited balance sheets, risk scores, and projected profit margins.",
-    highlights: ["Physical Site Audits", "Audited Financial Statements", "14% - 26% Target Annual Yields"],
+    tag: "Due diligence",
+    title: "Explore vetted opportunities",
+    desc: "Browse reviewed agricultural, SME, trade and commercial projects. Compare collateral, financial disclosures, durations and expected returns before you commit.",
+    highlights: ["Physical site checks", "Financial disclosures", "Returns shown upfront"],
   },
   {
     step: "03",
     image: "/images/contract-security.jpg",
-    tag: "CIVIL ENFORCEABILITY",
-    title: "Execute Legally Bound Contract",
-    desc: "Fund your allocation seamlessly via instant Bank Transfer or MFS (bKash/Nagad). Every investment is bound by an enforceable digital deed signed under Bangladesh Contract Act 1872.",
-    highlights: ["Contract Act 1872 Compliant", "Segregated Bank Escrow", "Direct Digital Deed PDF"],
+    tag: "Legal contract",
+    title: "Fund & sign your contract",
+    desc: "Pay by bank transfer or mobile banking (bKash/Nagad) and upload your payment proof. Every investment is bound by a digital deed under the Bangladesh Contract Act 1872.",
+    highlights: ["Contract Act 1872 compliant", "Project-specific bank accounts", "Downloadable PDF certificate"],
   },
   {
     step: "04",
     image: "/images/wallet-returns-payout.jpg",
-    tag: "AUTOMATED DISTRIBUTIONS",
-    title: "Track Milestones & Receive Returns",
-    desc: "Monitor business operations with live milestone progress photos and financial reports. Scheduled return payouts and principal returns are automatically credited to your wallet for instant withdrawal.",
-    highlights: ["100% On-Time Payout Record", "Direct Bank/MFS Withdrawals", "Double-Entry Ledger Proof"],
+    tag: "Returns",
+    title: "Track milestones & get paid",
+    desc: "Follow progress updates and financial reports from your dashboard. Scheduled returns and principal are credited to your wallet, ready to withdraw.",
+    highlights: ["Live milestone updates", "Bank / MFS withdrawals", "Double-entry ledger records"],
   },
 ];
 
-const INVESTOR_DETAILS = [
+const INVESTOR_JOURNEY = [
   {
     step: "01",
-    title: "Identity Verification & Wallet Setup",
-    desc: "Submit your National ID or Passport. Our automated KYC engine confirms your credentials, granting you full co-investor access and an individual secure wallet.",
     badge: "Registration",
+    title: "Identity verification & wallet setup",
+    desc: "Submit your National ID or Passport. Once your KYC is approved you get full investor access and an individual, secure wallet.",
   },
   {
     step: "02",
-    title: "Portfolio Diligence & Selection",
-    desc: "Access comprehensive financial disclosure decks, asset collateral reports, enterprise track records, and transparent revenue-sharing models.",
-    badge: "Due Diligence",
+    badge: "Due diligence",
+    title: "Portfolio review & selection",
+    desc: "Access financial disclosures, collateral reports, enterprise track records and transparent revenue-sharing models for each project.",
   },
   {
     step: "03",
-    title: "Bank Escrow Allocation",
-    desc: "Deposit directly into segregated project bank accounts. Capital remains in escrow until minimum milestone targets and compliance checks are certified.",
-    badge: "Escrow Deposit",
+    badge: "Deposit",
+    title: "Deposit to the project account",
+    desc: "Pay directly into the project's designated bank account and upload your proof. Our finance team verifies the transaction before confirming your allocation.",
   },
   {
     step: "04",
-    title: "Digital Deed Execution",
-    desc: "Sign a formal investment deed with cryptographic timestamping. You receive an instant PDF certificate and legally binding contract copy.",
-    badge: "Legal Contract",
+    badge: "Legal contract",
+    title: "Digital deed execution",
+    desc: "Your investment is recorded against a formal, timestamped deed. You receive a PDF certificate with a verification code.",
   },
   {
     step: "05",
-    title: "Milestone & Operational Tracking",
-    desc: "Receive auditable progress reports, site visit summaries, and financial statements directly in your investor dashboard.",
-    badge: "Live Monitoring",
+    badge: "Monitoring",
+    title: "Milestone & operational tracking",
+    desc: "Progress reports, site updates and financial statements are published straight to your investor dashboard.",
   },
   {
     step: "06",
-    title: "Direct Wallet Payouts & Withdrawal",
-    desc: "Receive scheduled profit payouts and principal return upon maturity. Transfer funds instantly to your Bangladesh bank account or mobile wallet.",
-    badge: "Return Payout",
+    badge: "Payout",
+    title: "Wallet payouts & withdrawal",
+    desc: "Receive scheduled profit payouts and your principal at maturity, then withdraw to your Bangladeshi bank account or mobile wallet.",
+  },
+];
+
+const CAPITAL_FLOW = [
+  {
+    icon: Wallet,
+    title: "Investor deposit",
+    desc: "Via bank transfer or MFS into the project's designated account",
+  },
+  {
+    icon: Landmark,
+    title: "Verified & held",
+    desc: "Finance team confirms the payment; funds are tracked on the ledger",
+    featured: true,
+  },
+  {
+    icon: Building2,
+    title: "Disbursed to business",
+    desc: "Released to the vetted enterprise according to the project plan",
   },
 ];
 
 const SAFEGUARDS = [
   {
     icon: ShieldCheck,
-    title: "Multi-Tier Due Diligence",
-    desc: "Every enterprise undergoes exhaustive CIB credit checks, physical asset inspections, and historical balance sheet audits before listing.",
+    title: "Multi-tier due diligence",
+    desc: "Enterprises go through credit checks, physical asset inspections and balance sheet reviews before listing.",
   },
   {
     icon: Lock,
-    title: "Immutable Double-Entry Ledger",
-    desc: "All financial transactions and distributions are mathematically verified and permanently auditable with zero tampering possibility.",
+    title: "Double-entry ledger",
+    desc: "Every transaction and distribution is recorded with balancing debits and credits, so accounts are fully auditable.",
   },
   {
     icon: FileCheck,
-    title: "Enforceable Digital Contracts",
-    desc: "Co-investors receive formal digital agreements backed by the Contract Act 1872 of Bangladesh, complete with director personal guarantees.",
+    title: "Enforceable contracts",
+    desc: "Investors receive formal digital agreements under the Contract Act 1872 of Bangladesh.",
   },
   {
     icon: Scale,
-    title: "Segregated Escrow Accounts",
-    desc: "Investor capital is held separately from platform operating reserves in scheduled commercial bank escrows until operational milestones are validated.",
+    title: "Separate project accounts",
+    desc: "Investor capital is paid into project-designated bank accounts rather than mixed with platform operating funds.",
   },
+];
+
+const RETURN_POINTS = [
+  { title: "Pre-agreed return formulas", desc: "Fixed milestone yield or a share of operating revenue, stated on the project." },
+  { title: "No hidden deductions", desc: "What you see on the project terms is what is credited to your wallet." },
+  { title: "Direct withdrawals", desc: "Move funds from your wallet to any Bangladeshi bank account or mobile wallet." },
 ];
 
 const FAQS = [
   {
     q: "How does my money reach the business?",
-    a: "When you fund a project, your money is held in a segregated escrow account at a scheduled commercial bank in Bangladesh. The funds are disbursed to the enterprise in planned tranches only when our inspection team verifies milestone completion.",
+    a: "You pay into the project's designated bank account and upload your payment proof. Once our finance team verifies it, your investment is confirmed and funds are released to the enterprise according to the project plan.",
   },
   {
     q: "What happens if a project underperforms?",
-    a: "Every listed project is backed by tangible asset collateral, post-dated security cheques, and personal guarantees from enterprise directors. In the rare event of business delays, our legal recovery covenants enforce repayment under Bangladesh Contract Act 1872.",
+    a: "Listed projects are backed by collateral and contractual covenants. If a business is delayed, the agreement signed under the Bangladesh Contract Act 1872 governs repayment and recovery.",
   },
   {
     q: "How are returns calculated and distributed?",
-    a: "Returns are calculated using audited profit-sharing or predetermined fixed-yield formulas detailed on the project card. When a payout date arrives, earnings are automatically credited to your Biniyog Club wallet, where you can withdraw directly to your bank account or bKash/Nagad.",
+    a: "Each project states its return formula — a fixed yield or a profit share — upfront. On each payout date, earnings are credited to your Biniyog Club wallet, from where you can withdraw to your bank account or bKash/Nagad.",
   },
   {
     q: "Can I invest as a Non-Resident Bangladeshi (NRB)?",
-    a: "Yes! NRBs can register using their valid Bangladeshi passport or dual citizenship documents and fund investments via international wire transfer or domestic accounts.",
+    a: "Yes. NRBs can register using a valid Bangladeshi passport and fund investments via international wire transfer or a domestic account.",
   },
 ];
 
 export default function HowItWorksPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* ── 1. Hero Section ── */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-slate-950 via-emerald-950/80 to-slate-950 py-20 lg:py-28 text-white border-b border-border/40">
-        <div className="absolute top-0 right-1/4 -mt-20 h-96 w-96 rounded-full bg-emerald-500/15 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-10 -mb-20 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
-
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
-          <AnimatedSection animation="fade-down">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-emerald-300 backdrop-blur-md mb-6">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              <span>TRANSPARENT CO-INVESTMENT PROTOCOL • END-TO-END</span>
-            </div>
-
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-light tracking-tight text-white max-w-4xl mx-auto leading-tight">
-              How Direct Investment Works on{" "}
-              <span className="font-semibold bg-gradient-to-r from-emerald-400 via-teal-300 to-emerald-200 bg-clip-text text-transparent">
-                Biniyog Club
-              </span>
-            </h1>
-
-            <p className="mt-6 text-base sm:text-lg font-normal text-slate-100 max-w-3xl mx-auto leading-relaxed">
-              We make investing in Bangladesh&apos;s real economy straightforward, transparent, and legally protected. Explore our 4-stage co-investment lifecycle from KYC verification to automated profit distribution.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link
-                href="/auth/register"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5 w-full sm:w-auto"
-              >
-                Create Free Account <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                href="/projects"
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-8 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 w-full sm:w-auto"
-              >
-                Explore Live Opportunities
-              </Link>
-            </div>
-          </AnimatedSection>
+      {/* ── 1. Hero ── */}
+      <section className="relative overflow-hidden bg-[#040d09] pb-36 pt-20 text-white lg:pb-40 lg:pt-28">
+        <div className="pointer-events-none absolute inset-0">
+          <Image src="/images/contract-security.jpg" alt="" fill priority className="object-cover opacity-15" sizes="100vw" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#040d09]/70 via-[#040d09]/85 to-[#040d09]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(16,185,129,0.18),transparent)]" />
         </div>
+
+        <AnimatedSection animation="fade-down" className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
+          <div className="mb-6 inline-flex items-center gap-2 border border-emerald-400/30 bg-emerald-950/60 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
+            <span className="h-px w-5 bg-emerald-400/70" />
+            How it works
+            <span className="h-px w-5 bg-emerald-400/70" />
+          </div>
+          <h1 className="text-4xl font-light leading-[1.1] tracking-tight text-balance sm:text-5xl lg:text-6xl">
+            How direct investment works on{" "}
+            <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text font-semibold text-transparent">
+              Biniyog Club
+            </span>
+          </h1>
+          <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-slate-300 sm:text-lg">
+            Investing in Bangladesh&apos;s real economy, made straightforward, transparent and legally protected — from
+            KYC verification to profit distribution in four stages.
+          </p>
+          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/auth/register"
+              className="group inline-flex items-center justify-center gap-2 bg-primary px-7 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
+            >
+              Create free account
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Link>
+            <Link
+              href="/projects"
+              className="inline-flex items-center justify-center gap-2 border border-white/25 bg-white/5 px-7 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition-all hover:border-white/50 hover:bg-white/10"
+            >
+              Explore live projects
+            </Link>
+          </div>
+        </AnimatedSection>
       </section>
 
-      {/* ── 2. Primary 4-Stage Core Flow with Real Photographic Imagery ── */}
-      <section className="relative z-20 -mt-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ── 2. Four-stage flow (overlaps hero) ── */}
+      <section className="relative z-20 mx-auto -mt-24 max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {HOW_IT_WORKS_STEPS.map((step, idx) => (
-            <AnimatedSection key={step.step} delay={idx * 100} animation="fade-up">
-              <div className="group relative flex flex-col justify-between h-full overflow-hidden rounded-3xl border border-slate-200/90 bg-card dark:border-white/10 p-5 shadow-lg transition-all duration-300 hover:-translate-y-1.5 hover:border-emerald-500/50 hover:shadow-xl">
-                <div>
-                  {/* Photo Banner with Badges */}
-                  <div className="relative h-44 w-full rounded-2xl overflow-hidden mb-4 bg-slate-100 dark:bg-slate-800">
-                    <Image
-                      src={step.image}
-                      alt={step.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, 25vw"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
-                    
-                    <span className="absolute top-3 right-3 rounded-full bg-slate-900/90 backdrop-blur-md px-2.5 py-0.5 text-[10px] font-mono font-bold text-white border border-white/20">
-                      STEP {step.step}
-                    </span>
+            <AnimatedSection key={step.step} delay={idx * 100} animation="fade-up" className="h-full">
+              <article className="group flex h-full flex-col border border-border bg-card shadow-xl transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/50">
+                <div className="relative h-44 w-full overflow-hidden bg-muted">
+                  <Image
+                    src={step.image}
+                    alt={step.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 768px) 100vw, 25vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent" />
+                  <span className="absolute left-3 top-3 bg-primary px-2.5 py-1 text-xs font-bold tabular-nums text-white">
+                    {step.step}
+                  </span>
+                  <span className="absolute bottom-3 left-3 text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                    {step.tag}
+                  </span>
+                </div>
 
-                    <span className="absolute bottom-3 left-3 rounded-full bg-emerald-950/90 backdrop-blur-md border border-emerald-500/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-200 tracking-wider">
-                      {step.tag}
-                    </span>
-                  </div>
-
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                <div className="flex flex-1 flex-col p-5">
+                  <h3 className="mb-2 text-lg font-semibold text-foreground transition-colors group-hover:text-primary">
                     {step.title}
                   </h3>
-                  <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed mb-4">
-                    {step.desc}
-                  </p>
+                  <p className="mb-5 text-sm leading-relaxed text-muted-foreground">{step.desc}</p>
+                  <ul className="mt-auto space-y-1.5 border-t border-border pt-4">
+                    {step.highlights.map((h) => (
+                      <li key={h} className="flex items-center gap-2 text-xs font-medium text-foreground">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
+                        {h}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-
-                <div className="space-y-1.5 pt-3 border-t border-border/60">
-                  {step.highlights.map((h) => (
-                    <div key={h} className="flex items-center gap-1.5 text-xs font-medium text-slate-800 dark:text-slate-200">
-                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                      <span>{h}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              </article>
             </AnimatedSection>
           ))}
         </div>
       </section>
 
-      {/* ── 3. Visual Capital Flow Architecture ("Where Does Your Money Go?") ── */}
-      <section className="py-20 lg:py-28 bg-card/60 border-b border-border/60 mt-16">
+      {/* ── 3. Capital flow ── */}
+      <section className="bg-background py-20 lg:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-16">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium tracking-widest text-emerald-700 dark:text-emerald-300 mb-3">
-              <Landmark className="h-3.5 w-3.5" />
-              <span>CAPITAL PROTECTION ARCHITECTURE</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-slate-900 dark:text-white">
-              Where Does Your Money Go?
-            </h2>
-            <p className="mt-3 text-sm sm:text-base font-normal text-slate-700 dark:text-slate-200">
-              Unlike informal lending or speculative funds, your capital never sits in an unmonitored platform account. Here is the segregated flow:
-            </p>
+          <AnimatedSection animation="fade-down" className="mb-14">
+            <SectionHeading
+              eyebrow="Capital protection"
+              title="Where does your"
+              highlight="money go?"
+              description="Your capital never sits in an unmonitored account. Here's how it moves from you to the business — and back."
+            />
           </AnimatedSection>
 
-          <div className="relative rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-6 sm:p-10 shadow-xl">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-6 items-center">
-              {/* Box 1: Investor Deposit */}
-              <div className="rounded-2xl border border-slate-200/90 dark:border-white/10 bg-background p-5 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                  <Wallet className="h-6 w-6" />
-                </div>
-                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Step 1</p>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">Co-Investor Deposit</h4>
-                <p className="text-xs font-normal text-slate-800 dark:text-slate-200 mt-1">Via Bank Transfer or MFS into Segregated Escrow</p>
-              </div>
+          <AnimatedSection animation="zoom-in" delay={100}>
+            <div className="border border-border bg-card p-6 shadow-xl sm:p-10">
+              <ol className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+                {CAPITAL_FLOW.map(({ icon: Icon, title, desc, featured }, i) => (
+                  <li key={title} className="contents">
+                    <div
+                      className={`relative flex flex-col items-center p-6 text-center ${featured ? "border-2 border-primary bg-primary/5" : "border border-border bg-background"}`}
+                    >
+                      <div
+                        className={`mb-4 flex h-12 w-12 items-center justify-center ${featured ? "bg-primary text-white" : "bg-primary/10 text-primary"}`}
+                      >
+                        <Icon className="h-6 w-6" />
+                      </div>
+                      <p className="text-xs font-bold uppercase tracking-widest text-primary">Step {i + 1}</p>
+                      <h3 className="mt-1 text-base font-semibold text-foreground">{title}</h3>
+                      <p className="mt-1.5 text-sm text-muted-foreground">{desc}</p>
+                    </div>
+                    {i < CAPITAL_FLOW.length - 1 && (
+                      <div className="flex items-center justify-center text-primary" aria-hidden="true">
+                        <ArrowRight className="hidden h-6 w-6 md:block" />
+                        <ArrowDown className="h-5 w-5 md:hidden" />
+                      </div>
+                    )}
+                  </li>
+                ))}
+              </ol>
 
-              {/* Arrow 1 */}
-              <div className="hidden md:flex justify-center text-emerald-600 dark:text-emerald-400">
-                <ArrowRight className="h-6 w-6 animate-pulse" />
-              </div>
-
-              {/* Box 2: Scheduled Bank Escrow */}
-              <div className="rounded-2xl border-2 border-emerald-500/50 bg-emerald-500/10 p-5 text-center relative">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/20 text-emerald-700 dark:text-emerald-400">
-                  <Landmark className="h-6 w-6" />
-                </div>
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-emerald-600 px-2.5 py-0.5 text-[9px] font-bold text-white uppercase tracking-wider shadow-sm">
-                  Segregated Escrow
-                </span>
-                <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Step 2</p>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">Scheduled Bank Escrow</h4>
-                <p className="text-xs font-normal text-slate-800 dark:text-slate-200 mt-1">Capital locked until project hits target and passes audit</p>
-              </div>
-
-              {/* Arrow 2 */}
-              <div className="hidden md:flex justify-center text-emerald-600 dark:text-emerald-400">
-                <ArrowRight className="h-6 w-6 animate-pulse" />
-              </div>
-
-              {/* Box 3: Milestone Tranche Disbursal */}
-              <div className="rounded-2xl border border-slate-200/90 dark:border-white/10 bg-background p-5 text-center">
-                <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
-                  <Building2 className="h-6 w-6" />
-                </div>
-                <p className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Step 3</p>
-                <h4 className="text-sm font-bold text-slate-900 dark:text-white mt-1">Audited Disbursal</h4>
-                <p className="text-xs font-normal text-slate-800 dark:text-slate-200 mt-1">Disbursed in tranches directly to vetted business entity</p>
-              </div>
-            </div>
-
-            {/* Bottom Return Cycle Banner */}
-            <div className="mt-8 pt-6 border-t border-border/60 grid sm:grid-cols-2 gap-4 items-center">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+              <div className="mt-8 flex items-center gap-4 border-t border-border pt-6">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10 text-primary">
                   <CircleDollarSign className="h-5 w-5" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-bold text-slate-900 dark:text-white">Repayment & Profit Realization Cycle</h4>
-                  <p className="text-xs font-normal text-slate-800 dark:text-slate-200">Revenues generated by the enterprise flow back to co-investor wallets.</p>
+                  <h3 className="text-sm font-semibold text-foreground">Repayment &amp; profit cycle</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Revenue generated by the enterprise flows back to investor wallets as scheduled returns.
+                  </p>
                 </div>
               </div>
-              <div className="text-left sm:text-right">
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> 100% On-Time Payout Track Record
-                </span>
-              </div>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      {/* ── 4. Detailed 6-Step Investor Journey ── */}
-      <section className="py-20 lg:py-24">
+      {/* ── 4. Six-step investor journey ── */}
+      <section className="bg-muted/40 py-20 lg:py-24">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection animation="fade-down" className="mb-14 text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium tracking-widest text-emerald-700 dark:text-emerald-300 mb-3">
-              <span>FOR RETAIL & CORPORATE CO-INVESTORS</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-slate-900 dark:text-white">
-              Your Complete Co-Investment Journey
-            </h2>
-            <p className="mt-3 text-sm sm:text-base font-normal text-slate-700 dark:text-slate-200 leading-relaxed">
-              From creating your account to collecting your final returns, every interaction is tracked on your investor dashboard.
-            </p>
+          <AnimatedSection animation="fade-down" className="mb-14">
+            <SectionHeading
+              eyebrow="For retail & corporate investors"
+              title="Your complete"
+              highlight="investment journey"
+              description="From creating your account to collecting your final returns, every step is tracked on your investor dashboard."
+            />
           </AnimatedSection>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {INVESTOR_DETAILS.map(({ step, title, desc, badge }, idx) => (
-              <AnimatedSection key={step} delay={idx * 80} animation="fade-up">
-                <div className="group relative flex flex-col justify-between h-full rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-7 shadow-sm transition-all duration-300 hover:border-emerald-500/40 hover:shadow-lg hover:-translate-y-1">
-                  <div>
-                    <div className="mb-4 flex items-center justify-between">
-                      <span className="text-3xl font-normal font-mono text-emerald-600 dark:text-emerald-400">
-                        {step}
-                      </span>
-                      <span className="rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700 dark:text-emerald-300">
-                        {badge}
-                      </span>
-                    </div>
-                    <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-                      {title}
-                    </h3>
-                    <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
-                      {desc}
-                    </p>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {INVESTOR_JOURNEY.map(({ step, title, desc, badge }, idx) => (
+              <AnimatedSection key={step} delay={idx * 70} animation="fade-up" className="h-full">
+                <div className="group relative h-full overflow-hidden border border-border bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg">
+                  <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent transition-all group-hover:via-primary" />
+                  <div className="mb-4 flex items-center justify-between">
+                    <span className="text-3xl font-light tabular-nums text-primary">{step}</span>
+                    <span className="bg-primary/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wider text-primary">
+                      {badge}
+                    </span>
                   </div>
-
-                  <div className="mt-5 pt-3 border-t border-border/60 flex items-center justify-between text-[11px] text-slate-700 dark:text-slate-300 font-medium">
-                    <span>Automated Protocol</span>
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                  </div>
+                  <h3 className="mb-2 text-base font-semibold text-foreground transition-colors group-hover:text-primary">
+                    {title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">{desc}</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -377,117 +348,104 @@ export default function HowItWorksPage() {
           <div className="mt-12 text-center">
             <Link
               href="/auth/register"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5"
+              className="group inline-flex items-center justify-center gap-2 bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
             >
-              Open Investor Account Now <ArrowRight className="h-4 w-4" />
+              Open investor account
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
       </section>
 
-      {/* ── 5. Concrete Return Example Calculator Scenario ── */}
-      <section className="py-20 lg:py-24 bg-card/70 border-y border-border/60">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-12 gap-10 items-center">
-            <div className="lg:col-span-6">
-              <AnimatedSection animation="fade-right">
-                <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 mb-3">
-                  <BadgePercent className="h-3.5 w-3.5" />
-                  <span>ILLUSTRATIVE SCENARIO</span>
+      {/* ── 5. Return example ── */}
+      <section className="bg-background py-20 lg:py-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+          <AnimatedSection animation="fade-right" className="lg:col-span-6">
+            <SectionHeading
+              align="left"
+              eyebrow="Illustrative scenario"
+              title="How returns are"
+              highlight="realized in practice"
+              description="Every project states its return formula, duration and payout schedule before you invest."
+            />
+            <ul className="mt-8 space-y-4">
+              {RETURN_POINTS.map((pt) => (
+                <li key={pt.title} className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                  <span className="text-sm leading-relaxed text-muted-foreground">
+                    <strong className="font-semibold text-foreground">{pt.title}:</strong> {pt.desc}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </AnimatedSection>
+
+          <AnimatedSection animation="fade-left" className="lg:col-span-6">
+            <div className="overflow-hidden border border-border bg-card shadow-xl">
+              <div className="flex items-center justify-between gap-4 bg-[#040d09] px-6 py-5 text-white sm:px-8">
+                <div>
+                  <span className="text-[11px] font-bold uppercase tracking-widest text-emerald-300">
+                    Sample 6-month project
+                  </span>
+                  <h3 className="mt-0.5 text-base font-semibold">Commercial cold-chain agro expansion</h3>
                 </div>
-                <h2 className="text-2xl sm:text-4xl font-normal tracking-tight text-slate-900 dark:text-white leading-tight">
-                  How Returns are Realized in Practice
-                </h2>
-                <p className="mt-4 text-sm sm:text-base font-normal text-slate-800 dark:text-slate-200 leading-relaxed">
-                  We believe in 100% mathematical clarity. Every project explicitly outlines its return formula, cycle duration, and milestone schedule before you allocate capital.
-                </p>
-                <div className="mt-6 space-y-3">
-                  <div className="flex items-start gap-2.5 text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-white">Pre-agreed Return Formulas:</strong> Fixed milestone yield or percentage of gross operational revenue.</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-white">No Concealed Deductions:</strong> What you see on the project term sheet is what gets deposited to your wallet.</span>
-                  </div>
-                  <div className="flex items-start gap-2.5 text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                    <span><strong className="text-slate-900 dark:text-white">Direct Bank Re-direction:</strong> Withdraw from your wallet into any Bangladeshi scheduled bank with zero delay.</span>
-                  </div>
+                <span className="shrink-0 border border-emerald-400/40 bg-emerald-500/15 px-3 py-1 text-xs font-bold text-emerald-300">
+                  18% p.a.
+                </span>
+              </div>
+
+              <dl className="divide-y divide-border px-6 text-sm sm:px-8">
+                <div className="flex items-center justify-between py-3.5">
+                  <dt className="text-muted-foreground">Principal investment</dt>
+                  <dd className="font-semibold tabular-nums text-foreground">৳50,000</dd>
                 </div>
-              </AnimatedSection>
+                <div className="flex items-center justify-between py-3.5">
+                  <dt className="text-muted-foreground">Term</dt>
+                  <dd className="tabular-nums text-foreground">6 months (180 days)</dd>
+                </div>
+                <div className="flex items-center justify-between py-3.5">
+                  <dt className="text-muted-foreground">Projected profit (9% over 6 months)</dt>
+                  <dd className="font-semibold tabular-nums text-primary">+ ৳4,500</dd>
+                </div>
+                <div className="flex items-center justify-between py-4">
+                  <dt className="font-semibold text-foreground">Total payout at maturity</dt>
+                  <dd className="text-xl font-semibold tabular-nums text-primary">৳54,500</dd>
+                </div>
+              </dl>
+
+              <p className="border-t border-border bg-primary/5 px-6 py-4 text-xs leading-relaxed text-muted-foreground sm:px-8">
+                <strong className="font-semibold text-foreground">Payout mechanism:</strong> ৳4,500 profit paid in
+                milestone tranches; ৳50,000 principal returned at contract maturity. Illustrative only — actual terms
+                are set by each project agreement.
+              </p>
             </div>
-
-            {/* Right: Mock Term Sheet / Return Simulation Card */}
-            <div className="lg:col-span-6">
-              <AnimatedSection animation="fade-left">
-                <div className="rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-6 sm:p-8 shadow-xl">
-                  <div className="flex items-center justify-between pb-4 border-b border-border/60">
-                    <div>
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                        SAMPLE 6-MONTH SYNDICATE
-                      </span>
-                      <h4 className="text-base font-bold text-slate-900 dark:text-white">Commercial Cold-Chain Agro Expansion</h4>
-                    </div>
-                    <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-700 dark:text-emerald-300">
-                      18% Annualized
-                    </span>
-                  </div>
-
-                  <div className="mt-5 space-y-3.5 text-sm">
-                    <div className="flex justify-between items-center py-1 font-normal text-slate-800 dark:text-slate-200">
-                      <span>Principal Investment</span>
-                      <span className="font-mono font-bold text-slate-900 dark:text-white">৳50,000</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 font-normal text-slate-800 dark:text-slate-200">
-                      <span>Syndicate Term</span>
-                      <span className="font-mono text-slate-900 dark:text-white">6 Months (180 Days)</span>
-                    </div>
-                    <div className="flex justify-between items-center py-1 font-normal text-slate-800 dark:text-slate-200">
-                      <span>Projected Net Profit (9% in 6 mo)</span>
-                      <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">+ ৳4,500</span>
-                    </div>
-                    <div className="flex justify-between items-center py-2.5 border-t border-b border-border/60">
-                      <span className="font-bold text-slate-900 dark:text-white">Total Payout at Maturity</span>
-                      <span className="text-lg font-mono font-bold text-emerald-600 dark:text-emerald-400">৳54,500</span>
-                    </div>
-                  </div>
-
-                  <div className="mt-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 p-4 text-xs font-normal text-slate-900 dark:text-slate-100">
-                    <strong className="font-bold text-slate-900 dark:text-white">Payout Mechanism:</strong> ৳4,500 profit disbursed in milestone tranches; ৳50,000 principal returned at contract expiration.
-                  </div>
-                </div>
-              </AnimatedSection>
-            </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      {/* ── 6. Built-In Safeguards Dock ── */}
-      <section className="py-20 lg:py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection animation="fade-down" className="mb-14 text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium tracking-widest text-emerald-700 dark:text-emerald-300 mb-3">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              <span>INSTITUTIONAL GRADE SECURITY</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-slate-900 dark:text-white">
-              Built-In Investor Protection Protocol
-            </h2>
-            <p className="mt-3 text-sm sm:text-base font-normal text-slate-700 dark:text-slate-200 leading-relaxed">
-              Biniyog Club enforces structural safeguards at every level of capital flow, ledger math, and legal enforceability.
-            </p>
+      {/* ── 6. Safeguards (dark anchor) ── */}
+      <section className="relative overflow-hidden bg-[#040d09] py-20 text-white lg:py-24">
+        <div className="pointer-events-none absolute -top-24 right-1/4 h-96 w-96 bg-emerald-500/10 blur-[140px]" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <AnimatedSection animation="fade-down" className="mb-14">
+            <SectionHeading
+              tone="dark"
+              eyebrow="Investor protection"
+              title="Built-in"
+              highlight="safeguards"
+              description="Structural protections at every level — capital flow, ledger accounting and legal enforceability."
+            />
           </AnimatedSection>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {SAFEGUARDS.map(({ icon: Icon, title, desc }, idx) => (
-              <AnimatedSection key={title} delay={idx * 80} animation="fade-up">
-                <div className="rounded-3xl border border-slate-200/90 dark:border-white/10 bg-card p-7 text-center transition-all duration-300 hover:border-emerald-500/40 hover:shadow-lg">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400">
+              <AnimatedSection key={title} delay={idx * 80} animation="fade-up" className="h-full">
+                <div className="h-full border border-white/10 bg-white/[0.04] p-7 transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/[0.07]">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center border border-emerald-500/30 bg-emerald-500/10 text-emerald-300">
                     <Icon className="h-6 w-6" />
                   </div>
-                  <h3 className="mb-2 text-base font-bold text-slate-900 dark:text-white">{title}</h3>
-                  <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">{desc}</p>
+                  <h3 className="mb-2 text-base font-semibold text-white">{title}</h3>
+                  <p className="text-sm leading-relaxed text-slate-300">{desc}</p>
                 </div>
               </AnimatedSection>
             ))}
@@ -495,60 +453,60 @@ export default function HowItWorksPage() {
         </div>
       </section>
 
-      {/* ── 7. Frequently Asked Questions ── */}
-      <section className="py-20 lg:py-24 bg-card/60 border-t border-border/60">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <AnimatedSection animation="fade-down" className="mb-14 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-3.5 py-1 text-xs font-medium tracking-widest text-emerald-700 dark:text-emerald-300 mb-3">
-              <HelpCircle className="h-3.5 w-3.5" />
-              <span>FREQUENT QUESTIONS</span>
-            </div>
-            <h2 className="text-3xl sm:text-4xl font-normal tracking-tight text-slate-900 dark:text-white">
-              Questions About How It Works?
-            </h2>
-            <p className="mt-3 text-sm sm:text-base font-normal text-slate-700 dark:text-slate-200">
-              Clear answers to the most common questions about funding, legal protection, and withdrawals.
-            </p>
+      {/* ── 7. FAQ ── */}
+      <section className="bg-muted/40 py-20 lg:py-24">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+          <AnimatedSection animation="fade-right" className="lg:col-span-5">
+            <SectionHeading
+              align="left"
+              eyebrow="FAQ"
+              title="Questions about"
+              highlight="how it works?"
+              description="Answers to the most common questions about funding, legal protection and withdrawals."
+            />
+            <Link
+              href="/faq"
+              className="group mt-8 inline-flex items-center gap-2 border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
+            >
+              See all FAQs
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
           </AnimatedSection>
-
-          <div className="space-y-4">
-            {FAQS.map((faq) => (
-              <div
-                key={faq.q}
-                className="rounded-2xl border border-slate-200/90 dark:border-white/10 bg-card p-6 shadow-sm transition-all hover:border-emerald-500/40"
-              >
-                <h4 className="text-base font-bold text-slate-900 dark:text-white mb-2">{faq.q}</h4>
-                <p className="text-xs sm:text-sm font-normal text-slate-800 dark:text-slate-200 leading-relaxed">{faq.a}</p>
-              </div>
-            ))}
-          </div>
+          <AnimatedSection animation="fade-left" delay={100} className="lg:col-span-7">
+            <FaqAccordion items={FAQS} />
+          </AnimatedSection>
         </div>
       </section>
 
-      {/* ── 8. Bottom Call to Action ── */}
-      <section className="py-20 bg-gradient-to-b from-slate-950 to-slate-900 text-white border-t border-emerald-950">
-        <div className="mx-auto max-w-4xl px-4 text-center sm:px-6">
-          <h2 className="text-3xl sm:text-5xl font-light tracking-tight text-white mb-4">
-            Start Your Co-Investment Journey Today
+      {/* ── 8. Final CTA ── */}
+      <section className="relative overflow-hidden bg-[#030906] py-20 text-white lg:py-24">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_40%,rgba(16,185,129,0.18),transparent)]" />
+        <AnimatedSection animation="zoom-in" className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <h2 className="text-3xl font-light tracking-tight text-balance sm:text-5xl">
+            Start your investment{" "}
+            <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text font-semibold text-transparent">
+              journey today
+            </span>
           </h2>
-          <p className="text-sm sm:text-base font-normal text-slate-100 max-w-xl mx-auto mb-8 leading-relaxed">
-            Create your account in under 2 minutes, verify your NID, and join over 5,000 investors earning predictable returns in Bangladesh.
+          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-300">
+            Create your account in minutes, verify your NID, and start investing in vetted projects across Bangladesh.
           </p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+          <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/auth/register"
-              className="inline-flex items-center justify-center gap-2 rounded-full bg-emerald-600 px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-600/25 transition-all duration-300 hover:bg-emerald-700 hover:-translate-y-0.5 w-full sm:w-auto"
+              className="group inline-flex items-center justify-center gap-2 bg-primary px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-emerald-900/40 transition-all hover:-translate-y-0.5 hover:bg-brand-500"
             >
-              Register Account <ArrowRight className="h-4 w-4" />
+              Register account
+              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
             <Link
               href="/projects"
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/30 px-8 py-3.5 text-sm font-semibold text-white backdrop-blur-sm transition-all hover:bg-white/10 w-full sm:w-auto"
+              className="inline-flex items-center justify-center gap-2 border border-white/25 bg-white/5 px-8 py-3.5 text-sm font-semibold text-white transition-all hover:border-white/50 hover:bg-white/10"
             >
-              Browse Live Opportunities
+              Browse live projects
             </Link>
           </div>
-        </div>
+        </AnimatedSection>
       </section>
     </div>
   );

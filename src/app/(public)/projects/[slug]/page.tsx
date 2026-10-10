@@ -221,12 +221,12 @@ export default async function ProjectDetailPage({ params }: Props) {
       </section>
 
       {/* Body */}
-      <section className="py-10">
+      <section className="py-6 sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-8 lg:grid-cols-3">
+          <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
 
-            {/* Left */}
-            <div className="lg:col-span-2 space-y-10">
+            {/* Left — order-2 on mobile so sidebar shows first */}
+            <div className="lg:col-span-2 space-y-10 order-2 lg:order-1">
 
               <div>
                 <h2 className="mb-4 text-xl font-bold">Overview</h2>
@@ -326,15 +326,13 @@ export default async function ProjectDetailPage({ params }: Props) {
                   <div className="space-y-2">
                     {project.documents.map((doc) => (
                       <a key={doc.id} href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center justify-between rounded-xl border border-border bg-card px-5 py-4 transition-colors hover:border-primary/40 hover:bg-muted/30">
-                        <div className="flex items-center gap-3">
-                          <FileText className="h-5 w-5 shrink-0 text-primary" />
-                          <div>
-                            <p className="text-sm font-medium">{doc.name}</p>
-                            <p className="text-xs text-muted-foreground">{doc.mimeType} · {fileSizeLabel(doc.sizeBytes)}</p>
-                          </div>
+                        className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 transition-colors hover:border-primary/40 hover:bg-muted/30">
+                        <FileText className="h-5 w-5 shrink-0 text-primary" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{doc.name}</p>
+                          <p className="text-xs text-muted-foreground">{doc.mimeType} · {fileSizeLabel(doc.sizeBytes)}</p>
                         </div>
-                        <span className="text-xs text-primary">Download ↗</span>
+                        <span className="text-xs text-primary shrink-0">↗</span>
                       </a>
                     ))}
                   </div>
@@ -408,8 +406,8 @@ export default async function ProjectDetailPage({ params }: Props) {
 
             </div>
 
-            {/* Sidebar */}
-            <div className="space-y-5 lg:sticky lg:top-20 lg:self-start">
+            {/* Sidebar — order-1 on mobile so it shows above content */}
+            <div className="space-y-5 order-1 lg:order-2 lg:sticky lg:top-20 lg:self-start">
 
               <Card className="overflow-hidden">
                 <div className="bg-gradient-to-br from-brand-700 to-brand-600 px-5 py-4">
@@ -492,11 +490,11 @@ export default async function ProjectDetailPage({ params }: Props) {
                       { label: "Project Start", value: fmtDate(project.startDate) },
                       { label: "Expected Maturity", value: fmtDate(project.endDate) },
                     ].map(({ label, value }) => (
-                      <div key={label} className="flex items-center justify-between text-sm">
-                        <span className="flex items-center gap-1.5 text-muted-foreground">
+                      <div key={label} className="flex items-start justify-between gap-2 text-sm">
+                        <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">
                           <Calendar className="h-3.5 w-3.5 shrink-0" />{label}
                         </span>
-                        <span className="font-medium text-right">{value ?? "TBD"}</span>
+                        <span className="font-medium text-right text-xs">{value ?? "TBD"}</span>
                       </div>
                     ))}
                   </div>
@@ -509,17 +507,17 @@ export default async function ProjectDetailPage({ params }: Props) {
                     <h3 className="mb-3 text-sm font-semibold">Project Info</h3>
                     <div className="space-y-2 text-sm">
                       {project.group && (
-                        <div className="flex justify-between">
-                          <span className="text-muted-foreground">Group</span>
+                        <div className="flex items-start justify-between gap-2">
+                          <span className="text-muted-foreground shrink-0">Group</span>
                           <span className="font-medium text-right text-primary">{project.group.name}</span>
                         </div>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Location</span>
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground shrink-0">Location</span>
                         <span className="font-medium text-right">{project.location}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Category</span>
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-muted-foreground shrink-0">Category</span>
                         <span className="font-medium text-right">{CATEGORY_LABELS[project.category] ?? project.category}</span>
                       </div>
                     </div>

@@ -4,13 +4,17 @@ import { useId, useState } from "react";
 import { Plus } from "lucide-react";
 import { HOME_FAQS } from "@/components/shared/faq-data";
 
-export function FaqAccordion() {
+interface FaqAccordionProps {
+  items?: { q: string; a: string }[];
+}
+
+export function FaqAccordion({ items = HOME_FAQS }: FaqAccordionProps) {
   const [open, setOpen] = useState<number | null>(0);
   const baseId = useId();
 
   return (
     <div className="divide-y divide-border border-y border-border">
-      {HOME_FAQS.map(({ q, a }, i) => {
+      {items.map(({ q, a }, i) => {
         const isOpen = open === i;
         const panelId = `${baseId}-panel-${i}`;
         const buttonId = `${baseId}-button-${i}`;
