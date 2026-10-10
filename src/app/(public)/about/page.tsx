@@ -428,7 +428,7 @@ export default function AboutPage() {
               </p>
               <p className="flex items-center gap-3 text-sm text-slate-200">
                 <Clock className="h-4 w-4 shrink-0 text-emerald-400" />
-                Sun–Thu: 9:00 AM – 6:00 PM
+                Sat–Thu: 9:00 AM – 6:00 PM
               </p>
               <a href="tel:+8801335149033" className="flex items-center gap-3 text-sm text-slate-200 hover:text-white">
                 <Phone className="h-4 w-4 shrink-0 text-emerald-400" />

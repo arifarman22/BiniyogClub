@@ -45,8 +45,8 @@ const CONTACT_CARDS: {
   {
     icon: Clock,
     title: "Office hours",
-    value: "Sunday – Thursday",
-    sub: "9:00 AM – 6:00 PM (Fri–Sat closed)",
+    value: "Saturday – Thursday",
+    sub: "9:00 AM – 6:00 PM (Friday closed)",
     action: "Plan a visit",
     href: "#visit",
   },
@@ -315,7 +315,7 @@ export default function ContactPageClient() {
                 <li className="flex items-start gap-3">
                   <Clock className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span>
-                    <strong className="font-semibold text-foreground">In-person meetings:</strong> Sun–Thu, 9:00 AM – 6:00
+                    <strong className="font-semibold text-foreground">In-person meetings:</strong> Sat–Thu, 9:00 AM – 6:00
                     PM. An appointment is recommended for group and partnership discussions.
                   </span>
                 </li>

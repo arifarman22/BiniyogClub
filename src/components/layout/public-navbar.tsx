@@ -53,7 +53,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
             <span className="hidden lg:inline-flex items-center gap-1.5 text-slate-400">
               <span className="h-1 w-1 rounded-full bg-emerald-500" />
               <Clock className="h-3 w-3 text-emerald-400 shrink-0" />
-              <span>Sun–Thu: 9:00 AM – 6:00 PM BST</span>
+              <span>Sat–Thu: 9:00 AM – 6:00 PM BST</span>
             </span>
             {/* Mobile city preview */}
             <span className="inline-flex sm:hidden items-center gap-1.5 text-emerald-400 font-medium">

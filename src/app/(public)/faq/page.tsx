@@ -198,7 +198,7 @@ export default function FaqPage() {
             </span>
           </h2>
           <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-slate-300">
-            Our investor relations desk in Mohakhali, Dhaka is available Sunday to Thursday, 9:00 AM – 6:00 PM.
+            Our investor relations desk in Mohakhali, Dhaka is available Saturday to Thursday, 9:00 AM – 6:00 PM (closed Friday).
           </p>
           <div className="mt-9 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
