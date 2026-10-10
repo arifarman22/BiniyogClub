@@ -9,7 +9,7 @@ import { SectionHeading } from "@/components/home/section-heading";
 export function FaqSection() {
   return (
     <section className="relative bg-muted/40 py-24 lg:py-28" id="faq">
-      <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+      <div className="mx-auto grid grid-cols-1 max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
         <AnimatedSection animation="fade-right" className="lg:col-span-5">
           <div className="lg:sticky lg:top-36">
             <SectionHeading

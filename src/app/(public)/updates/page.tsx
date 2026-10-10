@@ -86,7 +86,7 @@ export default async function UpdatesPage() {
       <section className="py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {updates.length > 0 ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {updates.map((update) => {
                 const typeConfig = UPDATE_TYPE_CONFIG[update.type] ?? UPDATE_TYPE_CONFIG.GENERAL;
 

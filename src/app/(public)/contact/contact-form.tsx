@@ -190,7 +190,7 @@ export default function ContactPageClient() {
 
       {/* ── 3. Form + visit info ── */}
       <section className="bg-background py-20 lg:py-24">
-        <div className="mx-auto grid max-w-7xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+        <div className="mx-auto grid grid-cols-1 max-w-7xl items-start gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
           {/* Form */}
           <AnimatedSection animation="fade-right" className="lg:col-span-7">
             <div className="border border-border bg-card p-6 shadow-sm sm:p-10">

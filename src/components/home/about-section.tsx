@@ -40,7 +40,7 @@ export function AboutSection() {
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* ── Left: Real Due Diligence Image & Governance Card ── */}
           <AnimatedSection animation="fade-right" delay={100} className="lg:col-span-5">
             <div className="relative rounded-none border border-border/80 bg-card overflow-hidden shadow-2xl group">
@@ -110,7 +110,7 @@ export function AboutSection() {
               </p>
 
               {/* 4 Feature Cards Grid */}
-              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 {ABOUT_PILLARS.map((pillar) => (
                   <div
                     key={pillar.title}

@@ -146,7 +146,7 @@ export default function DesignSystemPage() {
 
         {/* Form Controls */}
         <Section title="Form Controls">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormField label="Email address" htmlFor="email" required hint="We'll never share your email.">
               <Input id="email" type="email" placeholder="you@example.com" />
             </FormField>
@@ -173,7 +173,7 @@ export default function DesignSystemPage() {
 
         {/* Cards */}
         <Section title="Cards">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Card>
               <CardHeader>
                 <CardTitle>Project Card</CardTitle>
@@ -218,7 +218,7 @@ export default function DesignSystemPage() {
 
         {/* Stat Cards */}
         <Section title="Stat Cards">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <StatCard title="Total Invested" value="৳4,50,000" trend={{ value: 12.5 }} description="vs last month" icon={<Wallet className="size-5" />} variant="brand" />
             <StatCard title="Active Projects" value="3" description="2 in funding" icon={<Sprout className="size-5" />} variant="default" />
             <StatCard title="Expected Returns" value="৳81,000" trend={{ value: 18 }} icon={<TrendingUp className="size-5" />} variant="harvest" />
@@ -309,7 +309,7 @@ export default function DesignSystemPage() {
 
         {/* States */}
         <Section title="States">
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <Card>
               <CardContent className="pt-4">
                 <EmptyState
@@ -338,13 +338,13 @@ export default function DesignSystemPage() {
 
         {/* Skeletons */}
         <Section title="Skeletons">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <SkeletonStatCard />
             <SkeletonStatCard />
             <SkeletonStatCard />
             <SkeletonStatCard />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <SkeletonCard />
             <SkeletonCard />
           </div>

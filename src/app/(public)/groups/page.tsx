@@ -303,7 +303,7 @@ export default async function GroupsPage() {
             />
           </AnimatedSection>
 
-          <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map(({ icon: Icon, title, desc }, i) => (
               <li key={title} className="relative border border-border bg-card p-6">
                 <div className="mb-4 flex items-center justify-between">

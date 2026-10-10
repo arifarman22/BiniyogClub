@@ -272,7 +272,7 @@ export default function HowItWorksPage() {
 
           <AnimatedSection animation="zoom-in" delay={100}>
             <div className="border border-border bg-card p-6 shadow-xl sm:p-10">
-              <ol className="grid items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
+              <ol className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
                 {CAPITAL_FLOW.map(({ icon: Icon, title, desc, featured }, i) => (
                   <li key={title} className="contents">
                     <div
@@ -325,7 +325,7 @@ export default function HowItWorksPage() {
             />
           </AnimatedSection>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {INVESTOR_JOURNEY.map(({ step, title, desc, badge }, idx) => (
               <AnimatedSection key={step} delay={idx * 70} animation="fade-up" className="h-full">
                 <div className="group relative h-full overflow-hidden border border-border bg-card p-7 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg">
@@ -359,7 +359,7 @@ export default function HowItWorksPage() {
 
       {/* ── 5. Return example ── */}
       <section className="bg-background py-20 lg:py-24">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
+        <div className="mx-auto grid grid-cols-1 max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:px-8">
           <AnimatedSection animation="fade-right" className="lg:col-span-6">
             <SectionHeading
               align="left"
@@ -437,7 +437,7 @@ export default function HowItWorksPage() {
             />
           </AnimatedSection>
 
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {SAFEGUARDS.map(({ icon: Icon, title, desc }, idx) => (
               <AnimatedSection key={title} delay={idx * 80} animation="fade-up" className="h-full">
                 <div className="h-full border border-white/10 bg-white/[0.04] p-7 transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/[0.07]">
@@ -455,7 +455,7 @@ export default function HowItWorksPage() {
 
       {/* ── 7. FAQ ── */}
       <section className="bg-muted/40 py-20 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+        <div className="mx-auto grid grid-cols-1 max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
           <AnimatedSection animation="fade-right" className="lg:col-span-5">
             <SectionHeading
               align="left"

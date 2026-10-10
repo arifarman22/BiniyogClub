@@ -137,7 +137,7 @@ export default function FaqPage() {
 
       {/* ── 2. FAQ sections ── */}
       <section className="bg-background py-20 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
+        <div className="mx-auto grid grid-cols-1 max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:gap-16 lg:px-8">
           {/* Sticky category index (desktop) */}
           <aside className="hidden lg:col-span-4 lg:block">
             <div className="sticky top-36">

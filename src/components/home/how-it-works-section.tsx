@@ -55,7 +55,7 @@ export function HowItWorksSection() {
           {/* Desktop Horizontal Connecting Line */}
           <div className="hidden lg:block absolute top-1/2 left-[12%] right-[12%] h-[2px] -translate-y-12 bg-gradient-to-r from-emerald-500/20 via-primary to-emerald-500/20 z-0" />
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 relative z-10">
             {HOW_IT_WORKS_STEPS.map((stepItem, i) => (
               <AnimatedSection key={stepItem.step} delay={i * 100} animation="fade-up">
                 <div className="group relative flex flex-col h-full rounded-none border border-border/80 bg-card p-5 sm:p-6 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 overflow-hidden">

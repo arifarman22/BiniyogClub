@@ -45,7 +45,7 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
       <div className="bg-[#030b07] text-slate-300 border-b border-emerald-500/15 text-[11px] font-normal transition-all duration-300">
         <div className="mx-auto flex h-9 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* Left info (Headquarters Location & Support Schedule) */}
-          <div className="flex items-center gap-4 text-slate-300">
+          <div className="flex min-w-0 items-center gap-4 text-slate-300">
             <span className="hidden sm:inline-flex items-center gap-1.5 hover:text-white transition-colors">
               <MapPin className="h-3 w-3 text-emerald-400 shrink-0" />
               <span>MG SAM Center, 12 Mohakhali C/A, Dhaka-1212</span>
@@ -56,14 +56,14 @@ export function PublicNavbar({ session }: { session: SessionUser | null }) {
               <span>Sat–Thu: 9:00 AM – 6:00 PM BST</span>
             </span>
             {/* Mobile city preview */}
-            <span className="inline-flex sm:hidden items-center gap-1.5 text-emerald-400 font-medium">
+            <span className="hidden min-[420px]:inline-flex sm:hidden items-center gap-1.5 text-emerald-400 font-medium">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span>Dhaka, Bangladesh</span>
             </span>
           </div>
 
           {/* Right info (Helpline, Email, Security) */}
-          <div className="flex items-center gap-3.5 sm:gap-4 text-xs font-normal">
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4 text-xs font-normal">
             <a
               href="tel:+8801335149033"
               className="inline-flex items-center gap-1.5 text-slate-200 hover:text-emerald-300 transition-colors"

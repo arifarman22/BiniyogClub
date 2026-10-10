@@ -84,7 +84,7 @@ export function PlatformFeaturesSection() {
         </AnimatedSection>
 
         {/* Split Layout */}
-        <div className="grid gap-10 lg:grid-cols-12 lg:items-center">
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-center">
           {/* Left: Interactive Feature List */}
           <div className="lg:col-span-6 space-y-3">
             {PLATFORM_FEATURES.map((feature, idx) => {

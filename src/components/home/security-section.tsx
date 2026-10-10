@@ -55,7 +55,7 @@ export function SecuritySection() {
       <div className="absolute bottom-0 left-10 -mb-24 h-96 w-96 bg-teal-500/10 blur-[140px] pointer-events-none" />
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
           {/* Left Text & Security Pillars */}
           <div className="lg:col-span-6">
             <AnimatedSection animation="fade-right" delay={50}>
@@ -69,7 +69,7 @@ export function SecuritySection() {
                 className="mb-8"
               />
 
-              <div className="grid sm:grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8">
                 {SECURITY_PILLARS.map((item) => {
                   const Icon = item.icon;
                   return (

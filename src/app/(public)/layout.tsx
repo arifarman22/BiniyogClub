@@ -9,7 +9,7 @@ export default async function PublicLayout({ children }: { children: ReactNode }
   const isLoggedIn = jar.has("bc_session");
   const session = isLoggedIn ? await getSession() : null;
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-screen flex-col overflow-x-clip">
       <PublicNavbar session={session} />
       <main className="flex-1 pt-24 sm:pt-[100px]">{children}</main>
       <PublicFooter />

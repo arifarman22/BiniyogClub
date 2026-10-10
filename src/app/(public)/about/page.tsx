@@ -175,7 +175,7 @@ export default function AboutPage() {
 
       {/* ── 2. Who We Are ── */}
       <section className="bg-background py-20 lg:py-24">
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">
+        <div className="mx-auto grid grid-cols-1 max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">
           <AnimatedSection animation="fade-right" className="lg:col-span-5">
             <div className="group relative h-80 overflow-hidden border border-border shadow-xl sm:h-[28rem]">
               <Image
@@ -263,7 +263,7 @@ export default function AboutPage() {
             <SectionHeading eyebrow="Leadership" title="Leaders behind" highlight="the vision" />
           </AnimatedSection>
 
-          <div className="grid gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {LEADERS.map((leader, i) => (
               <AnimatedSection key={leader.name} delay={i * 100} animation="fade-up">
                 <article className="relative h-full overflow-hidden border border-border bg-card p-7 shadow-sm sm:p-8">
@@ -301,7 +301,7 @@ export default function AboutPage() {
             />
           </AnimatedSection>
 
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {/* FMCG */}
             <AnimatedSection animation="fade-up" className="lg:col-span-2">
               <div className="h-full border border-border bg-card p-7 sm:p-8">
@@ -376,7 +376,7 @@ export default function AboutPage() {
             <SectionHeading eyebrow="Group companies" title="Our" highlight="concerns" />
           </AnimatedSection>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {COMPANIES.map((company, i) => (
               <AnimatedSection key={company} delay={i * 60} animation="fade-up">
                 <div className="group flex h-full items-center gap-3 border border-border bg-card p-5 transition-all duration-300 hover:border-primary/50 hover:shadow-md">
@@ -392,7 +392,7 @@ export default function AboutPage() {
       {/* ── 7. Contact & CTA ── */}
       <section className="relative overflow-hidden bg-[#040d09] py-20 text-white lg:py-24">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_80%_20%,rgba(16,185,129,0.15),transparent)]" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">
+        <div className="relative mx-auto grid grid-cols-1 max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-12 lg:items-center lg:px-8">
           <AnimatedSection animation="fade-right" className="lg:col-span-7">
             <SectionHeading
               align="left"

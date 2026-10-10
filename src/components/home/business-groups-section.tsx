@@ -35,7 +35,7 @@ export function BusinessGroupsSection({ groups }: BusinessGroupsSectionProps) {
 
         {/* Business Groups Grid */}
         {groups.length > 0 ? (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
             {groups.map((group, i) => (
               <AnimatedSection key={group.id} delay={i * 90} animation="zoom-in" className="h-full">
                 <BusinessGroupCard group={group} priority={i === 0} />

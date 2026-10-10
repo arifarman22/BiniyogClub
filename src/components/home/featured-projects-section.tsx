@@ -37,7 +37,7 @@ export function FeaturedProjectsSection({
 
         {/* Projects Grid */}
         {featuredProjects.length > 0 ? (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 items-stretch">
             {featuredProjects.map((project, i) => (
               <AnimatedSection key={project.id} delay={i * 80} animation="zoom-in" className="h-full">
                 <ProjectCard

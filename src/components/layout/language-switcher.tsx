@@ -124,7 +124,7 @@ export function LanguageSwitcher() {
         aria-label="Select language"
       >
         <span className="text-sm leading-none">{current.flag}</span>
-        <span className="tracking-wide">{current.label}</span>
+        <span className="hidden tracking-wide sm:inline">{current.label}</span>
         <ChevronDown className={cn("h-3 w-3 text-slate-400 transition-transform duration-150", open && "rotate-180")} />
       </button>
 

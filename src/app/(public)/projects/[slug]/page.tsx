@@ -219,8 +219,8 @@ export default async function ProjectDetailPage({ params }: Props) {
             <span className="truncate text-white/80">{project.title}</span>
           </nav>
 
-          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
-            <div className="lg:col-span-7">
+          <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="min-w-0 lg:col-span-7">
               <div className="mb-4 flex flex-wrap gap-2">
                 <span className="inline-flex items-center gap-1.5 border border-emerald-400/30 bg-emerald-950/60 px-2.5 py-1 text-xs font-semibold text-emerald-300">
                   <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[project.status] ?? "bg-white/50"}`} />
@@ -264,7 +264,7 @@ export default async function ProjectDetailPage({ params }: Props) {
             </div>
 
             {/* Funding panel */}
-            <div className="border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md sm:p-6 lg:col-span-5">
+            <div className="min-w-0 border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md sm:p-6 lg:col-span-5">
               <div className="flex items-end justify-between gap-4">
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50">Raised</p>
@@ -308,7 +308,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
       {/* ── Body ── */}
       <section className={canInvestNow ? "pb-28 pt-10 sm:pt-14 lg:pb-20" : "py-10 sm:py-14 lg:pb-20"}>
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8">
 
           {/* Main column */}
           <div className="min-w-0 space-y-12 lg:col-span-8">
@@ -345,7 +345,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
             <section aria-labelledby="timeline-heading">
               <SectionTitle id="timeline-heading" eyebrow="Schedule">Timeline</SectionTitle>
-              <ol className="relative grid gap-6 sm:grid-cols-3 sm:gap-4">
+              <ol className="relative grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
                 <span className="absolute left-[19px] top-2 h-[calc(100%-1rem)] w-px bg-border sm:left-0 sm:right-0 sm:top-[19px] sm:h-px sm:w-full" aria-hidden="true" />
                 {milestones.map(({ label, date, icon: Icon, done }) => (
                   <li key={label} className="relative flex items-start gap-4 sm:flex-col sm:gap-3">
@@ -366,7 +366,7 @@ export default async function ProjectDetailPage({ params }: Props) {
             {project.documents.length > 0 && (
               <section aria-labelledby="docs-heading">
                 <SectionTitle id="docs-heading" eyebrow="Due diligence">Project documents</SectionTitle>
-                <ul className="grid gap-3 sm:grid-cols-2">
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {project.documents.map((doc) => (
                     <li key={doc.id}>
                       <a
@@ -443,7 +443,7 @@ export default async function ProjectDetailPage({ params }: Props) {
           </div>
 
           {/* Sidebar */}
-          <aside className="space-y-5 lg:col-span-4">
+          <aside className="min-w-0 space-y-5 lg:col-span-4">
             <div id="invest" className="scroll-mt-32 lg:sticky lg:top-32">
               <div className="border border-border bg-card shadow-xl shadow-slate-900/5">
                 <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">

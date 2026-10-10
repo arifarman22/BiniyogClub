@@ -78,7 +78,7 @@ export function CommunitySection() {
         </AnimatedSection>
 
         {/* 3 Pillars Grid */}
-        <div className="grid gap-6 sm:grid-cols-3 mb-14">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 mb-14">
           {COMMUNITY_PILLARS.map((pillar, i) => {
             const Icon = pillar.icon;
             return (

@@ -28,8 +28,8 @@ export function AnimatedSection({ children, className = "", delay = 0, animation
     "fade-up":    "translate-y-10 opacity-0",
     "fade-down":  "-translate-y-10 opacity-0",
     "fade-in":    "opacity-0",
-    "fade-left":  "-translate-x-10 opacity-0",
-    "fade-right": "translate-x-10 opacity-0",
+    "fade-left":  "md:-translate-x-10 opacity-0",
+    "fade-right": "md:translate-x-10 opacity-0",
     "zoom-in":    "scale-95 opacity-0",
   };
 

@@ -98,7 +98,7 @@ export default async function GroupDetailPage({ params }: Props) {
                 <p className="mt-1 text-muted-foreground">{entity.description}</p>
               </div>
 
-              <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
                 {entity.tiers.map((tier) => (
                   <div key={tier.id} className={`rounded-2xl border-2 ${TIER_COLORS[tier.type] ?? "border-border bg-card"} overflow-hidden flex flex-col`}>
                     {/* Tier header */}

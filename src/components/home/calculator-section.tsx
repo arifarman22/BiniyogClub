@@ -40,7 +40,7 @@ export function CalculatorSection() {
         {/* Calculator Card */}
         <AnimatedSection animation="zoom-in" delay={100} className="mx-auto max-w-4xl">
           <div className="rounded-none border border-border/80 bg-card p-6 sm:p-10 shadow-xl dark:bg-slate-900/90 dark:border-white/10">
-            <div className="grid gap-8 lg:grid-cols-12 items-center">
+            <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 items-center">
               {/* Controls Column */}
               <div className="lg:col-span-7 space-y-6">
                 {/* Investment Amount Slider & Input */}
