@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 import { StatCard } from "@/components/ui/stat-card";
+import { formatReturnPct } from "@/lib/financial/return-range";
 
 export const metadata: Metadata = { title: "Dashboard — Biniyog Club" };
 
@@ -336,9 +337,7 @@ export default async function DashboardPage() {
                     <dl className="grid grid-cols-3 divide-x divide-border/70 rounded-xl border border-border/70 text-center">
                       <div className="py-2">
                         <dd className="text-sm font-semibold text-success">
-                          {p.returnType === "PROFIT_SHARE" && p.returnPctMin && p.returnPctMax
-                            ? `${Number(p.returnPctMin).toFixed(1)}–${Number(p.returnPctMax).toFixed(1)}%`
-                            : `${Number(p.expectedReturnPct).toFixed(1)}%`}
+                          {formatReturnPct(p)}
                         </dd>
                         <dt className="text-[10px] text-muted-foreground">Return</dt>
                       </div>
@@ -410,11 +409,9 @@ export default async function DashboardPage() {
                       </td>
                       <td className="px-5 py-3.5 text-right font-semibold tabular-nums">{fmt(Number(inv.amountBdt))}</td>
                       <td className="hidden px-5 py-3.5 text-right text-xs font-semibold text-success sm:table-cell">
-                        {inv.project?.returnType === "PROFIT_SHARE" && inv.project?.returnPctMin && inv.project?.returnPctMax
-                          ? `${Number(inv.project.returnPctMin).toFixed(1)}–${Number(inv.project.returnPctMax).toFixed(1)}%`
-                          : Number(inv.project?.expectedReturnPct ?? 0) > 0
-                            ? `+${Number(inv.project?.expectedReturnPct ?? 0).toFixed(1)}%`
-                            : "—"}
+                        {inv.project && Number(inv.project.expectedReturnPct ?? 0) > 0
+                          ? formatReturnPct(inv.project)
+                          : "—"}
                       </td>
                       <td className="px-5 py-3.5 text-right">
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1">

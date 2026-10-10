@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createInvestmentAction } from "@/server/actions/investment.actions";
 import { CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
+import { getReturnRange, formatReturnPct } from "@/lib/financial/return-range";
 
 type Project = {
   id: string;
@@ -11,6 +12,8 @@ type Project = {
   minInvestmentBdt: number;
   maxInvestmentBdt?: number;
   expectedReturnPct: number;
+  returnPctMin?: number | null;
+  returnPctMax?: number | null;
   returnType: string;
   durationDays: number;
 };
@@ -54,7 +57,11 @@ function ProjectInvestFormInner({
   }, [isLoggedIn, searchParams, project.id]);
 
   const amtNum = Number(amount) || 0;
-  const expectedReturn = ((amtNum * project.expectedReturnPct) / 100).toFixed(0);
+  const range = getReturnRange(project);
+  const taka = (pct: number) => Math.round((amtNum * pct) / 100).toLocaleString("en-BD");
+  const expectedReturnLabel = range
+    ? `+৳${taka(range.min)} – ৳${taka(range.max)}`
+    : `+৳${taka(project.expectedReturnPct)}`;
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -139,8 +146,8 @@ function ProjectInvestFormInner({
 
       <div className="rounded-lg bg-muted/40 p-3 space-y-1 text-xs">
         <div className="flex justify-between">
-          <span className="text-muted-foreground">Expected return</span>
-          <span className="font-semibold text-success">+৳{Number(expectedReturn).toLocaleString("en-BD")}</span>
+          <span className="text-muted-foreground">Expected return ({formatReturnPct(project)})</span>
+          <span className="text-right font-semibold text-success">{expectedReturnLabel}</span>
         </div>
         <div className="flex justify-between">
           <span className="text-muted-foreground">Return type</span>

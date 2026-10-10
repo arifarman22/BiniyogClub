@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FaqAccordion } from "@/components/shared/faq-accordion";
+import { formatReturnPct } from "@/lib/financial/return-range";
 import { getProjectBySlug, getAllProjectSlugs } from "@/server/data/public.data";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
@@ -171,10 +172,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   const isClosed = ["COMPLETED", "CANCELLED"].includes(project.status);
   const canInvestNow = isOpen || isRunning;
 
-  const returnLabel =
-    project.returnType === "PROFIT_SHARE" && project.returnPctMin && project.returnPctMax
-      ? `${Number(project.returnPctMin).toFixed(1)}–${Number(project.returnPctMax).toFixed(1)}%`
-      : `${Number(project.expectedReturnPct).toFixed(1)}%`;
+  const returnLabel = formatReturnPct(project);
 
   const gallery = [
     ...(project.coverImageUrl ? [project.coverImageUrl] : []),
@@ -472,6 +470,8 @@ export default async function ProjectDetailPage({ params }: Props) {
                         minInvestmentBdt: Number(project.minInvestmentBdt),
                         maxInvestmentBdt: project.maxInvestmentBdt ? Number(project.maxInvestmentBdt) : undefined,
                         expectedReturnPct: Number(project.expectedReturnPct),
+                        returnPctMin: project.returnPctMin != null ? Number(project.returnPctMin) : null,
+                        returnPctMax: project.returnPctMax != null ? Number(project.returnPctMax) : null,
                         returnType: project.returnType,
                         durationDays: project.durationDays,
                       }}
