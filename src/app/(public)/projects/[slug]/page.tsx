@@ -179,7 +179,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   return (
     <>
       {/* Hero */}
-      <section className="relative bg-brand-900 py-12 text-white">
+      <section className="relative bg-brand-900 py-10 text-white">
         {project.coverImageUrl && (
           <div className="pointer-events-none absolute inset-0">
             <Image src={project.coverImageUrl} alt="" fill className="object-cover object-center opacity-20" sizes="100vw" />
@@ -187,37 +187,34 @@ export default async function ProjectDetailPage({ params }: Props) {
           </div>
         )}
         <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav className="mb-4 flex items-center gap-1.5 text-sm text-brand-200/70">
-            <Link href="/projects" className="hover:text-brand-100">Projects</Link>
-            <ChevronRight className="h-3.5 w-3.5" />
-            <span className="text-brand-100 line-clamp-1">{project.title}</span>
+          <nav className="mb-4 flex items-center gap-1.5 text-sm text-brand-200/70 overflow-hidden">
+            <Link href="/projects" className="hover:text-brand-100 shrink-0">Projects</Link>
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+            <span className="text-brand-100 truncate">{project.title}</span>
           </nav>
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div className="max-w-2xl">
-              <div className="mb-3 flex flex-wrap gap-2">
-                <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[project.status] ?? "bg-muted text-muted-foreground"}`}>
-                  {STATUS_LABELS[project.status] ?? project.status}
+          <div className="max-w-2xl">
+            <div className="mb-3 flex flex-wrap gap-2">
+              <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[project.status] ?? "bg-muted text-muted-foreground"}`}>
+                {STATUS_LABELS[project.status] ?? project.status}
+              </span>
+              <Badge className="border-brand-400/40 bg-brand-700/60 text-brand-100">
+                {CATEGORY_LABELS[project.category] ?? project.category}
+              </Badge>
+            </div>
+            <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl leading-tight">{project.title}</h1>
+            <div className="mt-3 flex flex-wrap gap-3 text-sm text-brand-100/80">
+              {project.location && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4 shrink-0" />
+                  {project.location}
                 </span>
-                <Badge className="border-brand-400/40 bg-brand-700/60 text-brand-100">
-                  {CATEGORY_LABELS[project.category] ?? project.category}
-                </Badge>
-                <ProjectStatusBadge status={project.status} size="md" />
-              </div>
-              <h1 className="text-3xl font-bold text-white sm:text-4xl">{project.title}</h1>
-              <div className="mt-3 flex flex-wrap gap-4 text-sm text-brand-100/80">
-                {project.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4 shrink-0" />
-                    {project.location}
-                  </span>
-                )}
-                {isOpen && days > 0 && (
-                  <span className="flex items-center gap-1.5">
-                    <Clock className="h-4 w-4 shrink-0" />
-                    {days} days left to invest
-                  </span>
-                )}
-              </div>
+              )}
+              {isOpen && days > 0 && (
+                <span className="flex items-center gap-1.5">
+                  <Clock className="h-4 w-4 shrink-0" />
+                  {days} days left
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -252,22 +249,22 @@ export default async function ProjectDetailPage({ params }: Props) {
 
               <div>
                 <h2 className="mb-4 text-xl font-bold">Financial Information</h2>
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
                   {[
-                    { label: "Funding Goal", value: formatBdtFull(project.fundingGoalBdt.toString()), sub: "Total target" },
-                    { label: "Minimum Funding", value: formatBdtFull(project.fundingMinBdt.toString()), sub: "To activate project" },
-                    { label: "Amount Raised", value: formatBdtFull(project.fundedAmountBdt.toString()), sub: `${pct}% of goal` },
-                    { label: "Remaining", value: formatBdtFull(remaining), sub: "Still needed" },
-                    { label: "Min. Investment", value: formatBdtFull(project.minInvestmentBdt.toString()), sub: "Per investor" },
-                    ...(project.maxInvestmentBdt ? [{ label: "Max. Investment", value: formatBdtFull(project.maxInvestmentBdt.toString()), sub: "Per investor" }] : []),
+                    { label: "Funding Goal", value: formatBdt(project.fundingGoalBdt.toString()), sub: formatBdtFull(project.fundingGoalBdt.toString()) },
+                    { label: "Minimum Funding", value: formatBdt(project.fundingMinBdt.toString()), sub: "To activate project" },
+                    { label: "Amount Raised", value: formatBdt(project.fundedAmountBdt.toString()), sub: `${pct}% of goal` },
+                    { label: "Remaining", value: formatBdt(remaining), sub: "Still needed" },
+                    { label: "Min. Investment", value: formatBdt(project.minInvestmentBdt.toString()), sub: "Per investor" },
+                    ...(project.maxInvestmentBdt ? [{ label: "Max. Investment", value: formatBdt(project.maxInvestmentBdt.toString()), sub: "Per investor" }] : []),
                     { label: "Expected Return", value: `${Number(project.expectedReturnPct.toString()).toFixed(2)}%`, sub: RETURN_TYPE_LABELS[project.returnType] ?? project.returnType },
-                    { label: "Duration", value: `${project.durationDays} days`, sub: "From project start" },
+                    { label: "Duration", value: `${project.durationDays}d`, sub: "From project start" },
                     { label: "Investors", value: project._count.investments.toString(), sub: "Joined so far" },
                   ].map(({ label, value, sub }) => (
-                    <div key={label} className="rounded-xl border border-border bg-card p-4">
-                      <p className="text-xs text-muted-foreground">{label}</p>
-                      <p className="mt-1 text-lg font-bold text-primary">{value}</p>
-                      <p className="text-xs text-muted-foreground">{sub}</p>
+                    <div key={label} className="rounded-xl border border-border bg-card p-3 sm:p-4 min-w-0">
+                      <p className="text-xs text-muted-foreground truncate">{label}</p>
+                      <p className="mt-1 text-base sm:text-lg font-bold text-primary truncate">{value}</p>
+                      <p className="text-xs text-muted-foreground truncate">{sub}</p>
                     </div>
                   ))}
                 </div>
@@ -289,10 +286,10 @@ export default async function ProjectDetailPage({ params }: Props) {
                   <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
                     <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
                   </div>
-                  <div className="mt-4 grid grid-cols-3 gap-4 border-t border-border pt-4 text-center text-sm">
-                    <div><p className="font-semibold">{formatBdt(project.fundedAmountBdt.toString())}</p><p className="text-xs text-muted-foreground">Raised</p></div>
-                    <div><p className="font-semibold">{formatBdt(remaining)}</p><p className="text-xs text-muted-foreground">Remaining</p></div>
-                    <div><p className="font-semibold">{project._count.investments}</p><p className="text-xs text-muted-foreground">Investors</p></div>
+                  <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4 text-center text-sm">
+                    <div className="min-w-0"><p className="font-semibold truncate">{formatBdt(project.fundedAmountBdt.toString())}</p><p className="text-xs text-muted-foreground">Raised</p></div>
+                    <div className="min-w-0"><p className="font-semibold truncate">{formatBdt(remaining)}</p><p className="text-xs text-muted-foreground">Remaining</p></div>
+                    <div className="min-w-0"><p className="font-semibold">{project._count.investments}</p><p className="text-xs text-muted-foreground">Investors</p></div>
                   </div>
                   {isOpen && (
                     <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -308,17 +305,17 @@ export default async function ProjectDetailPage({ params }: Props) {
                 <div className="rounded-xl border border-border bg-card divide-y divide-border">
                   {[
                     { label: "Funding Deadline", date: fmtDate(project.fundingDeadline), icon: <Calendar className="h-4 w-4" />, active: isOpen },
-                    { label: "Project Start Date", date: fmtDate(project.startDate), icon: <TrendingUp className="h-4 w-4" />, active: false },
-                    { label: "Expected Maturity", date: fmtDate(project.endDate), icon: <CheckCircle2 className="h-4 w-4" />, active: false },
+                    { label: "Project Start", date: fmtDate(project.startDate), icon: <TrendingUp className="h-4 w-4" />, active: false },
+                    { label: "Maturity", date: fmtDate(project.endDate), icon: <CheckCircle2 className="h-4 w-4" />, active: false },
                   ].map(({ label, date, icon, active }) => (
-                    <div key={label} className="flex items-center justify-between px-5 py-4">
-                      <span className={`flex items-center gap-2 text-sm ${active ? "font-medium text-primary" : "text-muted-foreground"}`}>{icon}{label}</span>
-                      <span className="text-sm font-medium">{date ?? "TBD"}</span>
+                    <div key={label} className="flex items-center justify-between gap-3 px-4 py-3.5">
+                      <span className={`flex items-center gap-2 text-sm shrink-0 ${active ? "font-medium text-primary" : "text-muted-foreground"}`}>{icon}{label}</span>
+                      <span className="text-sm font-medium text-right">{date ?? "TBD"}</span>
                     </div>
                   ))}
-                  <div className="flex items-center justify-between px-5 py-4">
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground"><Clock className="h-4 w-4" />Duration</span>
-                    <span className="text-sm font-medium">{project.durationDays} days</span>
+                  <div className="flex items-center justify-between gap-3 px-4 py-3.5">
+                    <span className="flex items-center gap-2 text-sm text-muted-foreground shrink-0"><Clock className="h-4 w-4" />Duration</span>
+                    <span className="text-sm font-medium text-right">{project.durationDays} days</span>
                   </div>
                 </div>
               </div>

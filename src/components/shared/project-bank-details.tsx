@@ -71,12 +71,12 @@ export function ProjectBankDetails({ bankAccounts }: { bankAccounts: BankAccount
 
       {/* Tab selector if multiple accounts */}
       {bankAccounts.length > 1 && (
-        <div className="flex gap-1 border-b border-border px-4 pt-2">
+        <div className="flex gap-1 border-b border-border px-4 pt-2 overflow-x-auto">
           {bankAccounts.map((a, i) => (
             <button
               key={a.id}
               onClick={() => setActive(i)}
-              className={`px-3 py-1.5 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${
+              className={`shrink-0 px-3 py-1.5 text-xs font-medium rounded-t-lg border-b-2 transition-colors ${
                 i === active
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
