@@ -83,82 +83,9 @@ export default async function AdminDashboardPage() {
   const activity = await getAdminRecentActivity(session);
   const analytics = await getAdminAnalytics(session);
 
-  const attention = [
-    kpis.pendingKyc > 0 && {
-      href: "/admin/kyc?status=SUBMITTED",
-      icon: ShieldCheck,
-      label: `${kpis.pendingKyc} KYC review${kpis.pendingKyc !== 1 ? "s" : ""}`,
-    },
-    kpis.pendingWithdrawals > 0 && {
-      href: "/admin/withdrawals?status=PENDING",
-      icon: ArrowDownToLine,
-      label: `${kpis.pendingWithdrawals} withdrawal${kpis.pendingWithdrawals !== 1 ? "s" : ""}`,
-    },
-    kpis.projectsNearMaturity > 0 && {
-      href: "/admin/projects",
-      icon: AlertTriangle,
-      label: `${kpis.projectsNearMaturity} project${kpis.projectsNearMaturity !== 1 ? "s" : ""} near maturity`,
-    },
-  ].filter(Boolean) as { href: string; icon: typeof ShieldCheck; label: string }[];
-
   return (
     <div className="space-y-8">
       <PageHeader title="Platform overview" description="Live metrics across users, capital and projects." className="mb-0" />
-
-      {/* ── Hero summary ── */}
-      <section className="relative overflow-hidden rounded-3xl bg-[#06140f] p-6 text-white shadow-xl shadow-emerald-950/10 sm:p-8">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_70%_80%_at_100%_0%,rgba(16,185,129,0.28),transparent_60%)]" />
-        <div className="pointer-events-none absolute inset-0 fintech-grid-pattern opacity-30" />
-        <div className="relative grid gap-8 lg:grid-cols-12 lg:items-end">
-          <div className="lg:col-span-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">Total capital invested</p>
-            <p className="mt-2 text-4xl font-semibold tabular-nums tracking-tight sm:text-5xl">
-              {fmtBdt(analytics.kpis.totalInvested)}
-            </p>
-            <p className="mt-2 text-sm text-white/60">
-              Across {kpis.activeInvestments.toLocaleString()} active investments and{" "}
-              {analytics.kpis.activeProjects.toLocaleString()} live projects.
-            </p>
-          </div>
-
-          <dl className="grid grid-cols-3 gap-px overflow-hidden rounded-2xl bg-white/10 lg:col-span-4">
-            {[
-              { label: "Investors", value: analytics.kpis.totalInvestors.toLocaleString() },
-              { label: "Distributed", value: fmtBdt(analytics.kpis.totalDistributed) },
-              { label: "Funding rate", value: `${analytics.kpis.fundingRate}%` },
-            ].map((s) => (
-              <div key={s.label} className="bg-[#06140f]/80 px-4 py-3.5">
-                <dt className="text-[11px] text-white/50">{s.label}</dt>
-                <dd className="mt-0.5 truncate text-lg font-semibold tabular-nums">{s.value}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <div className="lg:col-span-3">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-white/50">Needs attention</p>
-            {attention.length === 0 ? (
-              <p className="inline-flex items-center gap-2 rounded-xl bg-emerald-500/15 px-3 py-2 text-sm font-medium text-emerald-200">
-                <CheckCircle2 className="h-4 w-4" /> All caught up
-              </p>
-            ) : (
-              <ul className="space-y-1.5">
-                {attention.map(({ href, icon: Icon, label }) => (
-                  <li key={href}>
-                    <Link
-                      href={href}
-                      className="group flex items-center gap-2.5 rounded-xl bg-white/[0.06] px-3 py-2 text-sm font-medium ring-1 ring-white/10 transition-colors hover:bg-white/[0.1]"
-                    >
-                      <Icon className="h-4 w-4 text-amber-300" />
-                      <span className="flex-1">{label}</span>
-                      <ArrowRight className="h-3.5 w-3.5 text-white/40 transition-transform group-hover:translate-x-0.5" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* ── KPI groups ── */}
       <div className="grid gap-8 xl:grid-cols-2">
