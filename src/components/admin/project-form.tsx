@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Alert } from "@/components/ui/alert";
 import { X, Plus, Pencil, Trash2, Check, Building2, Loader2 } from "lucide-react";
 import { createProjectAction, updateProjectAction, uploadProjectCoverImageAction } from "@/server/actions/project.actions";
-import { upsertProjectBankAccountAction, deleteProjectBankAccountAction } from "@/server/actions/project-bank.actions";
+import { upsertProjectBankAccountAction, deleteProjectBankAccountAction, getGlobalBankAccountsAction, type GlobalBankAccount } from "@/server/actions/project-bank.actions";
 
 type Manager = { id: string; name: string; role: string };
 type Group = { id: string; name: string; slug: string };
@@ -125,6 +125,12 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [bankError, setBankError] = useState<string | null>(null);
   const [bankFieldErrors, setBankFieldErrors] = useState<Record<string, string>>({});
   const [bankPending, startBankTransition] = useTransition();
+  const [globalBanks, setGlobalBanks] = useState<GlobalBankAccount[]>([]);
+
+  // Load global bank accounts on mount
+  useEffect(() => {
+    getGlobalBankAccountsAction().then((r) => { if (r.success) setGlobalBanks(r.data); });
+  }, []);
 
   async function handleExtraImagesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -449,6 +455,45 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
       <SectionCard title="Bank Accounts">
         <p className="-mt-3 text-xs text-muted-foreground">Investors will see these details when making payments.</p>
         {bankError && <Alert variant="destructive" className="text-sm">{bankError}</Alert>}
+
+        {/* Quick-add from platform accounts */}
+        {globalBanks.length > 0 && (
+          <div className="rounded-lg border border-border bg-muted/30 p-3">
+            <p className="text-xs font-medium text-muted-foreground mb-2">Quick-add from platform accounts</p>
+            <div className="flex gap-2">
+              <select
+                className={`flex-1 ${sel} text-xs`}
+                defaultValue=""
+                onChange={(e) => {
+                  const acc = globalBanks.find((b) => b.id === e.target.value);
+                  if (!acc) return;
+                  setBankForm({
+                    accountName:   acc.accountName,
+                    accountNumber: acc.accountNumber,
+                    bankName:      acc.bankName,
+                    branchName:    acc.branchName ?? "",
+                    routingNumber: "",
+                    swiftCode:     "",
+                    mobileNumber:  "",
+                    email:         "",
+                    branchAddress: "",
+                  });
+                  setBankEditing("new");
+                  setBankError(null);
+                  setBankFieldErrors({});
+                  e.target.value = "";
+                }}
+              >
+                <option value="">— Select a platform account to add —</option>
+                {globalBanks.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.accountName} — {b.bankName}{b.branchName ? ` (${b.branchName})` : ""} · {b.accountNumber}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
 
         {/* Saved banks (edit mode) */}
         {savedBanks.map((acc) => (

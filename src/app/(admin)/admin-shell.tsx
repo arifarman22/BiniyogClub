@@ -51,10 +51,11 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "System",
     items: [
-      { href: "/admin/notifications", label: "Notifications", icon: Bell,       permission: null },
-      { href: "/admin/documents",     label: "Documents",     icon: FileText,   permission: "document.view" },
-      { href: "/admin/audit-logs",    label: "Audit Logs",    icon: ScrollText, permission: "audit.view" },
-      { href: "/admin/settings",      label: "Configuration", icon: Settings,   permission: "audit.view" },
+      { href: "/admin/notifications", label: "Notifications",   icon: Bell,       permission: null },
+      { href: "/admin/documents",     label: "Documents",       icon: FileText,   permission: "document.view" },
+      { href: "/admin/audit-logs",    label: "Audit Logs",      icon: ScrollText, permission: "audit.view" },
+      { href: "/admin/settings/bank-accounts", label: "Bank Accounts", icon: CreditCard, permission: "project.update" },
+      { href: "/admin/settings",      label: "Configuration",   icon: Settings,   permission: "audit.view" },
     ],
   },
 ];
