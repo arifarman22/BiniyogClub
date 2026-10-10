@@ -5,13 +5,11 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import {
-  MapPin, Clock, Calendar, AlertCircle, TrendingUp,
-  FileText, CheckCircle2, ChevronRight, Info,
+  MapPin, Clock, Calendar, AlertCircle, TrendingUp, FileText, CheckCircle2,
+  ChevronRight, Users, ExternalLink, MessageSquare, ArrowRight,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { ButtonLink } from "@/components/shared/button-link";
 import { Button } from "@/components/ui/button";
+import { FaqAccordion } from "@/components/shared/faq-accordion";
 import { getProjectBySlug, getAllProjectSlugs } from "@/server/data/public.data";
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
@@ -54,12 +52,9 @@ const STATUS_LABELS: Record<string, string> = {
   ACTIVE: "In Progress", COMPLETED: "Completed", CANCELLED: "Cancelled",
 };
 
-const STATUS_COLORS: Record<string, string> = {
-  FUNDRAISING: "bg-harvest-100 text-harvest-600 border-harvest-400/30",
-  FUNDED: "bg-brand-100 text-brand-700 border-brand-400/30",
-  ACTIVE: "bg-brand-100 text-brand-700 border-brand-400/30",
-  COMPLETED: "bg-success-muted text-success border-success/30",
-  CANCELLED: "bg-destructive/10 text-destructive border-destructive/30",
+const STATUS_DOT: Record<string, string> = {
+  FUNDRAISING: "bg-amber-400", FUNDED: "bg-emerald-400",
+  ACTIVE: "bg-emerald-400", COMPLETED: "bg-sky-400", CANCELLED: "bg-red-400",
 };
 
 const RETURN_TYPE_LABELS: Record<string, string> = {
@@ -78,9 +73,9 @@ const UPDATE_TYPE_COLORS: Record<string, string> = {
 };
 
 const PROJECT_FAQS = [
-  { q: "When will I receive my returns?", a: "Returns are distributed after the project completes. You will receive a notification when funds are credited to your wallet." },
-  { q: "Can I withdraw my investment early?", a: "Investments cannot be withdrawn once a project is fully funded and active. You can cancel within 48 hours of committing if the project has not yet reached its funding goal." },
-  { q: "What happens if the funding goal is not reached?", a: "If the project does not reach its minimum funding threshold by the deadline, all invested funds are returned to your wallet in full with no fees charged." },
+  { q: "When will I receive my returns?", a: "Returns are paid according to the schedule in the project agreement and credited to your Biniyog Club wallet. You will be notified each time a payout is made." },
+  { q: "Can I withdraw my investment early?", a: "Early exit depends on the project agreement. Contact our investor desk before committing if you may need your funds before maturity." },
+  { q: "What happens if the funding goal is not reached?", a: "If a project doesn't reach its funding goal by the deadline, investor funds are handled as set out in the project agreement, which you can review before investing." },
 ];
 
 function formatBdt(n: number | string) {
@@ -176,279 +171,298 @@ export default async function ProjectDetailPage({ params }: Props) {
   const isClosed = ["COMPLETED", "CANCELLED"].includes(project.status);
   const canInvestNow = isOpen || isRunning;
 
+  const returnLabel =
+    project.returnType === "PROFIT_SHARE" && project.returnPctMin && project.returnPctMax
+      ? `${Number(project.returnPctMin).toFixed(1)}–${Number(project.returnPctMax).toFixed(1)}%`
+      : `${Number(project.expectedReturnPct).toFixed(1)}%`;
+
+  const gallery = [
+    ...(project.coverImageUrl ? [project.coverImageUrl] : []),
+    ...project.imageUrls.filter((u) => u !== project.coverImageUrl),
+  ].slice(0, 5);
+
+  const now = new Date();
+  const milestones = [
+    { label: "Funding deadline", date: project.fundingDeadline, icon: Calendar },
+    { label: "Project start", date: project.startDate, icon: TrendingUp },
+    { label: "Maturity", date: project.endDate, icon: CheckCircle2 },
+  ].map((m) => ({ ...m, done: !!m.date && new Date(m.date) < now }));
+
+  const financials = [
+    { label: "Funding goal", value: formatBdtFull(project.fundingGoalBdt.toString()) },
+    { label: "Minimum to activate", value: formatBdtFull(project.fundingMinBdt.toString()) },
+    { label: "Amount raised", value: formatBdtFull(project.fundedAmountBdt.toString()) },
+    { label: "Still needed", value: formatBdtFull(remaining) },
+    { label: "Minimum investment", value: formatBdtFull(project.minInvestmentBdt.toString()) },
+    ...(project.maxInvestmentBdt
+      ? [{ label: "Maximum investment", value: formatBdtFull(project.maxInvestmentBdt.toString()) }]
+      : []),
+    { label: "Expected return", value: `${returnLabel} · ${RETURN_TYPE_LABELS[project.returnType] ?? project.returnType}` },
+    { label: "Duration", value: `${project.durationDays} days` },
+    { label: "Investors so far", value: project._count.investments.toLocaleString() },
+  ];
+
   return (
     <>
-      {/* Hero */}
-      <section className="relative bg-brand-900 py-10 text-white">
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden bg-[#040d09] text-white">
         {project.coverImageUrl && (
           <div className="pointer-events-none absolute inset-0">
-            <Image src={project.coverImageUrl} alt="" fill className="object-cover object-center opacity-20" sizes="100vw" />
-            <div className="absolute inset-0 bg-gradient-to-r from-brand-900/95 to-brand-900/70" />
+            <Image src={project.coverImageUrl} alt="" fill priority className="object-cover object-center opacity-25" sizes="100vw" />
           </div>
         )}
-        <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav className="mb-4 flex items-center gap-1.5 text-sm text-brand-200/70 overflow-hidden">
-            <Link href="/projects" className="hover:text-brand-100 shrink-0">Projects</Link>
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-[#040d09] via-[#040d09]/90 to-[#040d09]/60" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_60%_at_85%_0%,rgba(16,185,129,0.18),transparent)]" />
+
+        <div className="relative mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8 lg:py-16">
+          <nav aria-label="Breadcrumb" className="mb-6 flex min-w-0 items-center gap-1.5 text-sm text-white/50">
+            <Link href="/projects" className="shrink-0 transition-colors hover:text-white">Projects</Link>
             <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-            <span className="text-brand-100 truncate">{project.title}</span>
+            <span className="truncate text-white/80">{project.title}</span>
           </nav>
-          <div className="max-w-2xl">
-            <div className="mb-3 flex flex-wrap gap-2">
-              <span className={`rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_COLORS[project.status] ?? "bg-muted text-muted-foreground"}`}>
-                {STATUS_LABELS[project.status] ?? project.status}
-              </span>
-              <Badge className="border-brand-400/40 bg-brand-700/60 text-brand-100">
-                {CATEGORY_LABELS[project.category] ?? project.category}
-              </Badge>
+
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <div className="mb-4 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1.5 border border-emerald-400/30 bg-emerald-950/60 px-2.5 py-1 text-xs font-semibold text-emerald-300">
+                  <span className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[project.status] ?? "bg-white/50"}`} />
+                  {STATUS_LABELS[project.status] ?? project.status}
+                </span>
+                <span className="border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/80">
+                  {CATEGORY_LABELS[project.category] ?? project.category}
+                </span>
+                {project.group && (
+                  <Link
+                    href={`/groups/${project.group.slug.toLowerCase()}`}
+                    className="border border-white/15 bg-white/5 px-2.5 py-1 text-xs font-semibold text-white/80 transition-colors hover:border-emerald-400/50 hover:text-white"
+                  >
+                    {project.group.name}
+                  </Link>
+                )}
+              </div>
+
+              <h1 className="text-3xl font-light leading-[1.1] tracking-tight text-balance sm:text-4xl lg:text-5xl">
+                {project.title}
+              </h1>
+
+              <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/70">
+                {project.location && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 shrink-0 text-emerald-400" />
+                    {project.location}
+                  </span>
+                )}
+                {isOpen && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 shrink-0 text-emerald-400" />
+                    {days > 0 ? `${days} days left to invest` : "Closing soon"}
+                  </span>
+                )}
+                <span className="inline-flex items-center gap-1.5">
+                  <Users className="h-4 w-4 shrink-0 text-emerald-400" />
+                  {project._count.investments} investor{project._count.investments !== 1 ? "s" : ""}
+                </span>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold text-white sm:text-3xl lg:text-4xl leading-tight">{project.title}</h1>
-            <div className="mt-3 flex flex-wrap gap-3 text-sm text-brand-100/80">
-              {project.location && (
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="h-4 w-4 shrink-0" />
-                  {project.location}
-                </span>
-              )}
-              {isOpen && days > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <Clock className="h-4 w-4 shrink-0" />
-                  {days} days left
-                </span>
-              )}
+
+            {/* Funding panel */}
+            <div className="border border-white/10 bg-white/[0.04] p-5 backdrop-blur-md sm:p-6 lg:col-span-5">
+              <div className="flex items-end justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold uppercase tracking-widest text-white/50">Raised</p>
+                  <p className="mt-1 truncate text-3xl font-semibold tabular-nums sm:text-4xl">
+                    {formatBdt(project.fundedAmountBdt.toString())}
+                  </p>
+                </div>
+                <p className="shrink-0 text-right text-sm text-white/60">
+                  <span className="block text-2xl font-semibold tabular-nums text-emerald-300">{pct}%</span>
+                  of {formatBdt(project.fundingGoalBdt.toString())}
+                </p>
+              </div>
+              <div
+                className="mt-4 h-2 w-full overflow-hidden bg-white/10"
+                role="progressbar"
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-label="Funding progress"
+              >
+                <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-300" style={{ width: `${pct}%` }} />
+              </div>
+              <dl className="mt-5 grid grid-cols-3 divide-x divide-white/10 border-t border-white/10 pt-4 text-center">
+                <div className="px-1">
+                  <dt className="text-[11px] text-white/50">Return</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold text-emerald-300 sm:text-base">{returnLabel}</dd>
+                </div>
+                <div className="px-1">
+                  <dt className="text-[11px] text-white/50">Minimum</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold sm:text-base">{formatBdt(project.minInvestmentBdt.toString())}</dd>
+                </div>
+                <div className="px-1">
+                  <dt className="text-[11px] text-white/50">Duration</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold sm:text-base">{project.durationDays} days</dd>
+                </div>
+              </dl>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Body */}
-      <section className="py-6 sm:py-10">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:gap-8 lg:grid-cols-3">
+      {/* ── Body ── */}
+      <section className={canInvestNow ? "pb-28 pt-10 sm:pt-14 lg:pb-20" : "py-10 sm:py-14 lg:pb-20"}>
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-12 lg:gap-12 lg:px-8">
 
-            {/* Left — order-2 on mobile so sidebar shows first */}
-            <div className="lg:col-span-2 space-y-10 order-2 lg:order-1">
+          {/* Main column */}
+          <div className="min-w-0 space-y-12 lg:col-span-8">
 
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Overview</h2>
-                {project.imageUrls.length > 0 && (
-                  <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-3">
-                    {project.imageUrls.slice(0, 3).map((url, i) => (
-                      <div key={i} className="relative h-36 overflow-hidden rounded-xl">
-                        <Image src={url} alt={`${project.title} image ${i + 1}`} fill className="object-cover" sizes="33vw" />
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {!project.imageUrls.length && project.coverImageUrl && (
-                  <div className="mb-5 overflow-hidden rounded-xl">
-                    <Image src={project.coverImageUrl} alt={project.title} width={800} height={400} className="w-full h-64 object-cover rounded-xl" />
-                  </div>
-                )}
-                <p className="text-muted-foreground leading-relaxed whitespace-pre-line">{project.description}</p>
-              </div>
-
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Financial Information</h2>
-                <div className="grid gap-3 grid-cols-2 lg:grid-cols-3">
-                  {[
-                    { label: "Funding Goal", value: formatBdt(project.fundingGoalBdt.toString()), sub: formatBdtFull(project.fundingGoalBdt.toString()) },
-                    { label: "Minimum Funding", value: formatBdt(project.fundingMinBdt.toString()), sub: "To activate project" },
-                    { label: "Amount Raised", value: formatBdt(project.fundedAmountBdt.toString()), sub: `${pct}% of goal` },
-                    { label: "Remaining", value: formatBdt(remaining), sub: "Still needed" },
-                    { label: "Min. Investment", value: formatBdt(project.minInvestmentBdt.toString()), sub: "Per investor" },
-                    ...(project.maxInvestmentBdt ? [{ label: "Max. Investment", value: formatBdt(project.maxInvestmentBdt.toString()), sub: "Per investor" }] : []),
-                    { label: "Expected Return", value: `${Number(project.expectedReturnPct.toString()).toFixed(2)}%`, sub: RETURN_TYPE_LABELS[project.returnType] ?? project.returnType },
-                    { label: "Duration", value: `${project.durationDays}d`, sub: "From project start" },
-                    { label: "Investors", value: project._count.investments.toString(), sub: "Joined so far" },
-                  ].map(({ label, value, sub }) => (
-                    <div key={label} className="rounded-xl border border-border bg-card p-3 sm:p-4 min-w-0">
-                      <p className="text-xs text-muted-foreground truncate">{label}</p>
-                      <p className="mt-1 text-base sm:text-lg font-bold text-primary truncate">{value}</p>
-                      <p className="text-xs text-muted-foreground truncate">{sub}</p>
-                    </div>
-                  ))}
+            {gallery.length > 0 && (
+              <div className="grid grid-cols-4 gap-2 sm:gap-3">
+                <div className="relative col-span-4 aspect-[16/9] overflow-hidden bg-muted">
+                  <Image src={gallery[0]} alt={project.title} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 66vw" />
                 </div>
+                {gallery.slice(1).map((url, i) => (
+                  <div key={url} className="relative aspect-[4/3] overflow-hidden bg-muted">
+                    <Image src={url} alt={`${project.title} — photo ${i + 2}`} fill className="object-cover" sizes="(max-width: 1024px) 25vw, 16vw" />
+                  </div>
+                ))}
               </div>
+            )}
 
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Funding Progress</h2>
-                <div className="rounded-xl border border-border bg-card p-6">
-                  <div className="mb-2 flex items-end justify-between">
+            <section aria-labelledby="about-heading">
+              <SectionTitle id="about-heading" eyebrow="Overview">About this project</SectionTitle>
+              <p className="whitespace-pre-line text-base leading-relaxed text-muted-foreground">{project.description}</p>
+            </section>
+
+            <section aria-labelledby="financials-heading">
+              <SectionTitle id="financials-heading" eyebrow="The numbers">Financial details</SectionTitle>
+              <dl className="grid grid-cols-1 border-l border-t border-border sm:grid-cols-2 xl:grid-cols-3">
+                {financials.map(({ label, value }) => (
+                  <div key={label} className="min-w-0 border-b border-r border-border bg-card px-5 py-4">
+                    <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+                    <dd className="mt-1 break-words text-base font-semibold tabular-nums text-foreground">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            <section aria-labelledby="timeline-heading">
+              <SectionTitle id="timeline-heading" eyebrow="Schedule">Timeline</SectionTitle>
+              <ol className="relative grid gap-6 sm:grid-cols-3 sm:gap-4">
+                <span className="absolute left-[19px] top-2 h-[calc(100%-1rem)] w-px bg-border sm:left-0 sm:right-0 sm:top-[19px] sm:h-px sm:w-full" aria-hidden="true" />
+                {milestones.map(({ label, date, icon: Icon, done }) => (
+                  <li key={label} className="relative flex items-start gap-4 sm:flex-col sm:gap-3">
+                    <span
+                      className={`relative flex h-10 w-10 shrink-0 items-center justify-center border ${done ? "border-primary bg-primary text-white" : "border-border bg-card text-primary"}`}
+                    >
+                      <Icon className="h-4 w-4" />
+                    </span>
                     <div>
-                      <span className="text-3xl font-bold text-primary">{pct}%</span>
-                      <span className="ml-2 text-sm text-muted-foreground">funded</span>
+                      <p className="text-sm font-semibold text-foreground">{label}</p>
+                      <p className="text-sm text-muted-foreground">{fmtDate(date) ?? "To be announced"}</p>
                     </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      <p className="font-medium text-foreground">{formatBdt(project.fundedAmountBdt.toString())} raised</p>
-                      <p>of {formatBdt(project.fundingGoalBdt.toString())} goal</p>
-                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            {project.documents.length > 0 && (
+              <section aria-labelledby="docs-heading">
+                <SectionTitle id="docs-heading" eyebrow="Due diligence">Project documents</SectionTitle>
+                <ul className="grid gap-3 sm:grid-cols-2">
+                  {project.documents.map((doc) => (
+                    <li key={doc.id}>
+                      <a
+                        href={doc.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="group flex items-center gap-3 border border-border bg-card px-4 py-3.5 transition-colors hover:border-primary/50"
+                      >
+                        <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary/10 text-primary">
+                          <FileText className="h-5 w-5" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-semibold text-foreground">{doc.name}</span>
+                          <span className="block text-xs text-muted-foreground">{fileSizeLabel(doc.sizeBytes)}</span>
+                        </span>
+                        <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-primary" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+
+            {project.updates.length > 0 && (
+              <section aria-labelledby="updates-heading">
+                <SectionTitle id="updates-heading" eyebrow="Progress">Project updates</SectionTitle>
+                <ol className="relative space-y-6 border-l border-border pl-6">
+                  {project.updates.map((u) => (
+                    <li key={u.id} className="relative">
+                      <span className="absolute -left-[29px] top-1.5 h-2.5 w-2.5 bg-primary ring-4 ring-background" aria-hidden="true" />
+                      <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                        <span className={`px-2 py-0.5 text-[11px] font-semibold ${UPDATE_TYPE_COLORS[u.type] ?? "bg-muted text-muted-foreground"}`}>
+                          {UPDATE_TYPE_LABELS[u.type] ?? u.type}
+                        </span>
+                        {u.publishedAt && <span className="text-xs text-muted-foreground">{fmtDate(u.publishedAt)}</span>}
+                      </div>
+                      <h3 className="text-base font-semibold text-foreground">{u.title}</h3>
+                      <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{u.content}</p>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+
+            <section aria-labelledby="risk-heading">
+              <SectionTitle id="risk-heading" eyebrow="Please read">Risk disclosure</SectionTitle>
+              <div className="border border-amber-500/30 bg-amber-500/[0.06] p-5 sm:p-6">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-400" />
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    All investments carry risk, including market fluctuations and operational challenges. Past performance
+                    does not guarantee future results, and you may receive less than you invest.
+                  </p>
+                </div>
+                {project.riskInfo && (
+                  <div className="mt-5 border-t border-amber-500/20 pt-5">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">Project-specific risks</p>
+                    <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">{project.riskInfo}</p>
                   </div>
-                  <div className="h-3 w-full overflow-hidden rounded-full bg-muted">
-                    <div className="h-full rounded-full bg-primary transition-all duration-500" style={{ width: `${pct}%` }} />
-                  </div>
-                  <div className="mt-4 grid grid-cols-3 gap-2 border-t border-border pt-4 text-center text-sm">
-                    <div className="min-w-0"><p className="font-semibold truncate">{formatBdt(project.fundedAmountBdt.toString())}</p><p className="text-xs text-muted-foreground">Raised</p></div>
-                    <div className="min-w-0"><p className="font-semibold truncate">{formatBdt(remaining)}</p><p className="text-xs text-muted-foreground">Remaining</p></div>
-                    <div className="min-w-0"><p className="font-semibold">{project._count.investments}</p><p className="text-xs text-muted-foreground">Investors</p></div>
-                  </div>
+                )}
+              </div>
+            </section>
+
+            <section aria-labelledby="faq-heading">
+              <SectionTitle id="faq-heading" eyebrow="FAQ">Common questions</SectionTitle>
+              <FaqAccordion items={PROJECT_FAQS} />
+              <p className="mt-5 text-sm text-muted-foreground">
+                More questions?{" "}
+                <Link href="/faq" className="font-semibold text-primary hover:underline">Read the full FAQ</Link>
+                {" "}or{" "}
+                <Link href="/contact" className="font-semibold text-primary hover:underline">contact support</Link>.
+              </p>
+            </section>
+          </div>
+
+          {/* Sidebar */}
+          <aside className="space-y-5 lg:col-span-4">
+            <div id="invest" className="scroll-mt-32 lg:sticky lg:top-32">
+              <div className="border border-border bg-card shadow-xl shadow-slate-900/5">
+                <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+                  <h2 className="text-base font-semibold">
+                    {canInvestNow ? "Invest in this project" : "Investment status"}
+                  </h2>
+                  <ProjectStatusBadge status={project.status} />
+                </div>
+                <div className="space-y-4 p-5">
                   {isOpen && (
-                    <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <p className="flex items-center gap-2 border border-amber-500/30 bg-amber-500/[0.06] px-3 py-2.5 text-xs font-semibold text-amber-700 dark:text-amber-300">
                       <Clock className="h-4 w-4 shrink-0" />
-                      {days > 0 ? `${days} days remaining to invest` : "Funding closes soon"}
+                      {days > 0 ? `${days} days left to invest` : "Closing very soon"}
                     </p>
                   )}
-                </div>
-              </div>
-
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Timeline</h2>
-                <div className="rounded-xl border border-border bg-card divide-y divide-border">
-                  {[
-                    { label: "Funding Deadline", date: fmtDate(project.fundingDeadline), icon: <Calendar className="h-4 w-4" />, active: isOpen },
-                    { label: "Project Start", date: fmtDate(project.startDate), icon: <TrendingUp className="h-4 w-4" />, active: false },
-                    { label: "Maturity", date: fmtDate(project.endDate), icon: <CheckCircle2 className="h-4 w-4" />, active: false },
-                  ].map(({ label, date, icon, active }) => (
-                    <div key={label} className="flex items-center justify-between gap-3 px-4 py-3.5">
-                      <span className={`flex items-center gap-2 text-sm shrink-0 ${active ? "font-medium text-primary" : "text-muted-foreground"}`}>{icon}{label}</span>
-                      <span className="text-sm font-medium text-right">{date ?? "TBD"}</span>
-                    </div>
-                  ))}
-                  <div className="flex items-center justify-between gap-3 px-4 py-3.5">
-                    <span className="flex items-center gap-2 text-sm text-muted-foreground shrink-0"><Clock className="h-4 w-4" />Duration</span>
-                    <span className="text-sm font-medium text-right">{project.durationDays} days</span>
-                  </div>
-                </div>
-              </div>
-
-              {project.documents.length > 0 && (
-                <div>
-                  <h2 className="mb-4 text-xl font-bold">Project Documents</h2>
-                  <div className="space-y-2">
-                    {project.documents.map((doc) => (
-                      <a key={doc.id} href={doc.fileUrl} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-3.5 transition-colors hover:border-primary/40 hover:bg-muted/30">
-                        <FileText className="h-5 w-5 shrink-0 text-primary" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{doc.name}</p>
-                          <p className="text-xs text-muted-foreground">{doc.mimeType} · {fileSizeLabel(doc.sizeBytes)}</p>
-                        </div>
-                        <span className="text-xs text-primary shrink-0">↗</span>
-                      </a>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {project.updates.length > 0 && (
-                <div>
-                  <h2 className="mb-4 text-xl font-bold">Project Updates</h2>
-                  <div className="space-y-4">
-                    {project.updates.map((u) => (
-                      <div key={u.id} className="rounded-xl border border-border bg-card p-5">
-                        <div className="mb-3 flex flex-wrap items-center gap-2">
-                          <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${UPDATE_TYPE_COLORS[u.type] ?? "bg-muted text-muted-foreground"}`}>
-                            {UPDATE_TYPE_LABELS[u.type] ?? u.type}
-                          </span>
-                          {u.publishedAt && <span className="text-xs text-muted-foreground">{fmtDate(u.publishedAt)}</span>}
-                        </div>
-                        <h3 className="mb-2 font-semibold">{u.title}</h3>
-                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{u.content}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Risk Information</h2>
-                <div className="rounded-xl border border-warning/30 bg-warning-muted p-6 space-y-4">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
-                    <div>
-                      <p className="font-semibold text-sm mb-1">Investment Risk Disclosure</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">
-                        All investments carry inherent risks including market fluctuations and operational challenges.
-                        Past performance does not guarantee future results. You may receive less than your invested amount.
-                      </p>
-                    </div>
-                  </div>
-                  {project.riskInfo && (
-                    <div className="border-t border-warning/20 pt-4">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-2">Project-Specific Risks</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">{project.riskInfo}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div>
-                <h2 className="mb-4 text-xl font-bold">Frequently Asked Questions</h2>
-                <div className="space-y-3">
-                  {PROJECT_FAQS.map(({ q, a }) => (
-                    <div key={q} className="rounded-xl border border-border bg-card p-5">
-                      <div className="flex items-start gap-3">
-                        <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                        <div>
-                          <p className="font-semibold text-sm mb-1.5">{q}</p>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{a}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm text-muted-foreground">
-                  More questions?{" "}
-                  <Link href="/faq" className="text-primary hover:underline">Visit our full FAQ</Link>
-                  {" "}or{" "}
-                  <Link href="/contact" className="text-primary hover:underline">contact support</Link>.
-                </p>
-              </div>
-
-            </div>
-
-            {/* Sidebar — order-1 on mobile so it shows above content */}
-            <div className="space-y-5 order-1 lg:order-2 lg:sticky lg:top-20 lg:self-start">
-
-              <Card className="overflow-hidden">
-                <div className="bg-gradient-to-br from-brand-700 to-brand-600 px-5 py-4">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-semibold uppercase tracking-wide text-brand-100/70">{STATUS_LABELS[project.status] ?? project.status}</p>
-                    <ProjectStatusBadge status={project.status} />
-                  </div>
-                  <p className="mt-1 text-2xl font-bold text-white">
-                    {formatBdt(project.fundedAmountBdt.toString())}
-                    <span className="ml-1 text-sm font-normal text-brand-100/80">raised</span>
-                  </p>
-                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-brand-800/50">
-                    <div className="h-full rounded-full bg-harvest-400 transition-all" style={{ width: `${pct}%` }} />
-                  </div>
-                  <p className="mt-1 text-xs text-brand-100/70">{pct}% of {formatBdt(project.fundingGoalBdt.toString())} goal</p>
-                </div>
-                <CardContent className="p-5 space-y-4">
-                  <div className="grid grid-cols-2 gap-2">
-                    {[
-                      { label: "Min. Investment", value: formatBdt(project.minInvestmentBdt.toString()) },
-                      { label: "Expected Return", value: `${Number(project.expectedReturnPct.toString()).toFixed(1)}%` },
-                      { label: "Duration", value: `${project.durationDays} days` },
-                      { label: "Return Type", value: RETURN_TYPE_LABELS[project.returnType] ?? project.returnType },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="rounded-lg bg-muted/50 p-3 text-center">
-                        <p className="text-sm font-bold text-primary">{value}</p>
-                        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{label}</p>
-                      </div>
-                    ))}
-                  </div>
-                  {isOpen && (
-                    <div className="flex items-center gap-2 rounded-lg bg-harvest-50 border border-harvest-400/30 px-3 py-2.5">
-                      <Clock className="h-4 w-4 shrink-0 text-harvest-600" />
-                      <p className="text-xs font-medium text-harvest-600">{days > 0 ? `${days} days left to invest` : "Closing very soon"}</p>
-                    </div>
-                  )}
                   {existingInvestment && (
-                    <ProjectInvestmentStatus
-                      investment={existingInvestment}
-                      bankAccounts={project.bankAccounts}
-                    />
+                    <ProjectInvestmentStatus investment={existingInvestment} bankAccounts={project.bankAccounts} />
                   )}
                   {canInvestNow ? (
                     <ProjectInvestForm
@@ -467,79 +481,88 @@ export default async function ProjectDetailPage({ params }: Props) {
                       walletBalance={walletBalance}
                     />
                   ) : isClosed ? (
-                    <Button className="w-full" variant="outline" disabled>{STATUS_LABELS[project.status] ?? project.status}</Button>
+                    <Button className="w-full" variant="outline" disabled>
+                      {STATUS_LABELS[project.status] ?? project.status}
+                    </Button>
                   ) : (
-                    <div className="rounded-lg bg-muted/50 px-4 py-3 text-center">
+                    <div className="bg-muted/50 px-4 py-3 text-center">
                       <p className="text-sm font-medium">{STATUS_LABELS[project.status] ?? project.status}</p>
-                      <p className="text-xs text-muted-foreground mt-0.5">This project is not currently accepting investments</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground">This project is not currently accepting investments.</p>
                     </div>
                   )}
                   <p className="text-center text-xs text-muted-foreground">
                     By investing you agree to our{" "}
-                    <Link href="/terms" className="text-primary hover:underline">Terms of Service</Link>
+                    <Link href="/terms" className="font-semibold text-primary hover:underline">Terms of Service</Link>
                   </p>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-5">
-                  <h3 className="mb-3 text-sm font-semibold">Key Dates</h3>
-                  <div className="space-y-3">
-                    {[
-                      { label: "Funding Deadline", value: fmtDate(project.fundingDeadline) },
-                      { label: "Project Start", value: fmtDate(project.startDate) },
-                      { label: "Expected Maturity", value: fmtDate(project.endDate) },
-                    ].map(({ label, value }) => (
-                      <div key={label} className="flex items-start justify-between gap-2 text-sm">
-                        <span className="flex items-center gap-1.5 text-muted-foreground shrink-0">
-                          <Calendar className="h-3.5 w-3.5 shrink-0" />{label}
-                        </span>
-                        <span className="font-medium text-right text-xs">{value ?? "TBD"}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {project.location && (
-                <Card>
-                  <CardContent className="p-5">
-                    <h3 className="mb-3 text-sm font-semibold">Project Info</h3>
-                    <div className="space-y-2 text-sm">
-                      {project.group && (
-                        <div className="flex items-start justify-between gap-2">
-                          <span className="text-muted-foreground shrink-0">Group</span>
-                          <span className="font-medium text-right text-primary">{project.group.name}</span>
-                        </div>
-                      )}
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-muted-foreground shrink-0">Location</span>
-                        <span className="font-medium text-right">{project.location}</span>
-                      </div>
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-muted-foreground shrink-0">Category</span>
-                        <span className="font-medium text-right">{CATEGORY_LABELS[project.category] ?? project.category}</span>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-
-              <div className="rounded-xl border border-border bg-card p-5 text-center space-y-2">
-                <p className="text-xs text-muted-foreground">Have questions about this project?</p>
-                <ButtonLink href="/contact" variant="outline" className="w-full justify-center text-xs">Contact Support</ButtonLink>
+                </div>
               </div>
 
-              {/* Bank details for investors */}
+              <dl className="mt-5 divide-y divide-border border border-border bg-card text-sm">
+                {[
+                  ...(project.group ? [{ label: "Business group", value: project.group.name }] : []),
+                  ...(project.location ? [{ label: "Location", value: project.location }] : []),
+                  { label: "Category", value: CATEGORY_LABELS[project.category] ?? project.category },
+                  { label: "Return type", value: RETURN_TYPE_LABELS[project.returnType] ?? project.returnType },
+                ].map(({ label, value }) => (
+                  <div key={label} className="flex items-start justify-between gap-4 px-5 py-3">
+                    <dt className="shrink-0 text-muted-foreground">{label}</dt>
+                    <dd className="text-right font-medium text-foreground">{value}</dd>
+                  </div>
+                ))}
+              </dl>
+
               {project.bankAccounts && project.bankAccounts.length > 0 && (
-                <ProjectBankDetails bankAccounts={project.bankAccounts} />
+                <div className="mt-5">
+                  <ProjectBankDetails bankAccounts={project.bankAccounts} />
+                </div>
               )}
 
+              <div className="mt-5 flex items-center gap-4 border border-border bg-muted/40 p-5">
+                <MessageSquare className="h-5 w-5 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold">Questions about this project?</p>
+                  <Link href="/contact" className="text-sm font-semibold text-primary hover:underline">
+                    Contact our investor desk
+                  </Link>
+                </div>
+              </div>
             </div>
-
-          </div>
+          </aside>
         </div>
       </section>
+
+      {/* Mobile sticky invest bar */}
+      {canInvestNow && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 px-4 py-3 shadow-[0_-8px_24px_-12px_rgba(16,24,40,0.2)] backdrop-blur-md lg:hidden">
+          <div className="mx-auto flex max-w-xl items-center gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">
+                {returnLabel} <span className="font-normal text-muted-foreground">expected return</span>
+              </p>
+              <p className="truncate text-xs text-muted-foreground">
+                From {formatBdt(project.minInvestmentBdt.toString())} · {pct}% funded
+              </p>
+            </div>
+            <a
+              href="#invest"
+              className="inline-flex shrink-0 items-center gap-1.5 bg-primary px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25"
+            >
+              Invest now <ArrowRight className="h-4 w-4" />
+            </a>
+          </div>
+        </div>
+      )}
     </>
+  );
+}
+
+function SectionTitle({ id, eyebrow, children }: { id: string; eyebrow: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-5">
+      <p className="mb-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">{eyebrow}</p>
+      <h2 id={id} className="text-2xl font-light tracking-tight text-foreground sm:text-3xl">
+        {children}
+      </h2>
+    </div>
   );
 }
