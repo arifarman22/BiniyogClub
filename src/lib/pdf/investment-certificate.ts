@@ -1,8 +1,9 @@
 /**
  * investment-certificate.ts
  *
- * Tamper-evident investment receipt — pdfkit + QR code.
- * Enterprise-grade layout with logo, address block, and verification section.
+ * Tamper-evident investment certificate — pdfkit + QR code.
+ * Formal single-page A4 layout: framed border, certificate statement,
+ * key figures, investor / investment details and a verification block.
  */
 
 import PDFDocument from "pdfkit";
@@ -23,6 +24,9 @@ export interface InvestmentCertificateData {
   project: {
     title: string;
     expectedReturnPct: number;
+    /** When both are set the project pays a range, not a fixed rate. */
+    returnPctMin?: number | null;
+    returnPctMax?: number | null;
     durationDays: number;
     category?: string;
     location?: string | null;
@@ -35,21 +39,18 @@ export interface InvestmentCertificateData {
   };
 }
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// ── Palette (matches the site's deep-green brand) ─────────────────────────────
 const C = {
-  green:    "#16a34a" as const,
-  greenBg:  "#f0fdf4" as const,
-  greenBd:  "#bbf7d0" as const,
-  dark:     "#0f172a" as const,
-  slate:    "#1e293b" as const,
-  muted:    "#64748b" as const,
-  border:   "#e2e8f0" as const,
-  bg:       "#f8fafc" as const,
-  amber:    "#b45309" as const,
-  amberBg:  "#fffbeb" as const,
-  amberBd:  "#fde68a" as const,
-  white:    "#ffffff" as const,
-  headerBg: "#0f172a" as const,
+  brand:     "#0d4a42",
+  brandDark: "#082f2a",
+  brandTint: "#eef6f4",
+  gold:      "#b08d4a",
+  goldSoft:  "#e9dcc0",
+  ink:       "#111827",
+  body:      "#374151",
+  muted:     "#6b7280",
+  rule:      "#e5e7eb",
+  white:     "#ffffff",
 };
 
 const RETURN_LABELS: Record<string, string> = {
@@ -58,16 +59,16 @@ const RETURN_LABELS: Record<string, string> = {
   HYBRID:       "Hybrid",
 };
 
-function rgb(hex: string): [number, number, number] {
-  return [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
-}
-
 function fmtBdt(n: number): string {
   return `BDT ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+function fmtPct(n: number): string {
+  return `${Number(n.toFixed(2))}%`;
+}
+
 function fmtDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" });
+  return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
 }
 
 // Resolve logo path — works both locally (public/) and on Vercel (process.cwd()/public/)
@@ -86,15 +87,29 @@ function getLogoPath(): string | null {
 export async function renderInvestmentCertificate(
   data: InvestmentCertificateData,
 ): Promise<Buffer> {
-  // Generate QR code PNG buffer
   const qrBuffer = await QRCode.toBuffer(data.verificationUrl, {
     type: "png",
-    width: 110,
-    margin: 1,
-    color: { dark: "#0f172a", light: "#ffffff" },
+    width: 220,
+    margin: 0,
+    color: { dark: C.brandDark, light: "#ffffff" },
   });
 
   const logoPath = getLogoPath();
+
+  // ── Derived figures ──────────────────────────────────────────────────────────
+  const { amountBdt } = data.investment;
+  const { returnPctMin, returnPctMax } = data.project;
+  const isRange = returnPctMin != null && returnPctMax != null && returnPctMin > 0 && returnPctMax > 0;
+  const retMin = isRange ? Math.round(amountBdt * returnPctMin!) / 100 : data.investment.expectedReturnBdt;
+  const retMax = isRange ? Math.round(amountBdt * returnPctMax!) / 100 : null;
+  const rateLabel = isRange ? `${fmtPct(returnPctMin!)} – ${fmtPct(returnPctMax!)}` : fmtPct(data.project.expectedReturnPct);
+  const returnLabel = retMax != null ? `${fmtBdt(retMin)} – ${fmtBdt(retMax)}` : fmtBdt(retMin);
+  const totalLabel = retMax != null
+    ? `${fmtBdt(amountBdt + retMin)} – ${fmtBdt(amountBdt + retMax)}`
+    : fmtBdt(amountBdt + retMin);
+
+  const maturity = new Date(data.investment.activatedAt);
+  maturity.setDate(maturity.getDate() + data.project.durationDays);
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -115,213 +130,213 @@ export async function renderInvestmentCertificate(
 
     const PW = doc.page.width;   // 595
     const PH = doc.page.height;  // 842
-    const M  = 48;               // margin
-    const W  = PW - M * 2;       // usable width
+    const M  = 58;               // content margin
+    const W  = PW - M * 2;
 
-    // ── Header band ──────────────────────────────────────────────────────────
-    const HEADER_H = 100;
-    doc.rect(0, 0, PW, HEADER_H).fillColor(rgb(C.headerBg)).fill();
+    const hRule = (y: number, color = C.rule, width = 0.6, x1 = M, x2 = M + W) =>
+      doc.moveTo(x1, y).lineTo(x2, y).strokeColor(color).lineWidth(width).stroke();
 
-    // Logo (left side)
-    const LOGO_SIZE = 52;
-    const LOGO_X = M;
-    const LOGO_Y = (HEADER_H - LOGO_SIZE) / 2;
+    // ── Frame ─────────────────────────────────────────────────────────────────
+    doc.rect(18, 18, PW - 36, PH - 36).lineWidth(2).strokeColor(C.brand).stroke();
+    doc.rect(24, 24, PW - 48, PH - 48).lineWidth(0.6).strokeColor(C.gold).stroke();
+    // Corner ornaments
+    for (const [cx, cy] of [[24, 24], [PW - 24, 24], [24, PH - 24], [PW - 24, PH - 24]]) {
+      doc.rect(cx - 3, cy - 3, 6, 6).fillColor(C.gold).fill();
+    }
+
+    // Watermark
     if (logoPath) {
       try {
-        doc.image(logoPath, LOGO_X, LOGO_Y, { width: LOGO_SIZE, height: LOGO_SIZE });
-      } catch { /* skip if image fails */ }
+        doc.save().opacity(0.035);
+        doc.image(logoPath, PW / 2 - 150, PH / 2 - 130, { width: 300, height: 300 });
+        doc.restore();
+      } catch { /* skip watermark */ }
     }
 
-    // Company name + tagline (next to logo)
-    const nameX = logoPath ? LOGO_X + LOGO_SIZE + 12 : M;
-    doc.fillColor(rgb(C.green)).fontSize(20).font("Helvetica-Bold")
-       .text("Biniyog Club", nameX, 28, { lineBreak: false });
-    doc.fillColor(rgb("#94a3b8")).fontSize(8).font("Helvetica")
-       .text("Agricultural Investment Platform", nameX, 52, { lineBreak: false });
+    // ── Letterhead ────────────────────────────────────────────────────────────
+    let y = 50;
+    const LOGO = 38;
+    let nameX = M;
+    if (logoPath) {
+      try {
+        doc.image(logoPath, M, y, { width: LOGO, height: LOGO });
+        nameX = M + LOGO + 10;
+      } catch { /* text-only letterhead */ }
+    }
+    doc.fillColor(C.brand).font("Helvetica-Bold").fontSize(15)
+       .text("BINIYOG CLUB", nameX, y + 6, { characterSpacing: 1.6, lineBreak: false });
+    doc.fillColor(C.muted).font("Helvetica").fontSize(7.5)
+       .text("A Mariners Group Investment Platform", nameX, y + 25, { characterSpacing: 0.4, lineBreak: false });
 
-    // Right side: address + contact block
-    const rightColW = 200;
-    const rightX = PW - M - rightColW;
-    doc.fillColor(rgb("#94a3b8")).fontSize(7).font("Helvetica")
-       .text("Dhaka, Bangladesh", rightX, 22, { width: rightColW, align: "right" })
-       .text("info@biniyogclub.com", rightX, 34, { width: rightColW, align: "right" })
-       .text("www.biniyogclub.com", rightX, 46, { width: rightColW, align: "right" });
+    const metaW = 190;
+    const metaX = M + W - metaW;
+    const metaRow = (label: string, value: string, ry: number) => {
+      doc.fillColor(C.muted).font("Helvetica").fontSize(6.5)
+         .text(label, metaX, ry, { width: metaW, align: "right", characterSpacing: 0.8 });
+      doc.fillColor(C.ink).font("Helvetica-Bold").fontSize(8.5)
+         .text(value, metaX, ry + 8, { width: metaW, align: "right" });
+    };
+    metaRow("CERTIFICATE NO.", data.receiptNumber, y + 1);
+    metaRow("DATE OF ISSUE", fmtDate(data.generatedAt), y + 22);
 
-    // Green accent line at bottom of header
-    doc.rect(0, HEADER_H, PW, 3).fillColor(rgb(C.green)).fill();
+    y += LOGO + 16;
+    hRule(y, C.gold, 0.8);
+    hRule(y + 2.5, C.gold, 0.3);
 
-    // ── Certificate title band ────────────────────────────────────────────────
-    const TITLE_Y = HEADER_H + 3;
-    const TITLE_H = 48;
-    doc.rect(0, TITLE_Y, PW, TITLE_H).fillColor(rgb(C.bg)).fill();
+    // ── Title ─────────────────────────────────────────────────────────────────
+    y += 26;
+    doc.fillColor(C.gold).font("Helvetica-Bold").fontSize(8)
+       .text("OFFICIAL RECORD", M, y, { width: W, align: "center", characterSpacing: 3 });
+    y += 16;
+    doc.fillColor(C.brandDark).font("Times-Bold").fontSize(30)
+       .text("Certificate of Investment", M, y, { width: W, align: "center" });
+    y += 44;
 
-    doc.fillColor(rgb(C.dark)).fontSize(16).font("Helvetica-Bold")
-       .text("INVESTMENT CERTIFICATE", M, TITLE_Y + 10, { width: W, align: "center", characterSpacing: 1.5 });
-    doc.fillColor(rgb(C.muted)).fontSize(8).font("Helvetica")
-       .text("This document confirms a verified investment on the Biniyog Club platform", M, TITLE_Y + 30, { width: W, align: "center" });
+    // ── Statement ─────────────────────────────────────────────────────────────
+    doc.fillColor(C.body).font("Times-Italic").fontSize(12)
+       .text("This is to certify that", M, y, { width: W, align: "center" });
+    y += 22;
+    doc.fillColor(C.ink).font("Times-Bold").fontSize(24)
+       .text(data.investor.name, M, y, { width: W, align: "center" });
+    y += doc.heightOfString(data.investor.name, { width: W }) + 6;
+    hRule(y, C.gold, 0.8, PW / 2 - 110, PW / 2 + 110);
+    y += 14;
 
-    // Thin border under title
-    doc.rect(0, TITLE_Y + TITLE_H, PW, 1).fillColor(rgb(C.border)).fill();
+    const statement =
+      `has invested ${fmtBdt(amountBdt)} in "${data.project.title}", ` +
+      `a project administered through Biniyog Club, with effect from ${fmtDate(data.investment.activatedAt)} ` +
+      `for a term of ${data.project.durationDays} days.`;
+    doc.fillColor(C.body).font("Times-Roman").fontSize(11.5);
+    doc.text(statement, M + 24, y, { width: W - 48, align: "center", lineGap: 3 });
+    y += doc.heightOfString(statement, { width: W - 48, lineGap: 3 }) + 22;
 
-    // ── Receipt meta row ──────────────────────────────────────────────────────
-    const META_Y = TITLE_Y + TITLE_H + 1;
-    const META_H = 32;
-    doc.rect(0, META_Y, PW, META_H).fillColor(rgb("#f1f5f9")).fill();
-
-    doc.fillColor(rgb(C.muted)).fontSize(7).font("Helvetica")
-       .text("CERTIFICATE NO.", M, META_Y + 8, { lineBreak: false });
-    doc.fillColor(rgb(C.dark)).fontSize(9).font("Helvetica-Bold")
-       .text(data.receiptNumber, M + 82, META_Y + 7, { lineBreak: false });
-
-    doc.fillColor(rgb(C.muted)).fontSize(7).font("Helvetica")
-       .text("ISSUED DATE", M + 220, META_Y + 8, { lineBreak: false });
-    doc.fillColor(rgb(C.dark)).fontSize(9).font("Helvetica-Bold")
-       .text(fmtDate(data.generatedAt), M + 290, META_Y + 7, { lineBreak: false });
-
-    // Status badge
-    const badgeW = 80;
-    const badgeX = PW - M - badgeW;
-    doc.roundedRect(badgeX, META_Y + 7, badgeW, 18, 3).fillColor(rgb(C.greenBg)).fill();
-    doc.roundedRect(badgeX, META_Y + 7, badgeW, 18, 3).strokeColor(rgb(C.greenBd)).lineWidth(0.8).stroke();
-    doc.fillColor(rgb(C.green)).fontSize(8).font("Helvetica-Bold")
-       .text("CONFIRMED", badgeX, META_Y + 12, { width: badgeW, align: "center" });
-
-    doc.rect(0, META_Y + META_H, PW, 1).fillColor(rgb(C.border)).fill();
-
-    // ── Key figures highlight box ─────────────────────────────────────────────
-    let y = META_Y + META_H + 1 + 16;
-
-    const maturityDate = new Date(data.investment.activatedAt);
-    maturityDate.setDate(maturityDate.getDate() + data.project.durationDays);
-
-    const hBoxH = 68;
-    doc.roundedRect(M, y, W, hBoxH, 6).fillColor(rgb(C.greenBg)).fill();
-    doc.roundedRect(M, y, W, hBoxH, 6).strokeColor(rgb(C.greenBd)).lineWidth(1).stroke();
-
+    // ── Key figures ───────────────────────────────────────────────────────────
+    const FIG_H = 74;
+    doc.rect(M, y, W, FIG_H).fillColor(C.brandTint).fill();
+    doc.rect(M, y, W, 2).fillColor(C.brand).fill();
     const col = W / 3;
-    const highlights = [
-      { label: "AMOUNT INVESTED",  value: fmtBdt(data.investment.amountBdt),        sub: "Principal" },
-      { label: "EXPECTED RETURN",  value: fmtBdt(data.investment.expectedReturnBdt), sub: `${data.project.expectedReturnPct}% of principal` },
-      { label: "MATURITY DATE",    value: fmtDate(maturityDate.toISOString()),        sub: `${data.project.durationDays}-day term` },
+    const figures = [
+      { label: "PRINCIPAL", value: fmtBdt(amountBdt), sub: "Amount invested" },
+      {
+        label: "EXPECTED RETURN",
+        value: retMax != null ? `${fmtBdt(retMin)} –\n${fmtBdt(retMax)}` : fmtBdt(retMin),
+        sub: `${rateLabel} of principal`,
+      },
+      { label: "MATURITY DATE", value: fmtDate(maturity.toISOString()), sub: `${data.project.durationDays}-day term` },
     ];
-    highlights.forEach((item, i) => {
+    figures.forEach((f, i) => {
       const x = M + col * i;
-      // Vertical divider
       if (i > 0) {
-        doc.moveTo(x, y + 10).lineTo(x, y + hBoxH - 10).strokeColor(rgb(C.greenBd)).lineWidth(0.8).stroke();
+        doc.moveTo(x, y + 14).lineTo(x, y + FIG_H - 12).strokeColor(C.goldSoft).lineWidth(0.8).stroke();
       }
-      doc.fillColor(rgb(C.muted)).fontSize(7).font("Helvetica")
-         .text(item.label, x, y + 10, { width: col, align: "center" });
-      doc.fillColor(rgb(C.green)).fontSize(13).font("Helvetica-Bold")
-         .text(item.value, x, y + 22, { width: col, align: "center" });
-      doc.fillColor(rgb(C.muted)).fontSize(7).font("Helvetica")
-         .text(item.sub, x, y + 42, { width: col, align: "center" });
+      const multi = f.value.includes("\n");
+      doc.fillColor(C.muted).font("Helvetica").fontSize(6.5)
+         .text(f.label, x + 8, y + 13, { width: col - 16, align: "center", characterSpacing: 1 });
+      doc.fillColor(C.brandDark).font("Helvetica-Bold").fontSize(multi ? 10 : 12.5)
+         .text(f.value, x + 8, y + (multi ? 25 : 29), { width: col - 16, align: "center", lineGap: 1 });
+      doc.fillColor(C.muted).font("Helvetica").fontSize(7)
+         .text(f.sub, x + 8, y + FIG_H - 18, { width: col - 16, align: "center" });
     });
+    y += FIG_H + 24;
 
-    y += hBoxH + 18;
+    // ── Details (two columns) ─────────────────────────────────────────────────
+    const GAP = 26;
+    const colW = (W - GAP) / 2;
 
-    // ── Section helper ────────────────────────────────────────────────────────
-    function section(title: string, rows: { label: string; value: string }[]) {
-      // Section label with left accent bar
-      doc.rect(M, y, 3, 14).fillColor(rgb(C.green)).fill();
-      doc.fillColor(rgb(C.slate)).fontSize(8).font("Helvetica-Bold")
-         .text(title.toUpperCase(), M + 8, y + 2, { characterSpacing: 0.8 });
-      y += 18;
-
-      const h = rows.length * 24 + 10;
-      doc.roundedRect(M, y, W, h, 4).fillColor(rgb(C.bg)).fill();
-      doc.roundedRect(M, y, W, h, 4).strokeColor(rgb(C.border)).lineWidth(0.8).stroke();
-
-      rows.forEach((row, i) => {
-        const ry = y + 7 + i * 24;
-        // Alternating row tint
-        if (i % 2 === 1) {
-          doc.rect(M + 1, ry - 2, W - 2, 22).fillColor(rgb("#f8fafc")).fill();
+    function detailColumn(x: number, startY: number, title: string, rows: { label: string; value: string }[], labelW: number) {
+      let cy = startY;
+      doc.fillColor(C.brand).font("Helvetica-Bold").fontSize(7.5)
+         .text(title.toUpperCase(), x, cy, { characterSpacing: 1.4, lineBreak: false });
+      cy += 13;
+      hRule(cy, C.brand, 0.8, x, x + colW);
+      cy += 8;
+      for (const row of rows) {
+        const vw = colW - labelW;
+        // Shrink unbreakable values (e.g. long emails) to fit instead of splitting mid-word.
+        let size = 8;
+        if (!/s/.test(row.value)) {
+          while (size > 6 && doc.font("Helvetica-Bold").fontSize(size).widthOfString(row.value) > vw) size -= 0.25;
         }
-        doc.fillColor(rgb(C.muted)).fontSize(9).font("Helvetica").text(row.label, M + 14, ry);
-        doc.fillColor(rgb(C.dark)).fontSize(9).font("Helvetica-Bold")
-           .text(row.value, M + 14, ry, { width: W - 28, align: "right" });
-        if (i < rows.length - 1) {
-          doc.moveTo(M + 14, ry + 20).lineTo(M + W - 14, ry + 20)
-             .strokeColor(rgb(C.border)).lineWidth(0.4).stroke();
-        }
-      });
-
-      y += h + 14;
+        doc.fillColor(C.muted).font("Helvetica").fontSize(8)
+           .text(row.label, x, cy, { width: labelW - 6 });
+        doc.fillColor(C.ink).font("Helvetica-Bold").fontSize(size)
+           .text(row.value, x + labelW, cy + (8 - size) / 2, { width: vw, align: "right" });
+        const h = Math.max(
+          doc.font("Helvetica-Bold").fontSize(size).heightOfString(row.value, { width: vw }),
+          doc.font("Helvetica").fontSize(8).heightOfString(row.label, { width: labelW - 6 }),
+        );
+        cy += h + 6;
+        hRule(cy - 3, C.rule, 0.4, x, x + colW);
+      }
+      return cy;
     }
 
-    // ── Investor Details ──────────────────────────────────────────────────────
-    const investorRows: { label: string; value: string }[] = [
-      { label: "Full Name",     value: data.investor.name },
-      { label: "Email Address", value: data.investor.email },
+    const investorRows = [
+      { label: "Name", value: data.investor.name },
+      { label: "Email", value: data.investor.email },
     ];
-    if (data.investor.phone) investorRows.push({ label: "Phone Number", value: data.investor.phone });
-    section("Investor Details", investorRows);
+    if (data.investor.phone) investorRows.push({ label: "Phone", value: data.investor.phone });
+    investorRows.push({ label: "Investment ID", value: data.investmentId.slice(0, 8).toUpperCase() });
 
-    // ── Project Details ───────────────────────────────────────────────────────
-    const projectRows: { label: string; value: string }[] = [
-      { label: "Project Title", value: data.project.title },
+    const investmentRows = [
+      { label: "Project", value: data.project.title },
     ];
-    if (data.project.location) projectRows.push({ label: "Location", value: data.project.location });
-    projectRows.push({ label: "Return Type", value: RETURN_LABELS[data.investment.returnType] ?? data.investment.returnType });
-    section("Project Details", projectRows);
+    if (data.project.location) investmentRows.push({ label: "Location", value: data.project.location });
+    investmentRows.push(
+      { label: "Return type", value: RETURN_LABELS[data.investment.returnType] ?? data.investment.returnType },
+      { label: isRange ? "Return range" : "Return rate", value: rateLabel },
+      { label: "Effective date", value: fmtDate(data.investment.activatedAt) },
+      { label: "Maturity date", value: fmtDate(maturity.toISOString()) },
+      { label: "Expected return", value: returnLabel },
+      { label: "Total expected", value: totalLabel },
+    );
 
-    // ── Investment Terms ──────────────────────────────────────────────────────
-    section("Investment Terms", [
-      { label: "Investment Date",                                       value: fmtDate(data.investment.activatedAt) },
-      { label: "Maturity Date",                                         value: fmtDate(maturityDate.toISOString()) },
-      { label: "Principal Amount",                                      value: fmtBdt(data.investment.amountBdt) },
-      { label: `Expected Return (${data.project.expectedReturnPct}%)`, value: fmtBdt(data.investment.expectedReturnBdt) },
-      { label: "Total Expected Value",                                  value: fmtBdt(data.investment.amountBdt + data.investment.expectedReturnBdt) },
-    ]);
+    const leftEnd = detailColumn(M, y, "Investor", investorRows, 70);
+    const rightEnd = detailColumn(M + colW + GAP, y, "Investment", investmentRows, 82);
+    y = Math.max(leftEnd, rightEnd) + 18;
 
-    // ── Verification box ──────────────────────────────────────────────────────
-    const vBoxH = 88;
-    doc.roundedRect(M, y, W, vBoxH, 6).fillColor(rgb(C.amberBg)).fill();
-    doc.roundedRect(M, y, W, vBoxH, 6).strokeColor(rgb(C.amberBd)).lineWidth(1).stroke();
+    // ── Verification + authorisation ──────────────────────────────────────────
+    // Anchor the verification block just above the footer.
+    y = Math.max(y, PH - 70 - 106);
 
-    const qrSize = 66;
-    const qrX    = M + W - qrSize - 12;
-    const textW  = qrX - M - 24;
+    const QR = 70;
+    doc.rect(M, y, QR + 10, QR + 10).lineWidth(0.6).strokeColor(C.rule).stroke();
+    doc.image(qrBuffer, M + 5, y + 5, { width: QR, height: QR });
 
-    // Left accent bar
-    doc.rect(M, y, 3, vBoxH).fillColor(rgb(C.amber)).fill();
-
-    doc.fillColor(rgb(C.amber)).fontSize(8).font("Helvetica-Bold")
-       .text("VERIFY THIS CERTIFICATE", M + 14, y + 10, { characterSpacing: 0.5 });
-    doc.fillColor(rgb(C.slate)).fontSize(7.5).font("Helvetica")
+    const ax = M + W - 150;
+    const vx = M + QR + 22;
+    const vw = ax - vx - 20;
+    doc.fillColor(C.brand).font("Helvetica-Bold").fontSize(7.5)
+       .text("VERIFY AUTHENTICITY", vx, y + 4, { characterSpacing: 1.2 });
+    doc.fillColor(C.body).font("Helvetica").fontSize(7.5)
        .text(
-         "Scan the QR code or visit the URL below to confirm this certificate is genuine.\n" +
-         "The verification page shows the original, uneditable record from our database.\n" +
-         "Any altered PDF will not match.",
-         M + 14, y + 24,
-         { width: textW, lineGap: 2 },
+         "Scan the QR code or visit the address below. The verification page shows the original record held by Biniyog Club; an altered document will not match.",
+         vx, y + 18, { width: vw, lineGap: 1.5 },
        );
-    doc.fillColor(rgb(C.green)).fontSize(7.5).font("Helvetica-Bold")
-       .text(data.verificationUrl, M + 14, y + 66, { width: textW });
+    doc.fillColor(C.brand).font("Helvetica-Bold").fontSize(7.5)
+       .text(data.verificationUrl, vx, y + 58, { width: vw });
 
-    // QR code
-    doc.image(qrBuffer, qrX, y + 11, { width: qrSize, height: qrSize });
-
-    y += vBoxH + 16;
+    // Authorisation (right)
+    doc.fillColor(C.brandDark).font("Times-BoldItalic").fontSize(14)
+       .text("Biniyog Club", ax, y + 30, { width: 150, align: "center" });
+    hRule(y + 50, C.ink, 0.6, ax, ax + 150);
+    doc.fillColor(C.muted).font("Helvetica").fontSize(7)
+       .text("Authorised on behalf of Biniyog Club", ax, y + 55, { width: 150, align: "center" })
+       .text("Electronically issued — no signature required", ax, y + 65, { width: 150, align: "center" });
 
     // ── Footer ────────────────────────────────────────────────────────────────
-    const FOOTER_Y = PH - 52;
-    doc.rect(0, FOOTER_Y, PW, 52).fillColor(rgb(C.headerBg)).fill();
-    doc.rect(0, FOOTER_Y, PW, 2).fillColor(rgb(C.green)).fill();
-
-    doc.fillColor(rgb(C.green)).fontSize(8).font("Helvetica-Bold")
-       .text("Biniyog Club", M, FOOTER_Y + 10);
-    doc.fillColor(rgb("#64748b")).fontSize(7).font("Helvetica")
-       .text("Agricultural Investment Platform  |  Dhaka, Bangladesh", M, FOOTER_Y + 22)
-       .text("info@biniyogclub.com  |  www.biniyogclub.com", M, FOOTER_Y + 33);
-
-    doc.fillColor(rgb("#475569")).fontSize(6.5).font("Helvetica")
+    const FY = PH - 70;
+    hRule(FY, C.gold, 0.5);
+    doc.fillColor(C.muted).font("Helvetica").fontSize(6.5)
        .text(
-         "This certificate is system-generated and cryptographically signed. Returns are projected and subject to project performance.",
-         M, FOOTER_Y + 22,
-         { width: W, align: "right" },
+         "Returns shown are projections based on the project's stated rate and are subject to project performance. " +
+         "This certificate is system-generated and cryptographically signed; it is not a negotiable instrument.",
+         M, FY + 8, { width: W, align: "center", lineGap: 1.5 },
        );
+    doc.fillColor(C.brand).font("Helvetica-Bold").fontSize(7)
+       .text("Biniyog Club  ·  Dhaka, Bangladesh  ·  info@biniyogclub.com  ·  www.biniyogclub.com", M, FY + 30, {
+         width: W, align: "center", characterSpacing: 0.3,
+       });
 
     doc.end();
   });

@@ -178,7 +178,7 @@ async function deleteDocument(session: SessionUser, documentId: string): Promise
 // investment. Runs as a system operation — no session permission check needed
 // since it is always triggered server-side after payment confirmation.
 
-const RECEIPT_TEMPLATE_VERSION = "v1.0.0";
+const RECEIPT_TEMPLATE_VERSION = "v2.0.0";
 
 async function generateInvestmentReceipt(
   investmentId: string,
@@ -197,7 +197,7 @@ async function generateInvestmentReceipt(
       project: {
         select: {
           id: true, title: true, slug: true,
-          expectedReturnPct: true, durationDays: true,
+          expectedReturnPct: true, returnPctMin: true, returnPctMax: true, durationDays: true,
           category: true, location: true,
         },
       },
@@ -263,6 +263,8 @@ async function generateInvestmentReceipt(
     project: {
       title:             investment.project.title,
       expectedReturnPct: Number(investment.project.expectedReturnPct),
+      returnPctMin:      investment.project.returnPctMin != null ? Number(investment.project.returnPctMin) : null,
+      returnPctMax:      investment.project.returnPctMax != null ? Number(investment.project.returnPctMax) : null,
       durationDays:      investment.project.durationDays,
       category:          investment.project.category ?? undefined,
       location:          investment.project.location,
