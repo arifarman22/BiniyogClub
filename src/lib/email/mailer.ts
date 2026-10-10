@@ -7,14 +7,16 @@ interface SendEmailOptions {
   to: string;
   subject: string;
   html: string;
+  replyTo?: string;
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailOptions): Promise<void> {
+export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions): Promise<void> {
   const { error } = await resend.emails.send({
     from: env.EMAIL_FROM,
     to,
     subject,
     html,
+    ...(replyTo ? { replyTo } : {}),
   });
   if (error) throw new Error(`Resend error: ${error.message}`);
 }
@@ -131,6 +133,32 @@ export function buildPasswordChangedEmail(name: string): string {
     <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;">
       If you did not make this change, please <a href="${env.NEXT_PUBLIC_APP_URL}/auth/forgot-password" style="color:#1a6b3c;font-weight:600;">reset your password immediately</a>.
     </p>
+  `);
+}
+
+export function buildContactInquiryEmail(inquiry: {
+  name: string;
+  email: string;
+  phone?: string;
+  inquiryType: string;
+  subject?: string;
+  message: string;
+}): string {
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="color:#6b7280;font-size:13px;padding:6px 16px 6px 0;vertical-align:top;white-space:nowrap;">${label}</td>
+      <td style="color:#111827;font-size:14px;padding:6px 0;">${escapeHtml(value)}</td>
+    </tr>`;
+  return emailLayout(`
+    <h2 style="color:#111827;font-size:22px;font-weight:700;margin:0 0 16px;">New contact inquiry</h2>
+    <table style="border-collapse:collapse;margin:0 0 20px;">
+      ${row("Name", inquiry.name)}
+      ${row("Email", inquiry.email)}
+      ${inquiry.phone ? row("Phone", inquiry.phone) : ""}
+      ${row("Inquiry type", inquiry.inquiryType)}
+      ${inquiry.subject ? row("Subject", inquiry.subject) : ""}
+    </table>
+    <p style="color:#374151;font-size:15px;line-height:1.6;margin:0;white-space:pre-wrap;">${escapeHtml(inquiry.message)}</p>
   `);
 }
 
