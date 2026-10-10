@@ -25,3 +25,18 @@ export function formatReturnPct(p: ReturnFields, digits = 1): string {
   if (range) return `${range.min.toFixed(digits)}–${range.max.toFixed(digits)}%`;
   return `${Number((p.expectedReturnPct ?? 0).toString()).toFixed(digits)}%`;
 }
+
+/**
+ * Expected profit in taka for an amount, derived from the project's rate(s).
+ * Always computed from amount × pct / 100 rather than trusting a stored figure.
+ */
+export function getExpectedReturnBdt(
+  amountBdt: number | string | { toString(): string },
+  p: ReturnFields,
+): { min: number; max: number | null } {
+  const amount = Number(amountBdt.toString());
+  const calc = (pct: number) => Math.round(amount * pct) / 100;
+  const range = getReturnRange(p);
+  if (range) return { min: calc(range.min), max: calc(range.max) };
+  return { min: calc(Number((p.expectedReturnPct ?? 0).toString())), max: null };
+}

@@ -11,6 +11,7 @@ import { AdminSortButton } from "@/components/admin/admin-sort-button";
 import { ProjectFilterSelect } from "@/components/admin/project-filter-select";
 import { InvestmentActionButtons } from "@/components/admin/investment-action-buttons";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
+import { formatReturnPct, getExpectedReturnBdt } from "@/lib/financial/return-range";
 import type { AsyncComponentProps } from "@/types";
 
 export const metadata: Metadata = { title: "Investments — Admin" };
@@ -124,7 +125,8 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
                 {items.map((inv) => {
                   const hasManual = inv.manualPayments.length > 0;
                   const manualStatus = inv.manualPayments[0]?.status;
-                  const returnPct = Number(inv.project.expectedReturnPct) * 100;
+                  const returnPct = formatReturnPct(inv.project);
+                  const expected = getExpectedReturnBdt(inv.amountBdt, inv.project);
 
                   return (
                     <tr key={inv.id} className="hover:bg-primary/[0.03] transition-colors">
@@ -147,14 +149,14 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
                       <td className="px-4 py-3 text-right">
                         <p className="font-mono font-semibold">{fmtBdt(inv.amountBdt)}</p>
                         <p className="text-xs text-muted-foreground font-mono">
-                          +{fmtBdt(inv.expectedReturnBdt)}
+                          +{fmtBdt(expected.min)}{expected.max != null && <>–{fmtBdt(expected.max)}</>}
                         </p>
                       </td>
 
                       {/* Return type + % */}
                       <td className="px-4 py-3 hidden lg:table-cell">
                         <p className="text-xs font-medium">{RETURN_TYPE_LABEL[inv.returnType] ?? inv.returnType}</p>
-                        <p className="text-xs text-muted-foreground">{returnPct.toFixed(1)}%</p>
+                        <p className="text-xs text-muted-foreground">{returnPct}</p>
                       </td>
 
                       {/* Status */}

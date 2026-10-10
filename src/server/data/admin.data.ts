@@ -253,7 +253,7 @@ export async function getAdminInvestments(
         confirmedAt: true, activatedAt: true, maturedAt: true,
         cancelledAt: true, paymentPendingAt: true, createdAt: true,
         investorProfile: { select: { user: { select: { id: true, name: true, email: true, phone: true } } } },
-        project: { select: { id: true, title: true, status: true, expectedReturnPct: true } },
+        project: { select: { id: true, title: true, status: true, expectedReturnPct: true, returnPctMin: true, returnPctMax: true } },
         manualPayments: { select: { id: true, status: true }, take: 1, orderBy: { createdAt: "desc" } },
       },
       orderBy,
