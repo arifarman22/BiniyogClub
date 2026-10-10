@@ -13,7 +13,6 @@ import { FeaturedProjectsSection } from "@/components/home/featured-projects-sec
 import { BusinessGroupsSection } from "@/components/home/business-groups-section";
 import { PlatformFeaturesSection } from "@/components/home/platform-features-section";
 import { SecuritySection } from "@/components/home/security-section";
-import { DashboardPreviewSection } from "@/components/home/dashboard-preview-section";
 import { CommunitySection } from "@/components/home/community-section";
 import { CalculatorSection } from "@/components/home/calculator-section";
 import { UpdatesSection } from "@/components/home/updates-section";
@@ -74,9 +73,6 @@ export default async function HomePage() {
 
       {/* ── SECTION 09 — PLATFORM FEATURES (plain) ── */}
       <PlatformFeaturesSection />
-
-      {/* ── SECTION 10 — DASHBOARD PREVIEW (tinted) ── */}
-      <DashboardPreviewSection />
 
       {/* ── SECTION 11 — INTERACTIVE RETURN SIMULATOR (plain) ── */}
       <CalculatorSection />
