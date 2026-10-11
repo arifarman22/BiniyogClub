@@ -4,6 +4,7 @@ import { requireSession } from "@/lib/auth/session";
 import { getInvestorPortfolio } from "@/server/data/investor.data";
 import { TrendingUp } from "lucide-react";
 import { cn } from "cn";
+import { getExpectedReturnBdt } from "@/lib/financial/return-range";
 
 export const metadata: Metadata = { title: "Portfolio — Dashboard" };
 
@@ -34,6 +35,11 @@ function formatBdt(n: number) {
   if (n >= 100000) return `৳${(n / 100000).toFixed(2)}L`;
   if (n >= 1000) return `৳${(n / 1000).toFixed(0)}K`;
   return `৳${n.toLocaleString()}`;
+}
+
+/** "৳16K – ৳22K" for a range, "৳16K" for a fixed figure. */
+function formatBdtRange(r: { min: number; max: number | null }) {
+  return r.max != null && r.max !== r.min ? `${formatBdt(r.min)} – ${formatBdt(r.max)}` : formatBdt(r.min);
 }
 
 export default async function PortfolioPage() {
@@ -72,7 +78,14 @@ export default async function PortfolioPage() {
   }
 
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
-  const totalExpected = investments.reduce((s, i) => s + Number(i.expectedReturnBdt), 0);
+  // Expected returns are derived from each project's rate(s), so ranged projects show min–max.
+  const totalExpected = investments.reduce(
+    (acc, i) => {
+      const e = getExpectedReturnBdt(i.amountBdt, i.project);
+      return { min: acc.min + e.min, max: acc.max + (e.max ?? e.min), hasRange: acc.hasRange || e.max != null };
+    },
+    { min: 0, max: 0, hasRange: false },
+  );
   const totalReturned = investments.reduce(
     (s, i) => s + i.distributions.reduce((ds, d) => ds + Number(d.netAmountBdt), 0),
     0,
@@ -93,7 +106,7 @@ export default async function PortfolioPage() {
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           { label: "Total Invested", value: formatBdt(totalInvested), sub: `${investments.length} investments` },
-          { label: "Expected Returns", value: formatBdt(totalExpected), sub: "At maturity" },
+          { label: "Expected Returns", value: formatBdtRange({ min: totalExpected.min, max: totalExpected.hasRange ? totalExpected.max : null }), sub: "At maturity" },
           { label: "Returns Received", value: formatBdt(totalReturned), sub: "Distributed so far" },
         ].map(({ label, value, sub }) => (
           <div key={label} className="surface-card p-5">
@@ -209,6 +222,7 @@ export default async function PortfolioPage() {
             </thead>
             <tbody className="divide-y divide-border/60">
               {investments.map((inv) => {
+                const expected = getExpectedReturnBdt(inv.amountBdt, inv.project);
                 const received = inv.distributions.reduce((s, d) => s + Number(d.netAmountBdt), 0);
                 return (
                   <tr key={inv.id} className="hover:bg-primary/[0.03]">
@@ -220,7 +234,7 @@ export default async function PortfolioPage() {
                     </td>
                     <td className="px-4 py-3 text-right font-semibold">৳{Number(inv.amountBdt).toLocaleString()}</td>
                     <td className="px-4 py-3 text-right text-muted-foreground hidden sm:table-cell">
-                      ৳{Number(inv.expectedReturnBdt).toLocaleString()}
+                      ৳{expected.min.toLocaleString()}{expected.max != null && <> – ৳{expected.max.toLocaleString()}</>}
                     </td>
                     <td className="px-4 py-3 text-right hidden md:table-cell">
                       {received > 0 ? (

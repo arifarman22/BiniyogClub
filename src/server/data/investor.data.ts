@@ -252,6 +252,8 @@ export async function getInvestorPortfolio(session: SessionUser) {
           category: true,
           status: true,
           expectedReturnPct: true,
+          returnPctMin: true,
+          returnPctMax: true,
           durationDays: true,
         },
       },
