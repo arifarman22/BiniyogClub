@@ -25,7 +25,7 @@ export function AuthCard({
   return (
     <div className="flex w-full flex-col lg:flex-row">
       {/* ── Left Showcase Panel (Desktop) ── */}
-      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-slate-950 p-12 text-white">
+      <div className="relative hidden lg:flex lg:w-1/2 flex-col justify-between overflow-hidden bg-slate-950 p-12 text-white sticky top-0 h-dvh">
         {/* Background Image & Multi-layer Vignette */}
         <Image
           src={image}
@@ -107,7 +107,7 @@ export function AuthCard({
       </div>
 
       {/* ── Right Form Panel ── */}
-      <div className="relative flex w-full lg:w-1/2 flex-col items-center justify-start lg:justify-center bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-5 py-6 sm:px-12 lg:px-16 h-full overflow-y-auto">
+      <div className="relative flex w-full lg:w-1/2 flex-col items-center justify-start lg:justify-center bg-gradient-to-br from-slate-50 via-white to-emerald-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 px-5 py-10 sm:px-12 lg:px-16">
         {/* Ambient background decoration */}
         <div className="absolute top-0 right-0 -mr-24 -mt-24 h-80 w-80 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 -ml-24 -mb-24 h-80 w-80 rounded-full bg-teal-500/10 blur-3xl pointer-events-none" />
