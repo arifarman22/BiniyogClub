@@ -31,6 +31,8 @@ export interface InvestmentCertificateData {
     category?: string;
     location?: string | null;
   };
+  /** "group" switches the wording from a project to a business-group tier. */
+  kind?: "project" | "group";
   investment: {
     amountBdt: number;
     expectedReturnBdt: number;
@@ -204,7 +206,7 @@ export async function renderInvestmentCertificate(
 
     const statement =
       `has invested ${fmtBdt(amountBdt)} in "${data.project.title}", ` +
-      `a project administered through Biniyog Club, with effect from ${fmtDate(data.investment.activatedAt)} ` +
+      `${data.kind === "group" ? "a business group tier" : "a project"} administered through Biniyog Club, with effect from ${fmtDate(data.investment.activatedAt)} ` +
       `for a term of ${data.project.durationDays} days.`;
     doc.fillColor(C.body).font("Times-Roman").fontSize(11.5);
     doc.text(statement, M + 24, y, { width: W - 48, align: "center", lineGap: 3 });
@@ -279,7 +281,7 @@ export async function renderInvestmentCertificate(
     investorRows.push({ label: "Investment ID", value: data.investmentId.slice(0, 8).toUpperCase() });
 
     const investmentRows = [
-      { label: "Project", value: data.project.title },
+      { label: data.kind === "group" ? "Group / tier" : "Project", value: data.project.title },
     ];
     if (data.project.location) investmentRows.push({ label: "Location", value: data.project.location });
     investmentRows.push(

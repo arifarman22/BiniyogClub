@@ -24,6 +24,9 @@ export const PERMISSIONS = {
   INVESTMENT_APPROVE: "investment.approve",
   INVESTMENT_CANCEL:  "investment.cancel",
 
+  // ── Business groups ──────────────────────────────────────────────────────
+  GROUP_MANAGE:       "group.manage",
+
   // ── Payment management ───────────────────────────────────────────────────
   PAYMENT_VIEW:       "payment.view",
   PAYMENT_VERIFY:     "payment.verify",
@@ -80,6 +83,7 @@ export const PERMISSION_DESCRIPTIONS: Record<Permission, string> = {
   "investment.create":  "Make a new investment",
   "investment.approve": "Approve or confirm investments",
   "investment.cancel":  "Cancel an investment",
+  "group.manage":       "Create and edit business groups, entities and tiers",
   "payment.view":       "View payment records",
   "payment.verify":     "Verify and reconcile payments",
   "withdrawal.view":    "View withdrawal requests",
@@ -112,6 +116,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     P.USER_VIEW, P.USER_CREATE, P.USER_UPDATE, P.USER_DELETE, P.USER_SUSPEND, P.USER_CHANGE_ROLE,
     P.PROJECT_VIEW, P.PROJECT_CREATE, P.PROJECT_UPDATE, P.PROJECT_DELETE, P.PROJECT_APPROVE, P.PROJECT_PUBLISH, P.PROJECT_ARCHIVE,
     P.INVESTMENT_VIEW, P.INVESTMENT_APPROVE, P.INVESTMENT_CANCEL,
+    P.GROUP_MANAGE,
     P.PAYMENT_VIEW, P.PAYMENT_VERIFY,
     P.WITHDRAWAL_VIEW, P.WITHDRAWAL_APPROVE,
     P.KYC_VIEW, P.KYC_REVIEW, P.KYC_APPROVE,
@@ -135,6 +140,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   PROJECT_MANAGER: [
     P.PROJECT_VIEW, P.PROJECT_CREATE, P.PROJECT_UPDATE, P.PROJECT_APPROVE, P.PROJECT_PUBLISH, P.PROJECT_ARCHIVE,
     P.INVESTMENT_VIEW,
+    P.GROUP_MANAGE,
     P.DISTRIBUTION_VIEW,
     P.REPORT_VIEW,
     P.USER_VIEW,

@@ -47,12 +47,16 @@ export async function createGroupInvestmentAction(data: {
       where: { id: data.tierId },
       select: {
         id: true, isActive: true, minAmountBdt: true, maxAmountBdt: true, type: true, availableUnits: true,
+        bankAccount: { select: { isActive: true } },
         entity: { select: { isActive: true, group: { select: { isActive: true } } } },
       },
     });
     if (!tier || !tier.isActive) throw new NotFoundError("Tier");
     if (!tier.entity.isActive) throw new ValidationError("This investment opportunity is not currently active.");
     if (!tier.entity.group.isActive) throw new ValidationError("This group is not currently active.");
+    if (!tier.bankAccount?.isActive) {
+      throw new ValidationError("Payment details for this tier are not available yet. Please check back soon.");
+    }
 
     if (data.amountBdt < Number(tier.minAmountBdt)) {
       throw new ValidationError(`Minimum investment is ৳${Number(tier.minAmountBdt).toLocaleString("en-BD")}`);
@@ -64,12 +68,8 @@ export async function createGroupInvestmentAction(data: {
       throw new ValidationError("No plots available at this time");
     }
 
-    // Check no active investment in same tier
-    const existing = await db.groupInvestment.findFirst({
-      where: { tierId: data.tierId, investorUserId: session.id, status: { notIn: ["CANCELLED"] } },
-      select: { id: true },
-    });
-    if (existing) throw new ValidationError("You already have an active investment in this tier");
+    // Investors may hold several investments in the same tier; each one is
+    // paid, reviewed and activated on its own.
 
     const inv = await db.groupInvestment.create({
       data: {
@@ -104,12 +104,16 @@ export async function submitGroupPaymentProofAction(data: {
 
     const inv = await db.groupInvestment.findUnique({
       where: { id: data.groupInvestmentId },
-      select: { id: true, status: true, amountBdt: true, investorUserId: true },
+      select: { id: true, status: true, amountBdt: true, investorUserId: true, tier: { select: { bankAccountId: true } } },
     });
     if (!inv) throw new NotFoundError("Group investment");
     if (inv.investorUserId !== session.id) throw new ForbiddenError("Access denied");
     if (inv.status !== "PAYMENT_PENDING") {
       throw new ValidationError(`Cannot submit proof for investment in status: ${inv.status}`);
+    }
+    // Investors must pay into the account the admin assigned to this tier.
+    if (inv.tier.bankAccountId && data.bankAccountId !== inv.tier.bankAccountId) {
+      throw new ValidationError("Please pay into the bank account shown for this tier.");
     }
 
     const existing = await db.groupInvestmentPayment.findFirst({
@@ -243,84 +247,212 @@ export async function rejectGroupPaymentAction(
   } catch (e) { return svcErr(e); }
 }
 
-// ─── Admin: edit business group ──────────────────────────────────────────────────
+// ─── Admin: manage business groups, entities and tiers ──────────────────────
+// Super Admin, Admin and Project Manager hold group.manage. Every write
+// revalidates the whole public /groups tree so the website reflects it.
+
+const TIER_TYPES = ["INVESTOR", "SHAREHOLDER", "DIRECTORSHIP", "PLOT_BOOKING", "LAND_SHARE"] as const;
+type TierTypeValue = (typeof TIER_TYPES)[number];
+
+function revalidateGroups() {
+  revalidatePath("/admin/groups");
+  revalidatePath("/groups", "layout");
+  revalidatePath("/");
+}
+
+function slugify(s: string) {
+  return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "entity";
+}
+
+async function uniqueEntitySlug(name: string) {
+  const base = slugify(name);
+  for (let i = 0; ; i++) {
+    const slug = i === 0 ? base : `${base}-${i + 1}`;
+    const clash = await db.groupEntity.findUnique({ where: { slug }, select: { id: true } });
+    if (!clash) return slug;
+  }
+}
+
+function optionalUrl(v: string | null | undefined) {
+  const s = v?.trim();
+  if (!s) return null;
+  if (!/^https?:\/\//i.test(s) && !s.startsWith("/")) throw new ValidationError("Image must be a full URL or a site path");
+  return s;
+}
 
 export async function updateGroupAction(
   groupId: string,
-  data: { name?: string; tagline?: string; description?: string; isActive?: boolean },
-): Promise<ActionResult<void>> {
-  try {
-    const session = await requireSession();
-    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
-    const group = await db.businessGroup.findUnique({ where: { id: groupId }, select: { id: true } });
-    if (!group) throw new NotFoundError("Business group");
-    await db.businessGroup.update({ where: { id: groupId }, data });
-    revalidatePath("/admin/groups");
-    revalidatePath("/groups");
-    return { success: true, data: undefined };
-  } catch (e) { return svcErr(e); }
-}
-
-// ─── Admin: edit group entity ───────────────────────────────────────────────────
-
-export async function updateGroupEntityAction(
-  entityId: string,
-  data: { name?: string; description?: string; isActive?: boolean },
-): Promise<ActionResult<void>> {
-  try {
-    const session = await requireSession();
-    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
-    const entity = await db.groupEntity.findUnique({ where: { id: entityId }, select: { id: true } });
-    if (!entity) throw new NotFoundError("Group entity");
-    await db.groupEntity.update({ where: { id: entityId }, data });
-    revalidatePath("/admin/groups");
-    revalidatePath("/groups");
-    return { success: true, data: undefined };
-  } catch (e) { return svcErr(e); }
-}
-
-// ─── Admin: edit group tier ──────────────────────────────────────────────────
-
-export async function updateGroupTierAction(
-  tierId: string,
   data: {
     name?: string;
+    tagline?: string | null;
     description?: string;
-    benefits?: string[];
-    minAmountBdt?: number;
-    maxAmountBdt?: number | null;
-    expectedReturnPct?: number | null;
-    durationMonths?: number | null;
-    totalUnits?: number | null;
-    availableUnits?: number | null;
+    coverUrl?: string | null;
+    logoUrl?: string | null;
     isActive?: boolean;
   },
 ): Promise<ActionResult<void>> {
   try {
     const session = await requireSession();
-    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
+    await requirePermission(session, PERMISSIONS.GROUP_MANAGE);
+    const group = await db.businessGroup.findUnique({ where: { id: groupId }, select: { id: true } });
+    if (!group) throw new NotFoundError("Business group");
+    if (data.name !== undefined && !data.name.trim()) throw new ValidationError("Group name is required");
 
-    const tier = await db.groupTier.findUnique({ where: { id: tierId }, select: { id: true } });
-    if (!tier) throw new NotFoundError("Tier");
-
-    await db.groupTier.update({
-      where: { id: tierId },
+    await db.businessGroup.update({
+      where: { id: groupId },
       data: {
-        ...(data.name !== undefined && { name: data.name }),
-        ...(data.description !== undefined && { description: data.description }),
-        ...(data.benefits !== undefined && { benefits: data.benefits }),
-        ...(data.minAmountBdt !== undefined && { minAmountBdt: data.minAmountBdt }),
-        ...("maxAmountBdt" in data && { maxAmountBdt: data.maxAmountBdt }),
-        ...("expectedReturnPct" in data && { expectedReturnPct: data.expectedReturnPct }),
-        ...("durationMonths" in data && { durationMonths: data.durationMonths }),
-        ...("totalUnits" in data && { totalUnits: data.totalUnits }),
-        ...("availableUnits" in data && { availableUnits: data.availableUnits }),
+        ...(data.name !== undefined && { name: data.name.trim() }),
+        ...("tagline" in data && { tagline: data.tagline?.trim() || null }),
+        ...(data.description !== undefined && { description: data.description.trim() }),
+        ...("coverUrl" in data && { coverUrl: optionalUrl(data.coverUrl) }),
+        ...("logoUrl" in data && { logoUrl: optionalUrl(data.logoUrl) }),
         ...(data.isActive !== undefined && { isActive: data.isActive }),
       },
     });
+    revalidateGroups();
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
 
-    revalidatePath("/admin/groups");
-    revalidatePath("/groups");
+type EntityInput = { name: string; description: string; isActive: boolean };
+
+export async function createGroupEntityAction(
+  groupId: string,
+  data: EntityInput,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.GROUP_MANAGE);
+    if (!data.name.trim()) throw new ValidationError("Entity name is required");
+    const group = await db.businessGroup.findUnique({ where: { id: groupId }, select: { id: true } });
+    if (!group) throw new NotFoundError("Business group");
+
+    const entity = await db.groupEntity.create({
+      data: {
+        groupId,
+        name: data.name.trim(),
+        slug: await uniqueEntitySlug(data.name),
+        description: data.description.trim(),
+        isActive: data.isActive,
+      },
+      select: { id: true },
+    });
+    revalidateGroups();
+    return { success: true, data: entity };
+  } catch (e) { return svcErr(e); }
+}
+
+export async function updateGroupEntityAction(
+  entityId: string,
+  data: Partial<EntityInput>,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.GROUP_MANAGE);
+    const entity = await db.groupEntity.findUnique({ where: { id: entityId }, select: { id: true } });
+    if (!entity) throw new NotFoundError("Group entity");
+    if (data.name !== undefined && !data.name.trim()) throw new ValidationError("Entity name is required");
+
+    await db.groupEntity.update({
+      where: { id: entityId },
+      data: {
+        ...(data.name !== undefined && { name: data.name.trim() }),
+        ...(data.description !== undefined && { description: data.description.trim() }),
+        ...(data.isActive !== undefined && { isActive: data.isActive }),
+      },
+    });
+    revalidateGroups();
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
+
+export type TierInput = {
+  type: TierTypeValue;
+  name: string;
+  description: string;
+  benefits: string[];
+  minAmountBdt: number;
+  maxAmountBdt: number | null;
+  expectedReturnPct: number | null;
+  durationMonths: number | null;
+  plotSizeSqft: number | null;
+  pricePerSqftBdt: number | null;
+  totalUnits: number | null;
+  availableUnits: number | null;
+  sortOrder: number;
+  bankAccountId: string | null;
+  isActive: boolean;
+};
+
+async function validateTier(data: TierInput) {
+  if (!TIER_TYPES.includes(data.type)) throw new ValidationError("Invalid tier type");
+  if (!data.name.trim()) throw new ValidationError("Tier name is required");
+  if (!(data.minAmountBdt > 0)) throw new ValidationError("Minimum amount must be greater than 0");
+  if (data.maxAmountBdt != null && data.maxAmountBdt < data.minAmountBdt) {
+    throw new ValidationError("Maximum amount cannot be less than the minimum");
+  }
+  if (data.expectedReturnPct != null && (data.expectedReturnPct < 0 || data.expectedReturnPct > 100)) {
+    throw new ValidationError("Expected return must be between 0 and 100%");
+  }
+  if (data.totalUnits != null && data.availableUnits != null && data.availableUnits > data.totalUnits) {
+    throw new ValidationError("Available units cannot exceed total units");
+  }
+  if (data.bankAccountId) {
+    const bank = await db.bankAccount.findUnique({ where: { id: data.bankAccountId }, select: { isActive: true } });
+    if (!bank || !bank.isActive) throw new ValidationError("Selected bank account is not active");
+  }
+}
+
+function tierData(data: TierInput) {
+  return {
+    type: data.type,
+    name: data.name.trim(),
+    description: data.description.trim(),
+    benefits: data.benefits.map((b) => b.trim()).filter(Boolean),
+    minAmountBdt: data.minAmountBdt,
+    maxAmountBdt: data.maxAmountBdt,
+    expectedReturnPct: data.expectedReturnPct,
+    durationMonths: data.durationMonths,
+    plotSizeSqft: data.plotSizeSqft,
+    pricePerSqftBdt: data.pricePerSqftBdt,
+    totalUnits: data.totalUnits,
+    availableUnits: data.availableUnits,
+    sortOrder: data.sortOrder,
+    bankAccountId: data.bankAccountId || null,
+    isActive: data.isActive,
+  };
+}
+
+export async function createGroupTierAction(
+  entityId: string,
+  data: TierInput,
+): Promise<ActionResult<{ id: string }>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.GROUP_MANAGE);
+    const entity = await db.groupEntity.findUnique({ where: { id: entityId }, select: { id: true } });
+    if (!entity) throw new NotFoundError("Group entity");
+    await validateTier(data);
+
+    const tier = await db.groupTier.create({ data: { entityId, ...tierData(data) }, select: { id: true } });
+    revalidateGroups();
+    return { success: true, data: tier };
+  } catch (e) { return svcErr(e); }
+}
+
+export async function updateGroupTierAction(
+  tierId: string,
+  data: TierInput,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.GROUP_MANAGE);
+    const tier = await db.groupTier.findUnique({ where: { id: tierId }, select: { id: true } });
+    if (!tier) throw new NotFoundError("Tier");
+    await validateTier(data);
+
+    await db.groupTier.update({ where: { id: tierId }, data: tierData(data) });
+    revalidateGroups();
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }
 }
@@ -346,6 +478,85 @@ export async function cancelGroupInvestmentAction(
       data: { status: "CANCELLED", cancelledAt: new Date() },
     });
 
+    revalidatePath("/dashboard/groups");
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
+
+// ─── Admin: cancel group investment ──────────────────────────────────────────
+
+export async function cancelGroupInvestmentAdminAction(
+  groupInvestmentId: string,
+  reason: string,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
+
+    const inv = await db.groupInvestment.findUnique({
+      where: { id: groupInvestmentId },
+      select: { id: true, status: true, investorUserId: true },
+    });
+    if (!inv) throw new NotFoundError("Group investment");
+    if (["CANCELLED", "COMPLETED"].includes(inv.status)) {
+      throw new ValidationError(`Cannot cancel investment in status: ${inv.status}`);
+    }
+
+    await db.groupInvestment.update({
+      where: { id: groupInvestmentId },
+      data: { status: "CANCELLED", cancelledAt: new Date() },
+    });
+
+    await db.notification.create({
+      data: {
+        userId: inv.investorUserId,
+        type: "INVESTMENT_CONFIRMED",
+        title: "Group Investment Cancelled",
+        body: `Your group investment has been cancelled by admin. Reason: ${reason}`,
+        data: { groupInvestmentId },
+      },
+    });
+
+    revalidatePath("/admin/groups");
+    revalidatePath("/dashboard/groups");
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
+
+// ─── Admin: complete group investment ────────────────────────────────────────
+
+export async function completeGroupInvestmentAction(
+  groupInvestmentId: string,
+): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.INVESTMENT_APPROVE);
+
+    const inv = await db.groupInvestment.findUnique({
+      where: { id: groupInvestmentId },
+      select: { id: true, status: true, investorUserId: true },
+    });
+    if (!inv) throw new NotFoundError("Group investment");
+    if (inv.status !== "ACTIVE") {
+      throw new ValidationError(`Investment must be ACTIVE to complete (current: ${inv.status})`);
+    }
+
+    await db.groupInvestment.update({
+      where: { id: groupInvestmentId },
+      data: { status: "COMPLETED" },
+    });
+
+    await db.notification.create({
+      data: {
+        userId: inv.investorUserId,
+        type: "INVESTMENT_CONFIRMED",
+        title: "Group Investment Completed",
+        body: "Your group investment has been marked as completed.",
+        data: { groupInvestmentId },
+      },
+    });
+
+    revalidatePath("/admin/groups");
     revalidatePath("/dashboard/groups");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }

@@ -1,22 +1,52 @@
 "use client";
 
 import { useState } from "react";
-import { Pencil, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ImagePlus, Loader2, Pencil } from "lucide-react";
 import { updateGroupAction } from "@/server/actions/group-investment.actions";
+import { uploadProjectCoverImageAction } from "@/server/actions/project.actions";
+import { ActiveToggle, Field, FormFooter, Modal, inputCls } from "./group-form-ui";
 
 type Props = {
-  group: { id: string; name: string; tagline: string | null; description: string; isActive: boolean };
+  group: {
+    id: string;
+    name: string;
+    tagline: string | null;
+    description: string;
+    coverUrl: string | null;
+    logoUrl: string | null;
+    isActive: boolean;
+  };
 };
 
 export function EditGroupDialog({ group }: Props) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
 
   const [name, setName] = useState(group.name);
   const [tagline, setTagline] = useState(group.tagline ?? "");
   const [description, setDescription] = useState(group.description);
+  const [coverUrl, setCoverUrl] = useState(group.coverUrl ?? "");
+  const [logoUrl, setLogoUrl] = useState(group.logoUrl ?? "");
   const [isActive, setIsActive] = useState(group.isActive);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    if (file.size > 3 * 1024 * 1024) { setError("Image must be smaller than 3 MB."); return; }
+    setError("");
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const result = await uploadProjectCoverImageAction(fd);
+    setUploading(false);
+    if (result.success) setCoverUrl(result.data.url);
+    else setError(result.error ?? "Upload failed.");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -24,13 +54,10 @@ export function EditGroupDialog({ group }: Props) {
     if (!name.trim()) { setError("Name is required."); return; }
     setLoading(true);
     const result = await updateGroupAction(group.id, {
-      name: name.trim(),
-      tagline: tagline.trim() || undefined,
-      description: description.trim(),
-      isActive,
+      name, tagline, description, coverUrl, logoUrl, isActive,
     });
     setLoading(false);
-    if (result.success) setOpen(false);
+    if (result.success) { setOpen(false); router.refresh(); }
     else setError(result.error ?? "Failed to update.");
   }
 
@@ -38,53 +65,53 @@ export function EditGroupDialog({ group }: Props) {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-muted/40 transition-colors"
+        className="flex items-center gap-1 rounded border border-border px-2 py-1 text-xs transition-colors hover:bg-muted/40"
       >
         <Pencil className="h-3 w-3" /> Edit Group
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-md surface-card shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h2 className="font-semibold">Edit Group</h2>
-              <button onClick={() => setOpen(false)} className="text-muted-foreground hover:text-foreground"><X className="h-4 w-4" /></button>
-            </div>
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Group Name</label>
-                <input type="text" value={name} onChange={(e) => setName(e.target.value)} required
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tagline</label>
-                <input type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Short tagline"
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Description</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
-                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10" />
-              </div>
-              <label className="flex items-center gap-3 cursor-pointer select-none">
-                <div onClick={() => setIsActive((v) => !v)}
-                  className={`relative h-5 w-9 rounded-full transition-colors ${isActive ? "bg-success" : "bg-muted-foreground/30"}`}>
-                  <span className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform ${isActive ? "translate-x-4" : "translate-x-0.5"}`} />
+        <Modal title="Edit Group" subtitle="Changes appear on the public group pages immediately." onClose={() => setOpen(false)}>
+          <form onSubmit={handleSubmit} className="space-y-4 overflow-y-auto p-5">
+            <Field label="Group Name">
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required className={inputCls} />
+            </Field>
+            <Field label="Tagline">
+              <input type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} placeholder="Short tagline" className={inputCls} />
+            </Field>
+            <Field label="Description">
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={`${inputCls} resize-none`} />
+            </Field>
+
+            <Field label="Cover Image" hint="shown behind the group header">
+              <div className="flex items-start gap-3">
+                <div className="relative h-20 w-32 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+                  {coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={coverUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="flex h-full items-center justify-center text-[10px] text-muted-foreground">Default image</span>
+                  )}
                 </div>
-                <span className="text-sm">{isActive ? "Active" : "Inactive"}</span>
-              </label>
-              {error && <p className="text-xs text-destructive">{error}</p>}
-              <div className="flex gap-3 pt-1">
-                <button type="button" onClick={() => setOpen(false)}
-                  className="flex-1 rounded-lg border border-border px-3 py-2 text-sm hover:bg-muted/40 transition-colors">Cancel</button>
-                <button type="submit" disabled={loading}
-                  className="flex-1 rounded-lg bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/80 disabled:opacity-60 transition-colors">
-                  {loading ? "Saving…" : "Save Changes"}
-                </button>
+                <div className="flex-1 space-y-2">
+                  <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:bg-muted/40">
+                    {uploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ImagePlus className="h-3.5 w-3.5" />}
+                    {uploading ? "Uploading…" : "Upload image"}
+                    <input type="file" accept="image/jpeg,image/png,image/webp" onChange={handleUpload} disabled={uploading} className="hidden" />
+                  </label>
+                  <input type="text" value={coverUrl} onChange={(e) => setCoverUrl(e.target.value)} placeholder="…or paste an image URL" className={inputCls} />
+                </div>
               </div>
-            </form>
-          </div>
-        </div>
+            </Field>
+
+            <Field label="Logo URL" hint="optional">
+              <input type="text" value={logoUrl} onChange={(e) => setLogoUrl(e.target.value)} placeholder="https://…" className={inputCls} />
+            </Field>
+
+            <ActiveToggle value={isActive} onChange={setIsActive} />
+            <FormFooter error={error} loading={loading || uploading} submitLabel="Save Changes" onCancel={() => setOpen(false)} />
+          </form>
+        </Modal>
       )}
     </>
   );

@@ -154,6 +154,12 @@ export async function deleteUserAction(userId: string): Promise<ActionResult<voi
     await db.documentAuditLog.deleteMany({ where: { document: { ownerUserId: userId } } });
     await db.document.deleteMany({ where: { ownerUserId: userId } });
     await db.document.deleteMany({ where: { uploadedBy: userId } });
+    // Delete group investments (RESTRICT FK on investorUserId)
+    const groupInvIds = (await db.groupInvestment.findMany({ where: { investorUserId: userId }, select: { id: true } })).map((g) => g.id);
+    if (groupInvIds.length) {
+      await db.groupInvestmentPayment.deleteMany({ where: { groupInvestmentId: { in: groupInvIds } } });
+      await db.groupInvestment.deleteMany({ where: { id: { in: groupInvIds } } });
+    }
     await db.auditLog.updateMany({ where: { actorId: userId }, data: { actorId: null } });
     // Hard delete — cascades sessions, kyc, wallet, investorProfile, notifications, verificationTokens
     await db.user.delete({ where: { id: userId } });

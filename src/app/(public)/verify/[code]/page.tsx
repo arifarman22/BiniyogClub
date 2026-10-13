@@ -1,5 +1,6 @@
 import { db } from "@/lib/db/prisma";
 import { verifyReceipt } from "@/lib/pdf/verify";
+import { verifyGroupReceipt } from "@/server/services/group-receipt.service";
 import { CheckCircle, XCircle, ShieldAlert } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +10,14 @@ interface Props {
 }
 
 async function getVerificationResult(code: string) {
+  // Group investment receipts (GRP-…) are rendered from the live record.
+  if (code.startsWith("GRP-")) {
+    const group = await verifyGroupReceipt(code);
+    if (!group) return { valid: false, reason: "not_found" as const };
+    if (!group.active) return { valid: false, reason: "not_active" as const };
+    return { valid: true, generatedAt: undefined, data: group.data };
+  }
+
   // Find the investment by receipt number
   const investment = await db.investment.findUnique({
     where: { receiptNumber: code },
@@ -37,13 +46,16 @@ async function getVerificationResult(code: string) {
     return { valid: false, reason: "not_active" as const };
   }
 
-  // Find the document with the stored hash
+  // Find the receipt document for THIS investment — an investor can hold
+  // several receipts, and matching on owner alone picked the wrong hash.
   const doc = await db.document.findFirst({
     where: {
       category: "INVESTMENT_RECEIPT",
       ownerUserId: investment.investorProfile.user.id,
+      description: `Receipt #${investment.receiptNumber}`,
       deletedAt: null,
     },
+    orderBy: { createdAt: "desc" },
     select: { verificationHash: true, generatedAt: true },
   });
 
@@ -126,7 +138,7 @@ export default async function VerifyPage({ params }: Props) {
               {[
                 { label: "Receipt Number",    value: result.data!.receiptNumber },
                 { label: "Investor Name",     value: result.data!.investorName },
-                { label: "Project",           value: result.data!.projectTitle },
+                { label: code.toUpperCase().startsWith("GRP-") ? "Group / tier" : "Project", value: result.data!.projectTitle },
                 ...(result.data!.location ? [{ label: "Location", value: result.data!.location }] : []),
                 { label: "Amount Invested",   value: fmtBdt(result.data!.amountBdt) },
                 { label: `Expected Return (${result.data!.returnPct}%)`, value: fmtBdt(result.data!.expectedReturnBdt) },

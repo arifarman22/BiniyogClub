@@ -8,6 +8,7 @@ import { GroupPaymentProofButton } from "@/components/groups/group-payment-proof
 import { cn } from "cn";
 import { Building2 } from "lucide-react";
 import { TierIcon } from "@/components/groups/tier-icon";
+import { CancelGroupInvestmentButton } from "@/components/groups/cancel-group-investment-button";
 
 export const metadata: Metadata = { title: "Group Investments — Dashboard" };
 
@@ -105,6 +106,17 @@ export default async function DashboardGroupsPage() {
                   <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium shrink-0", STATUS_COLORS[inv.status])}>
                     {STATUS_LABELS[inv.status] ?? inv.status}
                   </span>
+
+                  {inv.receiptNumber && ["ACTIVE", "COMPLETED"].includes(inv.status) && (
+                    <a
+                      href={`/api/group-receipts/${inv.id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="shrink-0 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/50 hover:text-primary"
+                    >
+                      Receipt
+                    </a>
+                  )}
                 </div>
 
                 {/* Extra details set by admin */}
@@ -157,7 +169,7 @@ export default async function DashboardGroupsPage() {
                         <GroupPaymentProofButton
                           groupInvestmentId={inv.id}
                           amountBdt={Number(inv.amountBdt)}
-                          bankAccounts={bankAccounts}
+                          bankAccounts={inv.tier.bankAccount ? [inv.tier.bankAccount] : bankAccounts}
                         />
                       </div>
                     )}
@@ -166,6 +178,10 @@ export default async function DashboardGroupsPage() {
                       <p className="text-xs text-muted-foreground">
                         Your proof is under review. This usually takes 1–2 business days.
                       </p>
+                    )}
+
+                    {!latestPayment && (
+                      <CancelGroupInvestmentButton groupInvestmentId={inv.id} />
                     )}
                   </div>
                 )}

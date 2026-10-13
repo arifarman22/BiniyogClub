@@ -9,13 +9,14 @@ import {
   getInvestorPortfolio,
   getInvestorKyc,
   getAvailableProjects,
+  getInvestorGroupDashboard,
 } from "@/server/data/investor.data";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
   TrendingUp, CheckCircle2, Clock, BarChart3,
   ArrowRight, AlertCircle, Bell, ArrowUpRight,
-  ShieldCheck, Layers, MapPin, Sparkles,
+  ShieldCheck, Layers, MapPin, Sparkles, Building2,
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 import { StatCard } from "@/components/ui/stat-card";
@@ -62,17 +63,18 @@ export default async function DashboardPage() {
     redirect("/auth/login?callbackUrl=/dashboard"),
   );
 
-  let stats, recentUpdates, investments, portfolio, kyc, availableProjects;
+  let stats, recentUpdates, investments, portfolio, kyc, availableProjects, groupStats;
 
   try {
-    [stats, recentUpdates, investments, portfolio, kyc, availableProjects] = await Promise.all([
+    [stats, recentUpdates, investments, portfolio, kyc, availableProjects, groupStats] = await Promise.all([
       getInvestorDashboard(session),
       getInvestorProjectUpdates(session, 4),
       getInvestorInvestments(session),
       getInvestorPortfolio(session),
       getInvestorKyc(session).catch(() => null),
       getAvailableProjects(6).catch(() => []),
-    ]) as [Awaited<ReturnType<typeof getInvestorDashboard>>, Awaited<ReturnType<typeof getInvestorProjectUpdates>>, Awaited<ReturnType<typeof getInvestorInvestments>>, Awaited<ReturnType<typeof getInvestorPortfolio>>, Awaited<ReturnType<typeof getInvestorKyc>>, Awaited<ReturnType<typeof getAvailableProjects>>];
+      getInvestorGroupDashboard(session),
+    ]) as [Awaited<ReturnType<typeof getInvestorDashboard>>, Awaited<ReturnType<typeof getInvestorProjectUpdates>>, Awaited<ReturnType<typeof getInvestorInvestments>>, Awaited<ReturnType<typeof getInvestorPortfolio>>, Awaited<ReturnType<typeof getInvestorKyc>>, Awaited<ReturnType<typeof getAvailableProjects>>, Awaited<ReturnType<typeof getInvestorGroupDashboard>>];
   } catch {
     // kyc may be undefined if the whole Promise.all failed; fetch it independently
     const fallbackKyc = await getInvestorKyc(session).catch(() => null);
@@ -196,14 +198,13 @@ export default async function DashboardPage() {
           <div className="lg:col-span-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300/80">Total invested</p>
             <div className="mt-2 flex flex-wrap items-end gap-3">
-              <p className="text-4xl font-semibold tabular-nums tracking-tight sm:text-5xl">{fmt(stats.totalInvested)}</p>
+              <p className="text-4xl font-semibold tabular-nums tracking-tight sm:text-5xl">{fmt(stats.totalInvested + groupStats.totalInvested)}</p>
               <span className="mb-1.5 inline-flex items-center gap-1 rounded-full bg-emerald-400/15 px-2.5 py-1 text-xs font-semibold text-emerald-300 ring-1 ring-emerald-400/20">
                 <ArrowUpRight className="h-3.5 w-3.5" /> {roi}% ROI
               </span>
             </div>
             <p className="mt-2 text-sm text-white/60">
-              {stats.activeCount} active investment{stats.activeCount !== 1 ? "s" : ""} ·{" "}
-              {fmt(stats.distributedReturns)} returns received
+              {stats.activeCount} project{stats.activeCount !== 1 ? "s" : ""} · {groupStats.activeCount} group investment{groupStats.activeCount !== 1 ? "s" : ""} active
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -214,20 +215,20 @@ export default async function DashboardPage() {
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
               </Link>
               <Link
-                href="/dashboard/portfolio"
+                href="/groups"
                 className="inline-flex items-center gap-2 rounded-xl bg-white/[0.08] px-5 py-2.5 text-sm font-semibold text-white ring-1 ring-white/15 transition-colors hover:bg-white/[0.12]"
               >
-                View portfolio
+                <Building2 className="h-4 w-4" /> Invest in Groups
               </Link>
             </div>
           </div>
 
           <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl bg-white/10 lg:col-span-6">
             {[
-              { label: "Portfolio value", value: fmt(stats.portfolioValue) },
+              { label: "Project invested", value: fmt(stats.totalInvested) },
+              { label: "Group invested", value: fmt(groupStats.totalInvested) },
               { label: "Returns earned", value: fmt(stats.distributedReturns) },
-              { label: "Active projects", value: stats.activeCount.toString() },
-              { label: "Completed", value: stats.completedCount.toString() },
+              { label: "Completed", value: (stats.completedCount + groupStats.completedCount).toString() },
             ].map((s) => (
               <div key={s.label} className="bg-[#06140f]/80 px-5 py-4">
                 <dt className="text-[11px] text-white/50">{s.label}</dt>
@@ -242,9 +243,9 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Link href="/dashboard/portfolio" className="block">
           <StatCard
-            title="Portfolio value"
+            title="Project Portfolio"
             value={fmt(stats.portfolioValue)}
-            description={`${stats.activeCount} active`}
+            description={`${stats.activeCount} active project${stats.activeCount !== 1 ? "s" : ""}`}
             icon={<BarChart3 />}
             variant="brand"
             className="h-full"
@@ -253,12 +254,12 @@ export default async function DashboardPage() {
         <Link href="/dashboard/portfolio" className="block">
           <StatCard title="ROI" value={`${roi}%`} description="From distributed returns" icon={<TrendingUp />} variant="finance" className="h-full" />
         </Link>
-        <Link href="/dashboard/investments" className="block">
+        <Link href="/dashboard/groups" className="block">
           <StatCard
-            title="Completed"
-            value={stats.completedCount.toString()}
-            description="Matured investments"
-            icon={<CheckCircle2 />}
+            title="Group Investments"
+            value={fmt(groupStats.totalInvested)}
+            description={`${groupStats.activeCount} active · ${groupStats.pendingCount} pending`}
+            icon={<Building2 />}
             variant="harvest"
             className="h-full"
           />
@@ -266,13 +267,73 @@ export default async function DashboardPage() {
         <Link href="/dashboard/investments" className="block">
           <StatCard
             title="Pending"
-            value={stats.pendingTransactions.toString()}
+            value={(stats.pendingTransactions + groupStats.pendingCount).toString()}
             description="Awaiting approval"
             icon={<Clock />}
             className="h-full"
           />
         </Link>
       </div>
+
+      {/* ── Group Investments section ── */}
+      {groupStats.groupInvestments.length > 0 && (
+        <section className="overflow-hidden rounded-2xl border border-border/70 bg-card shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
+          <div className="flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600">
+                <Building2 className="h-4 w-4" />
+              </span>
+              <div>
+                <h2 className="text-sm font-semibold">Group Investments</h2>
+                <p className="text-xs text-muted-foreground">{groupStats.activeCount} active · {groupStats.pendingCount} pending · {groupStats.completedCount} completed</p>
+              </div>
+            </div>
+            <Link href="/dashboard/groups" className="group inline-flex items-center gap-1 text-xs font-semibold text-primary">
+              View all <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+          </div>
+          <div className="overflow-x-auto border-t border-border/70">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-muted/40">
+                  <th className="px-5 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Group / Tier</th>
+                  <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Amount</th>
+                  <th className="px-5 py-2.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/60">
+                {groupStats.recent.map((inv) => (
+                  <tr key={inv.id} className="transition-colors hover:bg-muted/30">
+                    <td className="px-5 py-3.5">
+                      <p className="font-medium">{inv.tier.entity.group.name} — {inv.tier.entity.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{inv.tier.name} · {fmtDate(inv.createdAt)}</p>
+                    </td>
+                    <td className="px-5 py-3.5 text-right font-semibold tabular-nums">{fmt(Number(inv.amountBdt))}</td>
+                    <td className="px-5 py-3.5 text-right">
+                      <span className={cn("inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-2.5 py-1",
+                        inv.status === "ACTIVE" && "bg-success/10 text-success",
+                        inv.status === "PAYMENT_PENDING" && "bg-warning/10 text-warning",
+                        inv.status === "COMPLETED" && "bg-finance-100 text-finance-600",
+                        inv.status === "CANCELLED" && "bg-destructive/10 text-destructive",
+                      )}>
+                        <span className={cn("h-1.5 w-1.5 rounded-full",
+                          inv.status === "ACTIVE" ? "bg-success" :
+                          inv.status === "PAYMENT_PENDING" ? "bg-warning" :
+                          inv.status === "COMPLETED" ? "bg-finance-500" :
+                          inv.status === "CANCELLED" ? "bg-destructive" : "bg-muted-foreground"
+                        )} />
+                        <span className="text-[11px] font-medium">
+                          {inv.status === "PAYMENT_PENDING" ? "Awaiting Payment" : inv.status.charAt(0) + inv.status.slice(1).toLowerCase()}
+                        </span>
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
 
       {/* ── Available projects ── */}
       {availableProjects.length > 0 && (
@@ -479,18 +540,9 @@ export default async function DashboardPage() {
           <section className="rounded-2xl border border-border/70 bg-card p-2 shadow-[0_1px_2px_rgba(16,24,40,0.04)]">
             <p className="px-3 pb-1 pt-2 text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Quick actions</p>
             {[
-              {
-                href: "/projects",
-                label: canInvest ? "Browse & invest" : "Browse projects",
-                icon: TrendingUp,
-                tone: "from-emerald-500 to-teal-600",
-              },
-              {
-                href: "/dashboard/kyc",
-                label: kycVerified ? "KYC verified" : "Complete KYC",
-                icon: ShieldCheck,
-                tone: kycVerified ? "from-emerald-500 to-teal-600" : "from-amber-400 to-orange-500",
-              },
+              { href: "/projects", label: canInvest ? "Browse & invest" : "Browse projects", icon: TrendingUp, tone: "from-emerald-500 to-teal-600" },
+              { href: "/groups", label: "Invest in Groups", icon: Building2, tone: "from-amber-400 to-orange-500" },
+              { href: "/dashboard/kyc", label: kycVerified ? "KYC verified" : "Complete KYC", icon: ShieldCheck, tone: kycVerified ? "from-emerald-500 to-teal-600" : "from-amber-400 to-orange-500" },
               { href: "/dashboard/investments", label: "All investments", icon: BarChart3, tone: "from-sky-500 to-indigo-600" },
             ].map(({ href, label, icon: Icon, tone }) => (
               <Link

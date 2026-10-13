@@ -59,12 +59,15 @@ model GroupTier {
   durationMonths    Int?
   isActive          Boolean           @default(true)
   sortOrder         Int               @default(0)
+  bankAccountId     String?
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
   investments       GroupInvestment[]
   entity            GroupEntity       @relation(fields: [entityId], references: [id])
+  bankAccount       BankAccount?      @relation(fields: [bankAccountId], references: [id], onDelete: SetNull)
 
   @@index([entityId])
+  @@index([bankAccountId])
   @@map("group_tiers")
 }
 
@@ -202,44 +205,44 @@ model RolePermission {
 }
 
 model Kyc {
-  id                String           @id @default(uuid())
-  userId            String           @unique
-  status            KycStatus        @default(NOT_STARTED)
-  submittedAt       DateTime?
-  reviewedAt        DateTime?
-  reviewedBy        String?
-  reviewNote        String?
-  expiresAt         DateTime?
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  fullName          String?
-  dateOfBirth       DateTime?
-  nationality       String?          @default("BD")
-  addressLine       String?
-  city              String?
-  district          String?
-  division          String?
-  postalCode        String?
-  presentAddress    String?
-  presentDivision   String?
-  presentDistrict   String?
-  presentUpazila    String?
-  presentPostOffice String?
-  presentPostalCode String?
+  id                  String           @id @default(uuid())
+  userId              String           @unique
+  status              KycStatus        @default(NOT_STARTED)
+  submittedAt         DateTime?
+  reviewedAt          DateTime?
+  reviewedBy          String?
+  reviewNote          String?
+  expiresAt           DateTime?
+  createdAt           DateTime         @default(now())
+  updatedAt           DateTime         @updatedAt
+  fullName            String?
+  dateOfBirth         DateTime?
+  nationality         String?          @default("BD")
+  addressLine         String?
+  city                String?
+  district            String?
+  division            String?
+  postalCode          String?
+  presentAddress      String?
+  presentDivision     String?
+  presentDistrict     String?
+  presentUpazila      String?
+  presentPostOffice   String?
+  presentPostalCode   String?
   permanentAddress    String?
   permanentDivision   String?
   permanentDistrict   String?
   permanentUpazila    String?
   permanentPostOffice String?
   permanentPostalCode String?
-  documentType      KycDocumentType?
-  documentNumber    String?
-  bankName          String?
-  bankAccountNumber String?
-  mobileProvider    String?
-  mobileNumber      String?
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  documents         KycDocument[]
+  documentType        KycDocumentType?
+  documentNumber      String?
+  bankName            String?
+  bankAccountNumber   String?
+  mobileProvider      String?
+  mobileNumber        String?
+  user                User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents           KycDocument[]
 
   @@index([status])
   @@index([reviewedBy])
@@ -284,51 +287,51 @@ model InvestorProfile {
 }
 
 model Project {
-  id                 String               @id @default(uuid())
-  title              String
-  slug               String               @unique
-  description        String
-  category           ProjectCategory
-  status             ProjectStatus        @default(DRAFT)
-  fundingGoalBdt     Decimal              @db.Decimal(14, 2)
-  fundingMinBdt      Decimal              @db.Decimal(14, 2)
-  fundedAmountBdt    Decimal              @default(0) @db.Decimal(14, 2)
-  minInvestmentBdt   Decimal              @db.Decimal(14, 2)
-  maxInvestmentBdt   Decimal?             @db.Decimal(14, 2)
-  returnType         ReturnType
-  expectedReturnPct  Decimal              @db.Decimal(6, 4)
-  returnPctMin       Decimal?             @db.Decimal(6, 4)
-  returnPctMax       Decimal?             @db.Decimal(6, 4)
-  durationDays       Int
-  fundingDeadline    DateTime
-  startDate          DateTime?
-  endDate            DateTime?
-  coverImageUrl      String?
-  reviewedBy         String?
-  reviewedAt         DateTime?
-  approvedAt         DateTime?
-  publishedAt        DateTime?
-  completedAt        DateTime?
-  cancelledAt        DateTime?
-  cancellationReason String?
-  deletedAt          DateTime?
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  managerId          String?
-  riskInfo           String?
-  location           String?
-  imageUrls          String[]             @default([])
-  rejectionReason    String?
-  groupId            String?
-  documents          Document[]
-  investments        Investment[]
-  distributions      ProfitDistribution[]
-  updates            ProjectUpdate[]
-  distributionRule   DistributionRule?
+  id                  String               @id @default(uuid())
+  title               String
+  slug                String               @unique
+  description         String
+  category            ProjectCategory
+  status              ProjectStatus        @default(DRAFT)
+  fundingGoalBdt      Decimal              @db.Decimal(14, 2)
+  fundingMinBdt       Decimal              @db.Decimal(14, 2)
+  fundedAmountBdt     Decimal              @default(0) @db.Decimal(14, 2)
+  minInvestmentBdt    Decimal              @db.Decimal(14, 2)
+  maxInvestmentBdt    Decimal?             @db.Decimal(14, 2)
+  returnType          ReturnType
+  expectedReturnPct   Decimal              @db.Decimal(6, 4)
+  returnPctMin        Decimal?             @db.Decimal(6, 4)
+  returnPctMax        Decimal?             @db.Decimal(6, 4)
+  durationDays        Int
+  fundingDeadline     DateTime
+  startDate           DateTime?
+  endDate             DateTime?
+  coverImageUrl       String?
+  reviewedBy          String?
+  reviewedAt          DateTime?
+  approvedAt          DateTime?
+  publishedAt         DateTime?
+  completedAt         DateTime?
+  cancelledAt         DateTime?
+  cancellationReason  String?
+  deletedAt           DateTime?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  managerId           String?
+  riskInfo            String?
+  location            String?
+  imageUrls           String[]             @default([])
+  rejectionReason     String?
+  groupId             String?
+  documents           Document[]
+  investments         Investment[]
+  distributions       ProfitDistribution[]
+  updates             ProjectUpdate[]
+  distributionRule    DistributionRule?
   distributionBatches DistributionBatch[]
   bankAccounts        ProjectBankAccount[]
-  manager            User?                @relation("ProjectManager", fields: [managerId], references: [id])
-  group              BusinessGroup?       @relation(fields: [groupId], references: [id])
+  manager             User?                @relation("ProjectManager", fields: [managerId], references: [id])
+  group               BusinessGroup?       @relation(fields: [groupId], references: [id])
 
   @@index([managerId])
   @@index([groupId])
@@ -515,7 +518,7 @@ model LedgerEntry {
 }
 
 model BankAccount {
-  id            String   @id @default(uuid())
+  id            String      @id @default(uuid())
   bankName      String
   accountName   String
   accountNumber String
@@ -527,12 +530,13 @@ model BankAccount {
   email         String?
   branchAddress String?
   instructions  String?
-  isActive      Boolean  @default(true)
-  isDefault     Boolean  @default(false)
-  displayOrder  Int      @default(0)
+  isActive      Boolean     @default(true)
+  isDefault     Boolean     @default(false)
+  displayOrder  Int         @default(0)
   createdBy     String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  groupTiers    GroupTier[]
 
   @@index([isActive])
   @@index([displayOrder])
@@ -540,21 +544,21 @@ model BankAccount {
 }
 
 model ProjectBankAccount {
-  id             String   @id @default(uuid())
-  projectId      String
-  accountName    String
-  accountNumber  String
-  bankName       String
-  branchName     String?
-  routingNumber  String?
-  swiftCode      String?
-  mobileNumber   String?
-  email          String?
-  branchAddress  String?
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  projectId     String
+  accountName   String
+  accountNumber String
+  bankName      String
+  branchName    String?
+  routingNumber String?
+  swiftCode     String?
+  mobileNumber  String?
+  email         String?
+  branchAddress String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  project       Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
   @@map("project_bank_accounts")
@@ -697,30 +701,30 @@ model Withdrawal {
 }
 
 model Document {
-  id              String             @id @default(uuid())
-  uploadedBy      String
-  entityType      DocumentEntityType
-  entityId        String
-  category        DocumentCategory   @default(PROJECT_DOCUMENT)
-  name            String
-  description     String?
-  fileUrl         String
-  storageKey      String?
-  mimeType        String
-  sizeBytes       Int
-  isPublic        Boolean            @default(false)
-  isFinalized     Boolean            @default(false)
+  id               String             @id @default(uuid())
+  uploadedBy       String
+  entityType       DocumentEntityType
+  entityId         String
+  category         DocumentCategory   @default(PROJECT_DOCUMENT)
+  name             String
+  description      String?
+  fileUrl          String
+  storageKey       String?
+  mimeType         String
+  sizeBytes        Int
+  isPublic         Boolean            @default(false)
+  isFinalized      Boolean            @default(false)
   templateVersion  String?
   generatedAt      DateTime?
   expiresAt        DateTime?
   verificationHash String?
-  allowedRoles    String[]           @default([])
-  ownerUserId     String?
-  deletedAt       DateTime?
-  createdAt       DateTime           @default(now())
-  project         Project            @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "document_project_fk")
-  uploader        User               @relation(fields: [uploadedBy], references: [id])
-  auditLogs       DocumentAuditLog[]
+  allowedRoles     String[]           @default([])
+  ownerUserId      String?
+  deletedAt        DateTime?
+  createdAt        DateTime           @default(now())
+  project          Project            @relation(fields: [entityId], references: [id], onDelete: Cascade, map: "document_project_fk")
+  uploader         User               @relation(fields: [uploadedBy], references: [id])
+  auditLogs        DocumentAuditLog[]
 
   @@index([entityType, entityId])
   @@index([uploadedBy])

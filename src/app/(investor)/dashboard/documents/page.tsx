@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorDocuments } from "@/server/data/investor.data";
+import { getMyGroupInvestments } from "@/server/data/groups.data";
 import { documentService } from "@/server/services/document.service";
 import { DocumentDownloadButton } from "@/components/shared/document-download-button";
 import { DocumentUpload, CATEGORY_LABELS } from "@/components/shared/document-upload";
-import { FileText, ShieldCheck, Receipt, BarChart3, Leaf, FolderOpen } from "lucide-react";
+import { FileText, ShieldCheck, Receipt, BarChart3, Leaf, FolderOpen, Building2, Download } from "lucide-react";
 import { cn } from "cn";
 import type { DocumentCategory } from "@/types/prisma";
 
@@ -45,10 +46,15 @@ function fmtSize(bytes: number) {
 
 export default async function DocumentsPage() {
   const session = await requireSession();
-  const { contracts, kyc } = await getInvestorDocuments(session);
+  const [{ contracts, kyc }, myDocs, groupInvestments] = await Promise.all([
+    getInvestorDocuments(session),
+    // All documents owned by this investor
+    documentService.getDocumentsByOwner(session, session.id),
+    getMyGroupInvestments(session),
+  ]);
 
-  // Fetch all documents owned by this investor
-  const myDocs = await documentService.getDocumentsByOwner(session, session.id);
+  const groupReceipts = groupInvestments.filter((i) => i.receiptNumber && ["ACTIVE", "COMPLETED"].includes(i.status));
+  const pendingGroup = groupInvestments.filter((i) => ["PENDING", "PAYMENT_PENDING"].includes(i.status));
 
   const docsByCategory = myDocs.reduce<Partial<Record<DocumentCategory, typeof myDocs>>>((acc, doc) => {
     const cat = (doc as unknown as { category: DocumentCategory }).category;
@@ -56,6 +62,7 @@ export default async function DocumentsPage() {
     acc[cat]!.push(doc);
     return acc;
   }, {});
+  const projectReceipts = docsByCategory.INVESTMENT_RECEIPT ?? [];
 
   const uploadableCategories: DocumentCategory[] = ["PAYMENT_RECEIPT", "INVESTMENT_RECEIPT", "FARM_DOCUMENT"];
 
@@ -142,8 +149,83 @@ export default async function DocumentsPage() {
         )}
       </section>
 
+      {/* ── Project investment receipts ── */}
+      <section>
+        <h2 className="mb-1 flex items-center gap-2 font-semibold">
+          <Receipt className="h-4 w-4 text-primary" /> Project Investment Receipts
+        </h2>
+        <p className="mb-4 text-xs text-muted-foreground">Issued when a project investment is confirmed.</p>
+        {projectReceipts.length > 0 ? (
+          <div className="space-y-2">
+            {projectReceipts.map((doc) => (
+              <div key={doc.id} className="flex items-center justify-between surface-card px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">{doc.name.replace(/^Investment Receipt — /, "")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {doc.description ?? "Receipt"} · {fmtDate(doc.createdAt)}
+                  </p>
+                </div>
+                <DocumentDownloadButton documentId={doc.id} />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState message="No project investment receipts yet." />
+        )}
+      </section>
+
+      {/* ── Group investment receipts ── */}
+      <section>
+        <h2 className="mb-1 flex items-center gap-2 font-semibold">
+          <Building2 className="h-4 w-4 text-primary" /> Group Investment Receipts
+        </h2>
+        <p className="mb-4 text-xs text-muted-foreground">Issued when finance approves your group investment payment.</p>
+        {groupReceipts.length > 0 || pendingGroup.length > 0 ? (
+          <div className="space-y-2">
+            {groupReceipts.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between surface-card px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate">
+                    {inv.tier.entity.group.name} — {inv.tier.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ৳{Number(inv.amountBdt).toLocaleString()} · Receipt #{inv.receiptNumber}
+                    {inv.confirmedAt && ` · ${fmtDate(inv.confirmedAt)}`}
+                  </p>
+                </div>
+                <a
+                  href={`/api/group-receipts/${inv.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition-all hover:border-primary/50 hover:text-primary"
+                >
+                  <Download className="h-3.5 w-3.5" /> Download
+                </a>
+              </div>
+            ))}
+            {pendingGroup.map((inv) => (
+              <div key={inv.id} className="flex items-center justify-between surface-card border-dashed px-5 py-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium truncate text-muted-foreground">
+                    {inv.tier.entity.group.name} — {inv.tier.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    ৳{Number(inv.amountBdt).toLocaleString()} · Receipt available after payment approval
+                  </p>
+                </div>
+                <span className="rounded-full bg-warning/10 px-2.5 py-0.5 text-xs font-medium text-warning">Pending</span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState message="No group investment receipts yet.">
+            <a href="/groups" className="mt-2 inline-block text-sm text-primary hover:underline">Explore business groups →</a>
+          </EmptyState>
+        )}
+      </section>
+
       {/* ── Other document categories ── */}
-      {(["PAYMENT_RECEIPT", "INVESTMENT_RECEIPT", "DISTRIBUTION_STATEMENT", "HARVEST_REPORT", "PROJECT_DOCUMENT"] as DocumentCategory[]).map((cat) => {
+      {(["PAYMENT_RECEIPT", "DISTRIBUTION_STATEMENT", "HARVEST_REPORT", "PROJECT_DOCUMENT"] as DocumentCategory[]).map((cat) => {
         const docs = docsByCategory[cat] ?? [];
         return (
           <section key={cat}>

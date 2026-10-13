@@ -155,7 +155,70 @@ export async function getSubmissionsForInvestment(investmentId: string, userId: 
 
 export async function getPendingManualPaymentCount(session: SessionUser) {
   await requirePermission(session, PERMISSIONS.PAYMENT_VIEW);
-  return db.manualPaymentSubmission.count({
-    where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
-  });
+  const [project, group] = await Promise.all([
+    db.manualPaymentSubmission.count({
+      where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
+    }),
+    db.groupInvestmentPayment.count({
+      where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } },
+    }),
+  ]);
+  return project + group;
+}
+
+export async function getGroupPaymentSubmissions(
+  session: SessionUser,
+  opts: { status?: string; search?: string; page?: number } = {},
+) {
+  await requirePermission(session, PERMISSIONS.PAYMENT_VIEW);
+  const { status, search, page = 1 } = opts;
+
+  const where = {
+    ...(status && { status: status as never }),
+    ...(search && {
+      OR: [
+        { transactionRef: { contains: search, mode: "insensitive" as const } },
+        { groupInvestment: { investor: { name: { contains: search, mode: "insensitive" as const } } } },
+        { groupInvestment: { investor: { email: { contains: search, mode: "insensitive" as const } } } },
+      ],
+    }),
+  };
+
+  const [items, total] = await Promise.all([
+    db.groupInvestmentPayment.findMany({
+      where,
+      select: {
+        id: true,
+        status: true,
+        amountBdt: true,
+        transactionRef: true,
+        proofFileUrl: true,
+        proofMimeType: true,
+        notes: true,
+        rejectionReason: true,
+        reviewedAt: true,
+        createdAt: true,
+        groupInvestment: {
+          select: {
+            id: true,
+            amountBdt: true,
+            tier: {
+              select: {
+                name: true,
+                bankAccount: { select: { bankName: true, accountNumber: true } },
+                entity: { select: { name: true, group: { select: { name: true } } } },
+              },
+            },
+            investor: { select: { id: true, name: true, email: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    db.groupInvestmentPayment.count({ where }),
+  ]);
+
+  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
 }

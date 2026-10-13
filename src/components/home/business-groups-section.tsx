@@ -19,7 +19,7 @@ export function BusinessGroupsSection({ groups }: BusinessGroupsSectionProps) {
           <SectionHeading
             align="left"
             eyebrow="Partner enterprises"
-            title="Institutional"
+            title="Invest in"
             highlight="Business Groups"
             description="Partner with vetted corporate enterprises and multi-sector conglomerates driving verified economic growth across Bangladesh."
           />

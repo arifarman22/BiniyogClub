@@ -2,18 +2,20 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
+import { can } from "@/lib/authz";
+import { PERMISSIONS } from "@/lib/authz/permissions";
+import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
 import { getAdminGroupInvestments, getAllGroupsAdmin } from "@/server/data/groups.data";
 import { PageHeader } from "@/components/ui/page-header";
 import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ManualPaymentActions } from "@/components/admin/manual-payment-actions";
-import { EditTierDialog } from "@/components/admin/edit-tier-dialog";
-import { EditGroupDialog } from "@/components/admin/edit-group-dialog";
-import { EditEntityDialog } from "@/components/admin/edit-entity-dialog";
+import { GroupStructureView } from "@/components/admin/group-structure-view";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/utils";
 import { TierIcon } from "@/components/groups/tier-icon";
+import { GroupInvestmentActionButtons } from "@/components/admin/group-investment-action-buttons";
 import type { AsyncComponentProps } from "@/types";
 
 export const metadata: Metadata = { title: "Group Investments — Admin" };
@@ -43,14 +45,19 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
   const page = Math.max(1, parseInt(typeof sp.page === "string" ? sp.page : "1", 10));
   const view = typeof sp.view === "string" ? sp.view : "investments";
 
-  const [{ items, total, totalPages }, groups] = await Promise.all([
+  const [{ items, total, totalPages }, groups, bankAccounts, canManage] = await Promise.all([
     getAdminGroupInvestments({ search, status, page }),
     getAllGroupsAdmin(),
+    getActiveBankAccounts(),
+    can(session, PERMISSIONS.GROUP_MANAGE),
   ]);
+  const bankOptions = bankAccounts.map((b) => ({
+    id: b.id, bankName: b.bankName, accountName: b.accountName, accountNumber: b.accountNumber, branchName: b.branchName,
+  }));
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Business Groups" description="Manage group investments across Mariners, MOHS, and Marinozz" />
+      <PageHeader title="Business Groups" description="Manage groups, entities, tiers and group investments" />
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-border">
@@ -65,81 +72,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
       </div>
 
       {view === "structure" ? (
-        /* Group structure overview */
-        <div className="space-y-4">
-          {groups.map((group) => (
-            <div key={group.id} className="surface-card overflow-hidden">
-              <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{group.name}</span>
-                  {group.tagline && <span className="text-xs text-muted-foreground">{group.tagline}</span>}
-                  <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                    group.isActive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-border")}>
-                    {group.isActive ? "Active" : "Inactive"}
-                  </span>
-                </div>
-                <EditGroupDialog group={{
-                  id: group.id,
-                  name: group.name,
-                  tagline: group.tagline ?? null,
-                  description: group.description,
-                  isActive: group.isActive,
-                }} />
-              </div>
-              <div className="divide-y divide-border/60">
-                {group.entities.map((entity) => (
-                  <div key={entity.id} className="px-4 py-3">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium">{entity.name}</p>
-                        <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                          entity.isActive ? "bg-success/10 text-success border-success/30" : "bg-muted text-muted-foreground border-border")}>
-                          {entity.isActive ? "Active" : "Inactive"}
-                        </span>
-                      </div>
-                      <EditEntityDialog entity={{
-                        id: entity.id,
-                        name: entity.name,
-                        description: entity.description,
-                        isActive: entity.isActive,
-                      }} />
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {entity.tiers.map((tier) => (
-                        <div key={tier.id} className="rounded-lg border border-border bg-muted/20 px-3 py-2 text-xs">
-                          <div className="flex items-center justify-between gap-3">
-                            <div>
-                              <TierIcon type={tier.type} size="sm" className="mr-1.5 align-middle" />
-                              <span className="font-medium">{tier.name}</span>
-                              <span className="ml-2 text-muted-foreground">
-                                {fmtBdt(tier.minAmountBdt)} min · {tier._count.investments} investors
-                              </span>
-                            </div>
-                            <EditTierDialog
-                              tier={{
-                                id: tier.id,
-                                name: tier.name,
-                                description: tier.description,
-                                benefits: tier.benefits,
-                                minAmountBdt: Number(tier.minAmountBdt),
-                                maxAmountBdt: tier.maxAmountBdt != null ? Number(tier.maxAmountBdt) : null,
-                                expectedReturnPct: tier.expectedReturnPct != null ? Number(tier.expectedReturnPct) : null,
-                                durationMonths: tier.durationMonths,
-                                totalUnits: tier.totalUnits,
-                                availableUnits: tier.availableUnits,
-                                isActive: tier.isActive,
-                              }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+        <GroupStructureView groups={groups} bankOptions={bankOptions} canManage={canManage} />
       ) : (
         /* Investments list */
         <>
@@ -162,6 +95,7 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Date</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Payment</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -202,6 +136,14 @@ export default async function AdminGroupsPage({ searchParams }: AsyncComponentPr
                             ) : (
                               <span className="text-xs text-muted-foreground">No proof yet</span>
                             )}
+                          </td>
+                          <td className="px-4 py-3">
+                            <GroupInvestmentActionButtons
+                              groupInvestmentId={inv.id}
+                              status={inv.status}
+                              amountLabel={fmtBdt(inv.amountBdt)}
+                              investorName={inv.investor.name}
+                            />
                           </td>
                         </tr>
                       );

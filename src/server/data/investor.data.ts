@@ -303,6 +303,46 @@ export async function getInvestorPortfolio(session: SessionUser) {
   return { investments, categoryMap, statusMap, monthlyHistory };
 }
 
+// ─── Group investment dashboard stats ────────────────────────────────────────
+
+export async function getInvestorGroupDashboard(session: SessionUser) {
+  const groupInvestments = await db.groupInvestment.findMany({
+    where: { investorUserId: session.id },
+    select: {
+      id: true,
+      status: true,
+      amountBdt: true,
+      receiptNumber: true,
+      confirmedAt: true,
+      createdAt: true,
+      tier: {
+        select: {
+          name: true,
+          type: true,
+          entity: { select: { name: true, group: { select: { name: true, slug: true } } } },
+        },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const active = groupInvestments.filter((i) => i.status === "ACTIVE");
+  const pending = groupInvestments.filter((i) => ["PENDING", "PAYMENT_PENDING"].includes(i.status));
+  const completed = groupInvestments.filter((i) => i.status === "COMPLETED");
+
+  const totalInvested = active.reduce((s, i) => s + Number(i.amountBdt), 0)
+    + completed.reduce((s, i) => s + Number(i.amountBdt), 0);
+
+  return {
+    groupInvestments,
+    totalInvested,
+    activeCount: active.length,
+    pendingCount: pending.length,
+    completedCount: completed.length,
+    recent: groupInvestments.slice(0, 5),
+  };
+}
+
 // ─── Available projects for dashboard ───────────────────────────────────────
 
 export async function getAvailableProjects(limit = 6) {

@@ -114,9 +114,9 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
       return (
         <a
           href={loginUrl}
-          className="block w-full rounded-lg bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
+          className="block w-full bg-primary px-4 py-3 text-center text-sm font-semibold text-primary-foreground hover:bg-brand-500 transition-colors"
         >
-          Login to Invest
+          Log in to invest
         </a>
       );
     }
@@ -144,9 +144,9 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
     return (
       <button
         onClick={() => setStep("form")}
-        className="w-full rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
+        className="w-full bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:bg-brand-500 transition-colors"
       >
-        Invest in {tier.name}
+        Invest in this tier
       </button>
     );
   }
