@@ -18,6 +18,7 @@ export async function getAdminDashboardKpis(session: SessionUser) {
     totalUsers, totalInvestors,
     activeProjects, pendingKyc, pendingWithdrawals,
     activeInvestments, investmentSum, nearMaturity,
+    activeGroupInvestments, groupInvestmentSum,
   ] = await Promise.all([
     db.user.count({ where: { deletedAt: null } }),
     db.investorProfile.count({ where: { user: { status: "ACTIVE", deletedAt: null } } }),
@@ -25,7 +26,7 @@ export async function getAdminDashboardKpis(session: SessionUser) {
     db.kyc.count({ where: { status: { in: ["SUBMITTED", "UNDER_REVIEW"] } } }),
     db.withdrawal.count({ where: { status: { in: ["PENDING", "APPROVED"] } } }),
     db.investment.count({ where: { status: "ACTIVE" } }),
-    db.investment.aggregate({ where: { status: { in: ["ACTIVE", "MATURED", "COMPLETED"] } }, _sum: { amountBdt: true } }),
+    db.investment.aggregate({ where: { status: { in: ["ACTIVE", "MATURED", "COMPLETED"] } }, _sum: { amountBdt: true }, _count: { _all: true } }),
     db.project.count({
       where: {
         status: "ACTIVE",
@@ -33,6 +34,8 @@ export async function getAdminDashboardKpis(session: SessionUser) {
         deletedAt: null,
       },
     }),
+    db.groupInvestment.count({ where: { status: "ACTIVE" } }),
+    db.groupInvestment.aggregate({ where: { status: { in: ["ACTIVE", "COMPLETED"] } }, _sum: { amountBdt: true }, _count: { _all: true } }),
   ]);
 
   return {
@@ -40,6 +43,10 @@ export async function getAdminDashboardKpis(session: SessionUser) {
     activeProjects, pendingKyc, pendingWithdrawals,
     activeInvestments,
     totalInvestmentBdt: Number(investmentSum._sum.amountBdt ?? 0),
+    investmentCount: investmentSum._count._all,
+    activeGroupInvestments,
+    groupInvestmentBdt: Number(groupInvestmentSum._sum.amountBdt ?? 0),
+    groupInvestmentCount: groupInvestmentSum._count._all,
     projectsNearMaturity: nearMaturity,
   };
 }

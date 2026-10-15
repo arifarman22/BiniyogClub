@@ -69,6 +69,57 @@ function Panel({
   );
 }
 
+/** Total invested capital, split into project and business-group investments. */
+function InvestmentSplitCard({
+  project,
+  group,
+}: {
+  project: { amount: number; count: number };
+  group: { amount: number; count: number };
+}) {
+  const total = project.amount + group.amount;
+  const projectPct = total > 0 ? (project.amount / total) * 100 : 0;
+  const rows = [
+    { label: "Project investments", href: "/admin/investments", dot: "bg-sky-500", ...project },
+    { label: "Group investments", href: "/admin/groups", dot: "bg-amber-500", ...group },
+  ];
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card p-5 shadow-[0_1px_2px_rgba(16,24,40,0.04)] sm:col-span-2">
+      <div className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-gradient-to-br from-sky-500/[0.10] to-transparent blur-2xl" aria-hidden="true" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total investment</p>
+          <p className="mt-2 text-2xl font-semibold tabular-nums tracking-tight sm:text-[1.65rem]">{fmtBdt(total)}</p>
+        </div>
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-sky-500 to-indigo-600 text-white shadow-sm [&_svg]:h-5 [&_svg]:w-5">
+          <TrendingUp />
+        </span>
+      </div>
+
+      <div className="relative mt-4 flex h-2 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        <div className="bg-sky-500" style={{ width: `${projectPct}%` }} />
+        <div className="bg-amber-500" style={{ width: `${total > 0 ? 100 - projectPct : 0}%` }} />
+      </div>
+
+      <dl className="relative mt-4 grid grid-cols-2 gap-3">
+        {rows.map((r) => (
+          <Link key={r.label} href={r.href} className="rounded-xl border border-border/70 px-3 py-2.5 transition-colors hover:bg-muted/40">
+            <dt className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+              <span className={`h-2 w-2 rounded-full ${r.dot}`} /> {r.label}
+            </dt>
+            <dd className="mt-1 text-base font-semibold tabular-nums">{fmtBdt(r.amount)}</dd>
+            <dd className="text-[11px] text-muted-foreground">
+              {r.count} {r.count === 1 ? "investment" : "investments"}
+              {total > 0 && ` · ${Math.round((r.amount / total) * 100)}%`}
+            </dd>
+          </Link>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
 function Initials({ name }: { name: string | null | undefined }) {
   return (
     <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-[11px] font-bold text-emerald-800 dark:from-emerald-900/50 dark:to-teal-900/50 dark:text-emerald-200">
@@ -127,9 +178,18 @@ export default async function AdminDashboardPage() {
 
       <div>
         <SectionLabel>Finance</SectionLabel>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard title="Total investment" value={fmtBdt(analytics.kpis.totalInvested)} icon={<TrendingUp />} variant="finance" />
-          <StatCard title="Active investments" value={kpis.activeInvestments.toLocaleString()} icon={<Clock />} variant="finance" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          <InvestmentSplitCard
+            project={{ amount: kpis.totalInvestmentBdt, count: kpis.investmentCount }}
+            group={{ amount: kpis.groupInvestmentBdt, count: kpis.groupInvestmentCount }}
+          />
+          <StatCard
+            title="Active investments"
+            value={(kpis.activeInvestments + kpis.activeGroupInvestments).toLocaleString()}
+            description={`${kpis.activeInvestments} project · ${kpis.activeGroupInvestments} group`}
+            icon={<Clock />}
+            variant="finance"
+          />
           <StatCard title="Distributions" value={fmtBdt(analytics.kpis.totalDistributed)} icon={<Layers />} variant="finance" />
           <StatCard
             title="Pending withdrawals"
