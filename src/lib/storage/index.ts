@@ -121,7 +121,7 @@ export type AllowedMimeType = (typeof ALLOWED_MIME_TYPES)[number];
 
 // Per-category size limits (bytes)
 const CATEGORY_SIZE_LIMITS: Record<DocumentCategory, number> = {
-  KYC:                    3  * 1024 * 1024,  // 3 MB
+  KYC:                    10 * 1024 * 1024,  // 10 MB
   PROJECT_DOCUMENT:       10 * 1024 * 1024,  // 10 MB
   INVESTMENT_AGREEMENT:   5  * 1024 * 1024,  // 5 MB — generated PDFs
   PAYMENT_RECEIPT:        5  * 1024 * 1024,

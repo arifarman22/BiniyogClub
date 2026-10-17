@@ -136,8 +136,8 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
     const files = Array.from(e.target.files ?? []);
     if (!files.length) return;
     setImageError(null);
-    const oversized = files.find((f) => f.size > 3 * 1024 * 1024);
-    if (oversized) { setImageError(`"${oversized.name}" exceeds 3 MB. Please use a smaller image.`); return; }
+    const oversized = files.find((f) => f.size > 10 * 1024 * 1024);
+    if (oversized) { setImageError(`"${oversized.name}" exceeds 10 MB. Please use a smaller image.`); return; }
     setImageUploading(true);
     const results = await Promise.all(
       files.map(async (file) => {

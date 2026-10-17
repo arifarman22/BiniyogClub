@@ -211,7 +211,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
   async function handleFileUpload(group: DocGroup, side: Side, file: File) {
     const docType = form.documentType;
     if (!form.documentType) return;
-    if (file.size > 3 * 1024 * 1024) { setError("File must be smaller than 3 MB."); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("File must be smaller than 10 MB."); return; }
 
     setIsUploading(`${group}_${side}`);
     setError(null);
@@ -557,7 +557,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
             <p className="text-sm font-semibold">Your ID Photos</p>
-            <p className="text-xs text-muted-foreground mt-0.5">JPEG, PNG, WebP or PDF · max 3 MB each</p>
+            <p className="text-xs text-muted-foreground mt-0.5">JPEG, PNG, WebP or PDF · max 10 MB each</p>
           </div>
           <div className="p-5 space-y-4">
             {!canUploadInvestor ? (
