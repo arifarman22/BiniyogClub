@@ -394,8 +394,7 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
           body: `Your investment in "${inv.project.title}" has been approved. Receipt: ${receiptNumber}`,
           data: { investmentId, receiptNumber },
         },
-      });
-    });
+      });    });
 
     // External payment — debit PLATFORM_REVENUE, credit PLATFORM_ESCROW.
     await ledgerService.recordInvestmentFundingExternal(amountBdt, {
@@ -408,8 +407,8 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     // Generate receipt PDF after the response is sent (see after() note in manual-payment.actions).
     const { documentService } = await import("@/server/services/document.service");
     after(() =>
-      documentService.generateInvestmentReceipt(investmentId)
-        .catch((err) => console.error("[approve investment] receipt generation failed:", err)),
+      documentService.generateInvestmentDocuments(investmentId)
+        .catch((err) => console.error("[approve investment] document generation failed:", err)),
     );
 
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });

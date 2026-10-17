@@ -24,9 +24,21 @@ export async function POST(request: Request) {
 
   let generated = 0;
   let skipped = 0;
+  let agreements = 0;
   const errors: string[] = [];
 
   for (const inv of investments) {
+    // Agreements: issue any that are missing (idempotent — existing ones are reused).
+    try {
+      const before = await db.investmentContract.findUnique({ where: { investmentId: inv.id }, select: { contractUrl: true } });
+      if (!before?.contractUrl) {
+        await documentService.issueInvestmentAgreement(inv.id);
+        agreements++;
+      }
+    } catch (e) {
+      errors.push(`agreement ${inv.receiptNumber ?? inv.id}: ${(e as Error).message}`);
+    }
+
     const existing = await db.document.findFirst({
       where: {
         entityType: "PROJECT",
@@ -56,5 +68,5 @@ export async function POST(request: Request) {
     }
   }
 
-  return NextResponse.json({ generated, skipped, errors });
+  return NextResponse.json({ generated, skipped, agreements, errors });
 }

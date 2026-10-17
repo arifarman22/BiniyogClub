@@ -318,17 +318,194 @@ async function generateInvestmentReceipt(
   return { documentId: doc.id, storageKey: key };
 }
 
-// ─── Investment Agreement Generation (staff-only, kept for admin use) ─────────
+// ─── Investment Agreement Generation ─────────────────────────────────────────
+// Generates the INVESTMENT_AGREEMENT PDF once an investment is active, stores it
+// as a document and marks the InvestmentContract as issued (SENT) with the
+// document id in contractUrl. System operation — runs after payment approval.
 
 const AGREEMENT_TEMPLATE_VERSION = "v1.0.0";
 
+const METHOD_LABELS: Record<string, string> = {
+  BANK_TRANSFER: "Bank transfer", CHECK: "Cheque", CASH: "Cash", MOBILE_BANKING: "Mobile banking", OTHER: "Other",
+};
+const CASH_RECEIVER_LABELS: Record<string, string> = {
+  CEO: "CEO", MD: "Managing Director", CHAIRMAN: "Chairman", FINANCE_TEAM: "Finance Team",
+};
+
+async function issueInvestmentAgreement(
+  investmentId: string,
+): Promise<{ documentId: string; storageKey: string }> {
+  const investment = await db.investment.findUnique({
+    where: { id: investmentId },
+    select: {
+      id: true, status: true, amountBdt: true, returnType: true, createdAt: true, activatedAt: true, receiptNumber: true,
+      project: {
+        select: {
+          id: true, title: true, category: true, location: true, durationDays: true,
+          expectedReturnPct: true, returnPctMin: true, returnPctMax: true,
+        },
+      },
+      investorProfile: {
+        select: {
+          nationalId: true, address: true, nomineeName: true, nomineeNationalId: true,
+          user: { select: { id: true, name: true, email: true, phone: true } },
+        },
+      },
+      manualPayments: {
+        where: { status: "APPROVED" },
+        select: { paymentMethod: true, amountBdt: true, transactionRef: true, bankAccountId: true, cashReceivedBy: true },
+        orderBy: { createdAt: "asc" },
+      },
+    },
+  });
+  if (!investment) throw new NotFoundError("Investment");
+  if (!investment.receiptNumber || !["ACTIVE", "MATURED", "COMPLETED"].includes(investment.status)) {
+    throw new Error(`Investment ${investmentId} is not active — cannot issue an agreement`);
+  }
+
+  const investorUserId = investment.investorProfile.user.id;
+  const description = `Agreement #${investment.receiptNumber}`;
+
+  // Already issued for this investment? Make sure the contract points at it.
+  const existing = await db.document.findFirst({
+    where: { category: "INVESTMENT_AGREEMENT", ownerUserId: investorUserId, description, deletedAt: null },
+    select: { id: true, storageKey: true },
+  });
+  if (existing) {
+    await db.investmentContract.updateMany({
+      where: { investmentId, contractUrl: null },
+      data: { status: "SENT", contractUrl: existing.id, sentAt: new Date() },
+    });
+    return { documentId: existing.id, storageKey: existing.storageKey ?? "" };
+  }
+
+  // Bank names for bank-transfer parts
+  const bankIds = investment.manualPayments.map((p) => p.bankAccountId).filter((id): id is string => !!id);
+  const banks = bankIds.length
+    ? await db.projectBankAccount.findMany({ where: { id: { in: bankIds } }, select: { id: true, bankName: true, accountNumber: true } })
+    : [];
+  const bankById = new Map(banks.map((b) => [b.id, b]));
+
+  const amountBdt = Number(investment.amountBdt);
+  const { getReturnRange, formatReturnPct, getExpectedReturnBdt } = await import("@/lib/financial/return-range");
+  const range = getReturnRange(investment.project);
+  const expected = getExpectedReturnBdt(amountBdt, investment.project);
+  const bdt = (n: number) => `BDT ${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyogclub.com").replace("http://localhost:3000", "https://biniyogclub.com");
+  const now = new Date();
+
+  const { renderInvestmentAgreement } = await import("@/lib/pdf/investment-agreement");
+  const pdf = await renderInvestmentAgreement({
+    agreementNumber: investment.receiptNumber,
+    investmentId: investment.id,
+    issuedAt: now.toISOString(),
+    verificationUrl: `${appUrl}/verify/${investment.receiptNumber}`,
+    investor: {
+      name: investment.investorProfile.user.name ?? "Investor",
+      email: investment.investorProfile.user.email,
+      phone: investment.investorProfile.user.phone,
+      nationalId: investment.investorProfile.nationalId,
+      address: investment.investorProfile.address,
+      nomineeName: investment.investorProfile.nomineeName,
+      nomineeNationalId: investment.investorProfile.nomineeNationalId,
+    },
+    project: {
+      title: investment.project.title,
+      category: investment.project.category ? investment.project.category.charAt(0) + investment.project.category.slice(1).toLowerCase().replace(/_/g, " ") : null,
+      location: investment.project.location,
+      durationDays: investment.project.durationDays,
+    },
+    investment: {
+      amountBdt,
+      returnLabel: range ? formatReturnPct(investment.project) : `${Number(investment.project.expectedReturnPct)}%`,
+      expectedReturnLabel: expected.max != null ? `${bdt(expected.min)} – ${bdt(expected.max)}` : bdt(expected.min),
+      returnType: investment.returnType,
+      activatedAt: (investment.activatedAt ?? investment.createdAt).toISOString(),
+    },
+    payments: investment.manualPayments.map((p) => {
+      const bank = p.bankAccountId ? bankById.get(p.bankAccountId) : null;
+      return {
+        method: METHOD_LABELS[p.paymentMethod] ?? p.paymentMethod,
+        amountBdt: Number(p.amountBdt),
+        reference: p.transactionRef && p.transactionRef !== "CASH" ? `Ref ${p.transactionRef}` : null,
+        detail: bank
+          ? `${bank.bankName} ${bank.accountNumber}`
+          : p.cashReceivedBy ? `Received by ${CASH_RECEIVER_LABELS[p.cashReceivedBy] ?? p.cashReceivedBy}` : null,
+      };
+    }),
+  });
+
+  // entityId must be a valid Project.id due to the Document→Project FK constraint
+  const storageKey = buildStorageKey("INVESTMENT_AGREEMENT", investment.project.id, `agreement_${investment.receiptNumber}`);
+  const { key } = await storage.upload(pdf, storageKey, "application/pdf");
+
+  const doc = await db.document.create({
+    data: {
+      uploadedBy: investorUserId,
+      entityType: "PROJECT",
+      entityId: investment.project.id,
+      category: "INVESTMENT_AGREEMENT",
+      name: `Investment Agreement — ${investment.project.title}`,
+      description,
+      fileUrl: key,
+      storageKey: key,
+      mimeType: "application/pdf",
+      sizeBytes: pdf.length,
+      isPublic: false,
+      isFinalized: true,
+      templateVersion: AGREEMENT_TEMPLATE_VERSION,
+      generatedAt: now,
+      ownerUserId: investorUserId,
+      allowedRoles: CATEGORY_ACCESS.INVESTMENT_AGREEMENT,
+    },
+  });
+
+  await db.investmentContract.upsert({
+    where: { investmentId },
+    create: {
+      investmentId,
+      status: "SENT",
+      templateVersion: AGREEMENT_TEMPLATE_VERSION,
+      contractUrl: doc.id,
+      sentAt: now,
+      terms: { amountBdt, projectTitle: investment.project.title, investorId: investorUserId },
+    },
+    update: { status: "SENT", contractUrl: doc.id, sentAt: now, templateVersion: AGREEMENT_TEMPLATE_VERSION },
+  });
+
+  await db.documentAuditLog.create({
+    data: {
+      documentId: doc.id,
+      actorId: null,
+      action: "GENERATE",
+      metadata: { templateVersion: AGREEMENT_TEMPLATE_VERSION, investmentId } as Prisma.InputJsonValue,
+    },
+  });
+
+  return { documentId: doc.id, storageKey: key };
+}
+
+/** Staff-triggered (re)issue of an agreement. */
 async function generateInvestmentAgreement(
   session: SessionUser,
   investmentId: string,
 ): Promise<{ documentId: string; storageKey: string }> {
   await requirePermission(session, PERMISSIONS.DOCUMENT_MANAGE);
-  // Delegate to the receipt generator (same PDF, different category label)
-  return generateInvestmentReceipt(investmentId);
+  return issueInvestmentAgreement(investmentId);
+}
+
+/**
+ * Everything an investor receives when an investment becomes active: the
+ * receipt/certificate and the investment agreement. Each is attempted even if
+ * the other fails.
+ */
+async function generateInvestmentDocuments(investmentId: string) {
+  const [receipt, agreement] = await Promise.allSettled([
+    generateInvestmentReceipt(investmentId),
+    issueInvestmentAgreement(investmentId),
+  ]);
+  if (receipt.status === "rejected") console.error("[documents] receipt generation failed:", receipt.reason);
+  if (agreement.status === "rejected") console.error("[documents] agreement generation failed:", agreement.reason);
 }
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
@@ -402,6 +579,8 @@ export const documentService = {
   deleteDocument,
   generateInvestmentReceipt,
   generateInvestmentAgreement,
+  issueInvestmentAgreement,
+  generateInvestmentDocuments,
   getDocumentsByEntity,
   getDocumentsByOwner,
   getDocumentAuditLogs,

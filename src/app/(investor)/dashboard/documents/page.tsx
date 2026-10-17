@@ -21,6 +21,10 @@ const CONTRACT_STATUS_COLORS: Record<string, string> = {
   VOIDED:  "bg-red-100 text-red-600",
 };
 
+const CONTRACT_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Preparing", SENT: "Issued", SIGNED: "Signed", EXPIRED: "Expired", VOIDED: "Voided",
+};
+
 const KYC_DOC_LABELS: Record<string, string> = {
   NATIONAL_ID: "National ID", PASSPORT: "Passport", DRIVING_LICENSE: "Driving License",
   UTILITY_BILL: "Utility Bill", BANK_STATEMENT: "Bank Statement",
@@ -94,9 +98,10 @@ export default async function DocumentsPage() {
                 </div>
                 <div className="ml-4 flex items-center gap-3 shrink-0">
                   <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", CONTRACT_STATUS_COLORS[c.status] ?? "bg-muted text-muted-foreground")}>
-                    {c.status}
+                    {CONTRACT_STATUS_LABELS[c.status] ?? c.status}
                   </span>
-                  {c.contractUrl && <DocumentDownloadButton documentId={c.id} label="Download" />}
+                  {/* contractUrl holds the agreement document id */}
+                  {c.contractUrl && <DocumentDownloadButton documentId={c.contractUrl} label="Download" />}
                 </div>
               </div>
             ))}

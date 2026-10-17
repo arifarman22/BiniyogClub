@@ -444,8 +444,8 @@ export async function approveManualPaymentAction(
     // gets killed when the serverless function freezes, so use after().
     after(() =>
       documentService
-        .generateInvestmentReceipt(inv.id)
-        .catch((err) => console.error("[approveManualPayment] receipt generation failed:", err)),
+        .generateInvestmentDocuments(inv.id)
+        .catch((err) => console.error("[approveManualPayment] document generation failed:", err)),
     );
 
     return {

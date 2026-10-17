@@ -98,8 +98,8 @@ export async function confirmPaymentAction(
 
     // Generate investment receipt PDF (fire-and-forget)
     documentService
-      .generateInvestmentReceipt(parsed.data.investmentId)
-      .catch((err) => console.error("[investment] receipt generation failed:", err));
+      .generateInvestmentDocuments(parsed.data.investmentId)
+      .catch((err) => console.error("[investment] document generation failed:", err));
 
     revalidatePath("/dashboard/investments");
     revalidatePath("/dashboard/transactions");
