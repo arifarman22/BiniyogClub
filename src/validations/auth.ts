@@ -58,6 +58,7 @@ export const registerSchema = z
     // Nominee is optional — blank fields are allowed
     nomineeName: z.string().trim().max(100, "Name must be at most 100 characters").optional().or(z.literal("")),
     nomineeNidNumber: nidSchema("Nominee NID number").optional().or(z.literal("")),
+    nomineeRelation: z.string().trim().max(100, "Relation must be at most 100 characters").optional().or(z.literal("")),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
