@@ -11,12 +11,10 @@ import {
   ArrowUpRight,
   Layers,
   ChevronRight,
-  ShieldCheck,
   Sparkles,
   Landmark,
   Users,
   Briefcase,
-  Coins,
   CheckCircle2,
   Lock,
   ArrowRight,
@@ -442,8 +440,6 @@ export function HierarchySection({ groups }: HierarchySectionProps) {
     return true;
   });
 
-  const totalProjects = allGroups.reduce((acc, g) => acc + g.projects.length, 0);
-
   return (
     <section
       className="relative py-24 lg:py-28 bg-muted/40 overflow-hidden"
@@ -460,26 +456,7 @@ export function HierarchySection({ groups }: HierarchySectionProps) {
             eyebrow="Institutional architecture"
             title="Two-tier co-investment"
             highlight="structure & ecosystem"
-            description="Capital flows through vetted parent holding groups directly into tangible, asset-backed ventures — combining corporate governance with commercial returns."
           />
-
-          {/* Quick Architecture Indicators */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-muted-foreground">
-            <div className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-emerald-500" />
-              <span className="font-semibold text-foreground">1 Central Platform Hub</span>
-            </div>
-            <span className="text-border hidden sm:inline">•</span>
-            <div className="inline-flex items-center gap-1.5">
-              <Building2 className="h-4 w-4 text-teal-500" />
-              <span className="font-semibold text-foreground">{allGroups.length} Business Groups</span>
-            </div>
-            <span className="text-border hidden sm:inline">•</span>
-            <div className="inline-flex items-center gap-1.5">
-              <Coins className="h-4 w-4 text-emerald-500" />
-              <span className="font-semibold text-foreground">{totalProjects} Live Commercial Assets</span>
-            </div>
-          </div>
         </AnimatedSection>
 
         {/* ── Tier 1: Platform Root Node Architecture ── */}
