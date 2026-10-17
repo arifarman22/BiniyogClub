@@ -49,7 +49,7 @@ function UploadSlot({
   doc: KycDocumentRecord | null;
   canUpload: boolean;
   isUploading: boolean;
-  onUpload: (side: Side, file: File) => void;
+  onUpload: (side: Side, file: File) => void | Promise<void>;
   onDelete: (id: string) => void;
 }) {
   return (
@@ -162,7 +162,29 @@ export function KycSubmitForm({ existing, prefill }: Props) {
     mobileNumber: existing?.mobileNumber ?? prefill.phone,
   });
 
+  const DOC_UPLOAD_LABELS: Record<string, { panel: string; front: string; back: string }> = {
+    NATIONAL_ID:     { panel: "National ID (NID) Photos",     front: "Front side", back: "Back side" },
+    PASSPORT:        { panel: "Passport Photos",              front: "Photo page", back: "Back page" },
+    DRIVING_LICENSE: { panel: "Driving License Photos",       front: "Front side", back: "Back side" },
+  };
+
+  const uploadLabels = DOC_UPLOAD_LABELS[form.documentType] ?? { panel: "Your ID Photos", front: "Front side", back: "Back side" };
+
+  const DOC_NUMBER_PLACEHOLDERS: Record<string, string> = {
+    NATIONAL_ID: "e.g. 1234567890",
+    PASSPORT: "e.g. AB1234567",
+    DRIVING_LICENSE: "e.g. DL-1234567890",
+  };
+
   function set(field: keyof typeof form, value: string) {
+    if (field === "documentType" && value !== form.documentType) {
+      // Clear uploaded docs for old type and reset document number
+      setDocuments((d) => d.filter((doc) => !doc.documentType.startsWith(form.documentType + "_")));
+      setForm((f) => ({ ...f, documentType: value, documentNumber: "" }));
+      setFieldErrors((e) => { const n = { ...e }; delete n.documentType; delete n.documentNumber; return n; });
+      setSaved(false);
+      return;
+    }
     setForm((f) => ({ ...f, [field]: value }));
     setFieldErrors((e) => { const n = { ...e }; delete n[field]; return n; });
     setSaved(false);
@@ -445,10 +467,10 @@ export function KycSubmitForm({ existing, prefill }: Props) {
                     id="documentNumber"
                     value={form.documentNumber}
                     onChange={(e) => set("documentNumber", e.target.value.toUpperCase())}
-                    placeholder="e.g. 1234567890"
+                    placeholder={DOC_NUMBER_PLACEHOLDERS[form.documentType] ?? "Document number"}
                     className="font-mono"
                   />
-                  {prefill.nationalId && form.documentNumber === prefill.nationalId && (
+                  {prefill.nationalId && form.documentNumber === prefill.nationalId && form.documentType === "NATIONAL_ID" && (
                     <Lock className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/40" />
                   )}
                 </div>
@@ -556,7 +578,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
         {/* Investor document upload */}
         <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
-            <p className="text-sm font-semibold">Your ID Photos</p>
+            <p className="text-sm font-semibold">{uploadLabels.panel}</p>
             <p className="text-xs text-muted-foreground mt-0.5">JPEG, PNG, WebP or PDF · max 10 MB each</p>
           </div>
           <div className="p-5 space-y-4">
@@ -570,7 +592,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
                 <UploadSlot
                   inputId="investor-front"
                   side="FRONT"
-                  label="Front side"
+                  label={uploadLabels.front}
                   doc={frontDoc}
                   canUpload={canUploadInvestor}
                   isUploading={isUploading === "INVESTOR_FRONT"}
@@ -580,7 +602,7 @@ export function KycSubmitForm({ existing, prefill }: Props) {
                 <UploadSlot
                   inputId="investor-back"
                   side="BACK"
-                  label="Back side"
+                  label={uploadLabels.back}
                   doc={backDoc}
                   canUpload={canUploadInvestor}
                   isUploading={isUploading === "INVESTOR_BACK"}
