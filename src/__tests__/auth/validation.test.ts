@@ -20,7 +20,7 @@ describe("registerSchema", () => {
     role: "INVESTOR" as const,
     nidNumber: "1234567890",
     nomineeNidNumber: "0987654321",
-    nomineeRelation: "Spouse",
+    dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
   };
 
   it("accepts valid input", () => {
@@ -65,6 +65,26 @@ describe("registerSchema", () => {
   it("rejects password shorter than 8 characters", () => {
     const r = registerSchema.safeParse({ ...valid, password: "Sh0rt", confirmPassword: "Sh0rt" });
     expect(r.success).toBe(false);
+  });
+
+  it("rejects an investor younger than 18", () => {
+    const tooYoung = new Date();
+    tooYoung.setFullYear(tooYoung.getFullYear() - 17);
+    const r = registerSchema.safeParse({ ...valid, dateOfBirth: tooYoung.toISOString().slice(0, 10) });
+    expect(r.success).toBe(false);
+  });
+
+  it("requires present and permanent address", () => {
+    expect(registerSchema.safeParse({ ...valid, presentAddress: "" }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...valid, permanentAddress: "" }).success).toBe(false);
+  });
+
+  it("allows the nominee to be left blank", () => {
+    expect(registerSchema.safeParse({ ...valid, nomineeName: "", nomineeNidNumber: "" }).success).toBe(true);
+  });
+
+  it("validates a nominee NID when one is given", () => {
+    expect(registerSchema.safeParse({ ...valid, nomineeNidNumber: "12ab" }).success).toBe(false);
   });
 
   it("rejects mismatched confirmPassword", () => {

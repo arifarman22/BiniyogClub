@@ -329,28 +329,10 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
     const idempotencyKey = inv.idempotencyKey ?? `approve-${investmentId}`;
 
     const { ledgerService } = await import("@/server/services/ledger.service");
-    const { walletRepository } = await import("@/db/repositories/wallet.repository");
 
-    // Determine if this is a manual (external) payment investment.
-    // Manual payment investors never deposit to the platform wallet, so we
-    // must not check or debit their wallet balance.
-    const hasManualPayment = await db.manualPaymentSubmission.findFirst({
-      where: { investmentId },
-      select: { id: true },
-    });
-    const isManualPayment = !!hasManualPayment;
-
-    if (!isManualPayment) {
-      // Wallet-path: verify investor has sufficient balance
-      const wallet = await walletRepository.findByUserId(investorUserId);
-      if (!wallet) throw new NotFoundError("Investor wallet not found");
-      const trueBalance = await ledgerService.getTrueBalance(wallet.id);
-      if (trueBalance < amountBdt) {
-        throw new ValidationError(
-          `Investor has insufficient balance. Available: \u09F3${trueBalance.toFixed(2)}, Required: \u09F3${amountBdt.toFixed(2)}`,
-        );
-      }
-    }
+    // There is no platform wallet: investors pay outside the platform (bank,
+    // cheque or cash). An admin approving directly confirms that payment was
+    // received, so no wallet balance is checked or debited.
 
     await db.$transaction(async (tx) => {
       const lockedInv = await tx.investment.findUnique({
@@ -415,34 +397,13 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
       });
     });
 
-    const { generateIdempotencyKey: genKey, IDEMPOTENCY_PREFIXES: PREFIXES } =
-      await import("@/lib/financial/idempotency");
-
-    if (isManualPayment) {
-      // External bank transfer — debit PLATFORM_REVENUE, credit PLATFORM_ESCROW.
-      // Investor wallet is untouched.
-      await ledgerService.recordInvestmentFundingExternal(amountBdt, {
-        investmentId,
-        idempotencyKey: idempotencyKey,
-        projectTitle: inv.project.title,
-        metadata: { approvedBy: session.id },
-      });
-    } else {
-      // Wallet-path: release reservation then post INVESTMENT_FUNDING.
-      const releaseKey = `${PREFIXES.REFUND}release-${investmentId}`;
-      await ledgerService.recordReservationRelease(investorUserId, amountBdt, {
-        investmentId,
-        idempotencyKey: releaseKey,
-        description: `Reservation released on approval: ${inv.project.title}`,
-        metadata: { approvedBy: session.id },
-      });
-      await ledgerService.recordInvestmentFunding(investorUserId, amountBdt, {
-        investmentId,
-        idempotencyKey: idempotencyKey,
-        projectTitle: inv.project.title,
-        metadata: { approvedBy: session.id },
-      });
-    }
+    // External payment — debit PLATFORM_REVENUE, credit PLATFORM_ESCROW.
+    await ledgerService.recordInvestmentFundingExternal(amountBdt, {
+      investmentId,
+      idempotencyKey: idempotencyKey,
+      projectTitle: inv.project.title,
+      metadata: { approvedBy: session.id },
+    });
 
     // Generate receipt PDF after the response is sent (see after() note in manual-payment.actions).
     const { documentService } = await import("@/server/services/document.service");

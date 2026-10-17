@@ -12,7 +12,7 @@ export default function LoginPage() {
       title="Welcome back"
       description="Sign in to your Biniyog Club account"
       image="https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=1200&q=80"
-      quote="Real projects, real returns. Every investment opportunity is admin-reviewed, KYC-gated, and backed by a signed digital contract."
+      quote="Real projects, real returns. Every investment opportunity is admin-reviewed and backed by a signed digital contract."
       quoteAuthor="Biniyog Club"
       footer={
         <>

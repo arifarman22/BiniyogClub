@@ -17,7 +17,7 @@ export function InvestmentActionButtons({ investmentId, status, amountLabel, inv
         <AdminActionButton
           label="Approve"
           confirmTitle="Approve Investment"
-          confirmDescription={`Approve this investment of ${amountLabel} by ${investorName}? It will become ACTIVE and visible on their dashboard.`}
+          confirmDescription={`Approve this investment of ${amountLabel} by ${investorName}? Only approve once the payment has been received. It will become ACTIVE and visible on their dashboard.`}
           onConfirm={() => approveInvestmentAdminAction(investmentId)}
           variant="default"
         />

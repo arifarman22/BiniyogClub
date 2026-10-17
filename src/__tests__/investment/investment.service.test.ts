@@ -228,7 +228,8 @@ describe("investmentService.create", () => {
     ).rejects.toThrow(ForbiddenError);
   });
 
-  it("throws ForbiddenError when KYC is not VERIFIED", async () => {
+  // KYC is no longer a separate gate — identity details are collected at signup.
+  it("does not require a verified KYC record to invest", async () => {
     mockDb.kyc.findUnique.mockResolvedValue({ status: "PENDING" });
 
     await expect(
@@ -238,10 +239,10 @@ describe("investmentService.create", () => {
         paymentMethod: "BANK_TRANSFER",
         idempotencyKey: "idem-key-xyz",
       }),
-    ).rejects.toThrow(ForbiddenError);
+    ).resolves.toBeDefined();
   });
 
-  it("throws ForbiddenError when KYC record does not exist", async () => {
+  it("allows investing when no KYC record exists", async () => {
     mockDb.kyc.findUnique.mockResolvedValue(null);
 
     await expect(
@@ -251,7 +252,7 @@ describe("investmentService.create", () => {
         paymentMethod: "BANK_TRANSFER",
         idempotencyKey: "idem-key-xyz",
       }),
-    ).rejects.toThrow(ForbiddenError);
+    ).resolves.toBeDefined();
   });
 
   it("throws NotFoundError when project does not exist", async () => {
@@ -388,7 +389,8 @@ describe("investmentService.create", () => {
     ).rejects.toThrow(ValidationError);
   });
 
-  it("throws ConflictError when investor already has active investment in project", async () => {
+  // Multiple investments per project are allowed (each is paid and approved on its own).
+  it("allows a second investment in the same project", async () => {
     mockDb.investment.findFirst.mockResolvedValue({ id: "inv-existing", status: "ACTIVE" });
 
     await expect(
@@ -398,7 +400,7 @@ describe("investmentService.create", () => {
         paymentMethod: "BANK_TRANSFER",
         idempotencyKey: "idem-key-xyz",
       }),
-    ).rejects.toThrow(ConflictError);
+    ).resolves.toBeDefined();
   });
 
   it("calculates expected return server-side, ignoring any client value", async () => {

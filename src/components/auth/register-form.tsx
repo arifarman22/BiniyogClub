@@ -71,7 +71,7 @@ export function RegisterForm() {
       <input type="hidden" value="INVESTOR" {...register("role")} />
 
       {/* Row 1: Full Name + Email */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="name" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Full Name <span className="text-destructive">*</span>
@@ -112,7 +112,7 @@ export function RegisterForm() {
       </div>
 
       {/* Row 2: Phone + NID */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="phone" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Phone Number <span className="text-destructive">*</span>
@@ -173,7 +173,7 @@ export function RegisterForm() {
       </div>
 
       {/* Addresses */}
-      <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="presentAddress" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Present Address <span className="text-destructive">*</span>
@@ -234,7 +234,7 @@ export function RegisterForm() {
         </div>
         <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 -mt-2">Your nominee will receive your investment in case of an emergency.</p>
 
-        <div className="grid grid-cols-1 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div className="space-y-1.5">
             <label htmlFor="nomineeName" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
               Nominee Name
@@ -275,7 +275,7 @@ export function RegisterForm() {
       </div>
 
       {/* Row 3: Password + Confirm Password */}
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <label htmlFor="password" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Create Password <span className="text-destructive">*</span>

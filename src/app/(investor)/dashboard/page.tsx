@@ -7,16 +7,15 @@ import {
   getInvestorProjectUpdates,
   getInvestorInvestments,
   getInvestorPortfolio,
-  getInvestorKyc,
   getAvailableProjects,
   getInvestorGroupDashboard,
 } from "@/server/data/investor.data";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
-  TrendingUp, CheckCircle2, Clock, BarChart3,
+  TrendingUp, Clock, BarChart3,
   ArrowRight, AlertCircle, Bell, ArrowUpRight,
-  ShieldCheck, Layers, MapPin, Sparkles, Building2,
+  Layers, MapPin, Sparkles, Building2, FileText,
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 import { StatCard } from "@/components/ui/stat-card";
@@ -63,79 +62,35 @@ export default async function DashboardPage() {
     redirect("/auth/login?callbackUrl=/dashboard"),
   );
 
-  let stats, recentUpdates, investments, portfolio, kyc, availableProjects, groupStats;
+  let stats, recentUpdates, investments, portfolio, availableProjects, groupStats;
 
   try {
-    [stats, recentUpdates, investments, portfolio, kyc, availableProjects, groupStats] = await Promise.all([
+    [stats, recentUpdates, investments, portfolio, availableProjects, groupStats] = await Promise.all([
       getInvestorDashboard(session),
       getInvestorProjectUpdates(session, 4),
       getInvestorInvestments(session),
       getInvestorPortfolio(session),
-      getInvestorKyc(session).catch(() => null),
       getAvailableProjects(6).catch(() => []),
       getInvestorGroupDashboard(session),
-    ]) as [Awaited<ReturnType<typeof getInvestorDashboard>>, Awaited<ReturnType<typeof getInvestorProjectUpdates>>, Awaited<ReturnType<typeof getInvestorInvestments>>, Awaited<ReturnType<typeof getInvestorPortfolio>>, Awaited<ReturnType<typeof getInvestorKyc>>, Awaited<ReturnType<typeof getAvailableProjects>>, Awaited<ReturnType<typeof getInvestorGroupDashboard>>];
+    ]) as [Awaited<ReturnType<typeof getInvestorDashboard>>, Awaited<ReturnType<typeof getInvestorProjectUpdates>>, Awaited<ReturnType<typeof getInvestorInvestments>>, Awaited<ReturnType<typeof getInvestorPortfolio>>, Awaited<ReturnType<typeof getAvailableProjects>>, Awaited<ReturnType<typeof getInvestorGroupDashboard>>];
   } catch {
-    // kyc may be undefined if the whole Promise.all failed; fetch it independently
-    const fallbackKyc = await getInvestorKyc(session).catch(() => null);
-    const kycStatus = fallbackKyc?.status ?? "NOT_STARTED";
-    const kycVerified = kycStatus === "VERIFIED";
-
+    // Data failed to load — show a simple welcome instead of a broken dashboard.
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center text-center px-4 space-y-4">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25">{kycVerified ? <CheckCircle2 className="h-7 w-7" /> : <Sparkles className="h-7 w-7" />}</span>
+        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25"><Sparkles className="h-7 w-7" /></span>
         <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Welcome, {session.name.split(" ")[0]}!</h1>
-
-        {!kycVerified && kycStatus === "NOT_STARTED" && (
-          <>
-            <p className="text-muted-foreground max-w-sm">
-              Complete KYC verification to unlock investing.
-            </p>
-            <Link href="/dashboard/kyc" className={cn(buttonVariants({ size: "sm" }))}>
-              Start KYC <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </>
-        )}
-
-        {(kycStatus === "SUBMITTED" || kycStatus === "UNDER_REVIEW") && (
-          <>
-            <p className="text-muted-foreground max-w-sm">
-              Your KYC is under review. We&apos;ll notify you once verified.
-            </p>
-            <Link href="/dashboard/kyc" className={cn(buttonVariants({ size: "sm", variant: "outline" }))}>
-              View KYC Status
-            </Link>
-          </>
-        )}
-
-        {(kycStatus === "REJECTED" || kycStatus === "RESUBMISSION_REQUIRED") && (
-          <>
-            <p className="text-muted-foreground max-w-sm">
-              Your KYC needs attention. Please resubmit your documents.
-            </p>
-            <Link href="/dashboard/kyc" className={cn(buttonVariants({ size: "sm" }))}>
-              Update KYC <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Link>
-          </>
-        )}
-
-        {kycVerified && (
-          <>
-            <p className="text-muted-foreground max-w-sm">
-              Your KYC is verified! Complete your investor profile to start investing.
-            </p>
-            <Link href="/dashboard/profile" className={cn(buttonVariants({ size: "sm" }))}>
-              Complete Profile
-            </Link>
-          </>
-        )}
+        <p className="text-muted-foreground max-w-sm">
+          Your account is ready. Explore verified projects and business groups to start investing.
+        </p>
+        <Link href="/projects" className={cn(buttonVariants({ size: "sm" }))}>
+          Browse projects <ArrowRight className="ml-1.5 h-4 w-4" />
+        </Link>
       </div>
     );
   }
 
-  const kycStatus = kyc?.status ?? "NOT_STARTED";
-  const kycVerified = kycStatus === "VERIFIED";
-  const canInvest = kycVerified && session.emailVerified;
+  // No separate KYC step — identity details are collected at signup.
+  const canInvest = session.emailVerified;
 
   // Distribution history (12 months)
   const now = new Date();
@@ -542,7 +497,7 @@ export default async function DashboardPage() {
             {[
               { href: "/projects", label: canInvest ? "Browse & invest" : "Browse projects", icon: TrendingUp, tone: "from-emerald-500 to-teal-600" },
               { href: "/groups", label: "Invest in Groups", icon: Building2, tone: "from-amber-400 to-orange-500" },
-              { href: "/dashboard/kyc", label: kycVerified ? "KYC verified" : "Complete KYC", icon: ShieldCheck, tone: kycVerified ? "from-emerald-500 to-teal-600" : "from-amber-400 to-orange-500" },
+              { href: "/dashboard/documents", label: "Documents & receipts", icon: FileText, tone: "from-emerald-500 to-teal-600" },
               { href: "/dashboard/investments", label: "All investments", icon: BarChart3, tone: "from-sky-500 to-indigo-600" },
             ].map(({ href, label, icon: Icon, tone }) => (
               <Link

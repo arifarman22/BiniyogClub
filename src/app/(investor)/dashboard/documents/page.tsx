@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorDocuments } from "@/server/data/investor.data";
 import { getMyGroupInvestments } from "@/server/data/groups.data";
@@ -143,9 +144,7 @@ export default async function DocumentsPage() {
             ))}
           </div>
         ) : (
-          <EmptyState message="No KYC submission found.">
-            <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">Complete KYC →</a>
-          </EmptyState>
+          <EmptyState message="No identity documents on file. Your details were collected at signup." />
         )}
       </section>
 
@@ -219,7 +218,7 @@ export default async function DocumentsPage() {
           </div>
         ) : (
           <EmptyState message="No group investment receipts yet.">
-            <a href="/groups" className="mt-2 inline-block text-sm text-primary hover:underline">Explore business groups →</a>
+            <Link href="/groups" className="mt-2 inline-block text-sm text-primary hover:underline">Explore business groups →</Link>
           </EmptyState>
         )}
       </section>

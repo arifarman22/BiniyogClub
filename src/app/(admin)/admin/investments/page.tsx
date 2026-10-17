@@ -171,15 +171,15 @@ export default async function AdminInvestmentsPage({ searchParams }: AsyncCompon
                         {hasManual ? (
                           <div>
                             <span className="inline-flex items-center rounded-full bg-blue-500/10 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
-                              Bank Transfer
+                              Proof submitted
                             </span>
                             {manualStatus && (
                               <p className="mt-0.5 text-[10px] text-muted-foreground">{manualStatus.replace(/_/g, " ")}</p>
                             )}
                           </div>
                         ) : (
-                          <span className="inline-flex items-center rounded-full bg-violet-500/10 px-2 py-0.5 text-[10px] font-semibold text-violet-600 dark:text-violet-400">
-                            Wallet
+                          <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                            No proof yet
                           </span>
                         )}
                       </td>

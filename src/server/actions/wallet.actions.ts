@@ -203,22 +203,19 @@ export async function submitDepositRequestAction(
   }
 }
 
+/**
+ * Wallet-funded investing is not offered: investors pay by bank, cheque or
+ * cash and submit proof on the pay page. Kept as a stub so any stale client
+ * gets a clear answer instead of creating a wallet-funded investment.
+ */
 export async function investFromWalletAction(
-  input: { projectId: string; amountBdt: number; idempotencyKey: string },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _input: { projectId: string; amountBdt: number; idempotencyKey: string },
 ): Promise<ActionResult<{ investmentId: string; receiptNumber: string }>> {
-  if (!input.projectId || !input.amountBdt || !input.idempotencyKey) {
-    return { success: false, error: "Invalid request" };
-  }
-  try {
-    const session = await requireSession();
-    const result = await walletService.investFromWallet(session, input);
-
-    revalidatePath("/dashboard/investments");
-    revalidatePath("/dashboard");
-    return { success: true, data: { investmentId: result.investmentId, receiptNumber: result.receiptNumber } };
-  } catch (error) {
-    return serviceError(error);
-  }
+  return {
+    success: false,
+    error: "Wallet payments are not available. Please pay by bank transfer, cheque or cash.",
+  };
 }
 
 export async function confirmDepositAction(

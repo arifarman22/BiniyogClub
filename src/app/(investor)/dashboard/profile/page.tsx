@@ -507,7 +507,7 @@ export default function ProfilePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-primary" />
-                <h2 className="font-semibold">KYC Status</h2>
+                <h2 className="font-semibold">Account Verification</h2>
               </div>
               {user.kyc && (
                 <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-medium", KYC_STATUS_COLORS[user.kyc.status] ?? "bg-muted text-muted-foreground")}>
@@ -515,19 +515,9 @@ export default function ProfilePage() {
                 </span>
               )}
             </div>
-            {!user.kyc ? (
-              <div className="mt-3">
-                <p className="text-sm text-muted-foreground">KYC not submitted. Complete verification to unlock investing.</p>
-                <a href="/dashboard/kyc" className="mt-2 inline-block text-sm text-primary hover:underline">Start KYC →</a>
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {user.kyc.status === "VERIFIED"
-                  ? "Your identity has been verified."
-                  : "Visit the KYC page to check your verification status."}
-                {" "}<a href="/dashboard/kyc" className="text-primary hover:underline">View KYC →</a>
-              </p>
-            )}
+            <p className="mt-2 text-xs text-muted-foreground">
+              Your identity details were collected at signup. Your account is active and ready to invest.
+            </p>
           </div>
 
           <ChangePasswordSection />
