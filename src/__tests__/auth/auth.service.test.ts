@@ -107,7 +107,7 @@ describe("authService.register", () => {
       role: "INVESTOR",
       nidNumber: "1234567890",
       nomineeNidNumber: "0987654321",
-      dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
+      dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
     });
 
     expect(mockUserRepo.create).toHaveBeenCalledOnce();
@@ -119,7 +119,7 @@ describe("authService.register", () => {
     mockUserRepo.findByPhone.mockResolvedValue(null);
 
     await expect(
-      authService.register({ name: "X", email: "test@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla" }),
+      authService.register({ name: "X", email: "test@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" } }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -128,7 +128,7 @@ describe("authService.register", () => {
     mockUserRepo.findByPhone.mockResolvedValue(baseUser);
 
     await expect(
-      authService.register({ name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla" }),
+      authService.register({ name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR", nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" } }),
     ).rejects.toThrow(ConflictError);
   });
 
@@ -142,7 +142,7 @@ describe("authService.register", () => {
     const result = await authService.register({
       name: "Test User", email: "test@example.com", phone: "01712345678",
       password: "SecurePass1", role: "INVESTOR",
-      nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
+      nidNumber: "1234567890", nomineeNidNumber: "0987654321", dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
     });
 
     expect(result).not.toHaveProperty("passwordHash");
@@ -159,7 +159,7 @@ describe("authService.register", () => {
       name: "Test User", email: "test@example.com", phone: "01712345678",
       password: "SecurePass1", role: "INVESTOR",
       nidNumber: "1234567890", nomineeName: "Rahima", nomineeNidNumber: "0987654321",
-      dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
+      dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
     });
 
     expect(mockDb.kyc.create).toHaveBeenCalledWith(expect.objectContaining({
@@ -167,12 +167,22 @@ describe("authService.register", () => {
         status: "VERIFIED",
         documentType: "NATIONAL_ID",
         documentNumber: "1234567890",
-        presentAddress: "House 1, Road 2, Dhaka",
-        permanentAddress: "Village X, Cumilla",
+        presentAddress: "House 1, Road 2",
+        presentDivision: "Dhaka",
+        presentDistrict: "Dhaka",
+        presentUpazila: "Dhanmondi",
+        presentPostalCode: "1209",
+        permanentAddress: "Village X",
+        permanentDistrict: "Comilla",
+        permanentUpazila: "Debidwar",
+        permanentPostalCode: "3530",
       }),
     }));
     expect(mockDb.investorProfile.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ nationalId: "1234567890", nomineeName: "Rahima", nomineeNationalId: "0987654321" }),
+      data: expect.objectContaining({
+        nationalId: "1234567890", nomineeName: "Rahima", nomineeNationalId: "0987654321",
+        address: "House 1, Road 2, Dhanmondi, Dhaka, Dhaka - 1209",
+      }),
     }));
   });
 
@@ -185,7 +195,7 @@ describe("authService.register", () => {
     await expect(
       authService.register({
         name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR",
-        nidNumber: "1234567890", dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
+        nidNumber: "1234567890", dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
       }),
     ).rejects.toThrow(ConflictError);
     expect(mockUserRepo.create).not.toHaveBeenCalled();

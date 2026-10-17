@@ -25,6 +25,20 @@ const nidSchema = (label: string) =>
     .max(17, `${label} must be at most 17 digits`)
     .regex(/^\d+$/, `${label} must contain only digits`);
 
+/** A Bangladeshi address: house/road line plus division → district → thana and postal code. */
+export const bdAddressSchema = z.object({
+  line: z.string().trim().min(3, "Enter house, road and area").max(200, "Address is too long"),
+  division: z.string().trim().min(1, "Select a division"),
+  district: z.string().trim().min(1, "Select a district"),
+  thana: z.string().trim().min(1, "Select or enter your thana").max(100, "Thana is too long"),
+  postalCode: z.string().trim().regex(/^\d{4}$/, "Postal code must be 4 digits"),
+});
+export type BdAddress = z.infer<typeof bdAddressSchema>;
+
+/** One-line form of an address, e.g. for display and the profile summary. */
+export const formatBdAddress = (a: BdAddress) =>
+  [a.line, a.thana, a.district, a.division].filter(Boolean).join(", ") + (a.postalCode ? ` - ${a.postalCode}` : "");
+
 /** True when a YYYY-MM-DD birth date is at least 18 years ago (and not absurdly old). */
 function isAdult(isoDate: string) {
   const dob = new Date(`${isoDate}T00:00:00Z`);
@@ -53,8 +67,8 @@ export const registerSchema = z
       .string()
       .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter your date of birth")
       .refine((v) => isAdult(v), "You must be at least 18 years old"),
-    presentAddress: z.string().trim().min(5, "Enter your present address").max(300, "Address is too long"),
-    permanentAddress: z.string().trim().min(5, "Enter your permanent address").max(300, "Address is too long"),
+    presentAddress: bdAddressSchema,
+    permanentAddress: bdAddressSchema,
     // Nominee is optional — blank fields are allowed
     nomineeName: z.string().trim().max(100, "Name must be at most 100 characters").optional().or(z.literal("")),
     nomineeNidNumber: nidSchema("Nominee NID number").optional().or(z.literal("")),

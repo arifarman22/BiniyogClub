@@ -11,6 +11,7 @@ import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight, Credit
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { BdAddressFields, EMPTY_BD_ADDRESS } from "@/components/auth/bd-address-fields";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -22,14 +23,18 @@ export function RegisterForm() {
     handleSubmit,
     watch,
     setValue,
-    formState: { errors, isSubmitting },
-  } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
+    formState: { errors, isSubmitting, isSubmitted },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { presentAddress: EMPTY_BD_ADDRESS, permanentAddress: EMPTY_BD_ADDRESS },
+  });
 
   const [sameAddress, setSameAddress] = useState(false);
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password", "");
-  const presentAddress = watch("presentAddress", "");
+  const presentAddress = watch("presentAddress") ?? EMPTY_BD_ADDRESS;
+  const permanentAddress = watch("permanentAddress") ?? EMPTY_BD_ADDRESS;
 
   useEffect(() => {
     setValue("role", "INVESTOR");
@@ -37,8 +42,8 @@ export function RegisterForm() {
 
   // Keep the permanent address in step with the present one while "Same as present" is ticked.
   useEffect(() => {
-    if (sameAddress) setValue("permanentAddress", presentAddress, { shouldValidate: !!presentAddress });
-  }, [sameAddress, presentAddress, setValue]);
+    if (sameAddress) setValue("permanentAddress", presentAddress, { shouldValidate: isSubmitted });
+  }, [sameAddress, presentAddress, setValue, isSubmitted]);
 
   // Latest allowed birth date: 18 years ago today.
   const maxDob = (() => {
@@ -173,56 +178,39 @@ export function RegisterForm() {
       </div>
 
       {/* Addresses */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <div className="space-y-1.5">
-          <label htmlFor="presentAddress" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            Present Address <span className="text-destructive">*</span>
-          </label>
-          <div className="relative">
-            <MapPin className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" />
-            <textarea
-              id="presentAddress"
-              rows={2}
-              autoComplete="street-address"
-              placeholder="House, road, area, upazila, district"
-              className="w-full resize-none rounded-xl border border-border/80 bg-background py-2.5 pl-10 pr-3 text-sm shadow-xs placeholder:text-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              aria-invalid={!!errors.presentAddress}
-              {...register("presentAddress")}
-            />
-          </div>
-          {errors.presentAddress && <p className="text-xs text-destructive font-medium">{errors.presentAddress.message}</p>}
-        </div>
+      <fieldset className="space-y-4 rounded-xl border border-border p-4">
+        <legend className="flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-foreground">
+          <MapPin className="h-3.5 w-3.5 text-primary" /> Present Address
+        </legend>
+        <BdAddressFields
+          id="present"
+          value={presentAddress}
+          onChange={(next) => setValue("presentAddress", next, { shouldValidate: isSubmitted })}
+          errors={errors.presentAddress}
+        />
+      </fieldset>
 
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between gap-2">
-            <label htmlFor="permanentAddress" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Permanent Address <span className="text-destructive">*</span>
-            </label>
-            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={sameAddress}
-                onChange={(e) => setSameAddress(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-border accent-primary"
-              />
-              Same as present
-            </label>
-          </div>
-          <div className="relative">
-            <Home className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" />
-            <textarea
-              id="permanentAddress"
-              rows={2}
-              readOnly={sameAddress}
-              placeholder="Village/house, post office, upazila, district"
-              className={`w-full resize-none rounded-xl border border-border/80 py-2.5 pl-10 pr-3 text-sm shadow-xs placeholder:text-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sameAddress ? "bg-muted/40" : "bg-background"}`}
-              aria-invalid={!!errors.permanentAddress}
-              {...register("permanentAddress")}
-            />
-          </div>
-          {errors.permanentAddress && <p className="text-xs text-destructive font-medium">{errors.permanentAddress.message}</p>}
-        </div>
-      </div>
+      <fieldset className="space-y-4 rounded-xl border border-border p-4">
+        <legend className="flex items-center gap-1.5 px-1 text-xs font-semibold uppercase tracking-wider text-foreground">
+          <Home className="h-3.5 w-3.5 text-primary" /> Permanent Address
+        </legend>
+        <label className="flex w-fit cursor-pointer items-center gap-2 text-xs text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={sameAddress}
+            onChange={(e) => setSameAddress(e.target.checked)}
+            className="h-3.5 w-3.5 rounded border-border accent-primary"
+          />
+          Same as present address
+        </label>
+        <BdAddressFields
+          id="permanent"
+          value={permanentAddress}
+          onChange={(next) => setValue("permanentAddress", next, { shouldValidate: isSubmitted })}
+          errors={errors.permanentAddress}
+          disabled={sameAddress}
+        />
+      </fieldset>
 
       {/* Nominee (optional) */}
       <div className="rounded-xl border border-amber-400/40 bg-amber-50/60 dark:bg-amber-950/20 p-4 space-y-4">

@@ -23,6 +23,7 @@ import {
 } from "@/lib/errors";
 import { env } from "@/config/env";
 import type { UserRole } from "@/types/prisma";
+import { formatBdAddress, type BdAddress } from "@/validations/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -34,8 +35,8 @@ export type RegisterInput = {
   role: UserRole;
   nidNumber: string;
   dateOfBirth: string;        // YYYY-MM-DD
-  presentAddress: string;
-  permanentAddress: string;
+  presentAddress: BdAddress;
+  permanentAddress: BdAddress;
   nomineeName?: string;
   nomineeNidNumber?: string;
 };
@@ -88,7 +89,8 @@ export const authService = {
               userId: user.id,
               nationalId: nidNumber,
               dateOfBirth: dob,
-              address: presentAddress,
+              address: formatBdAddress(presentAddress),
+              city: presentAddress.district,
               nomineeName: nomineeName?.trim() || null,
               nomineeNationalId: nomineeNidNumber?.trim() || null,
               country: "BD",
@@ -103,8 +105,20 @@ export const authService = {
               reviewNote: "Verified from signup details",
               fullName: name,
               dateOfBirth: dob,
-              presentAddress,
-              permanentAddress,
+              presentAddress: presentAddress.line,
+              presentDivision: presentAddress.division,
+              presentDistrict: presentAddress.district,
+              presentUpazila: presentAddress.thana,
+              presentPostalCode: presentAddress.postalCode,
+              permanentAddress: permanentAddress.line,
+              permanentDivision: permanentAddress.division,
+              permanentDistrict: permanentAddress.district,
+              permanentUpazila: permanentAddress.thana,
+              permanentPostalCode: permanentAddress.postalCode,
+              city: presentAddress.district,
+              district: presentAddress.district,
+              division: presentAddress.division,
+              postalCode: presentAddress.postalCode,
               documentType: "NATIONAL_ID",
               documentNumber: nidNumber,
               mobileNumber: phone,

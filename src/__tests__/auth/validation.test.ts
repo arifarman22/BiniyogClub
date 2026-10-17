@@ -20,7 +20,7 @@ describe("registerSchema", () => {
     role: "INVESTOR" as const,
     nidNumber: "1234567890",
     nomineeNidNumber: "0987654321",
-    dateOfBirth: "1990-01-01", presentAddress: "House 1, Road 2, Dhaka", permanentAddress: "Village X, Cumilla",
+    dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
   };
 
   it("accepts valid input", () => {
@@ -74,9 +74,15 @@ describe("registerSchema", () => {
     expect(r.success).toBe(false);
   });
 
-  it("requires present and permanent address", () => {
-    expect(registerSchema.safeParse({ ...valid, presentAddress: "" }).success).toBe(false);
-    expect(registerSchema.safeParse({ ...valid, permanentAddress: "" }).success).toBe(false);
+  it("requires every part of present and permanent address", () => {
+    expect(registerSchema.safeParse({ ...valid, presentAddress: { ...valid.presentAddress, division: "" } }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...valid, presentAddress: { ...valid.presentAddress, thana: "" } }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...valid, permanentAddress: { ...valid.permanentAddress, district: "" } }).success).toBe(false);
+  });
+
+  it("requires a 4-digit postal code", () => {
+    expect(registerSchema.safeParse({ ...valid, presentAddress: { ...valid.presentAddress, postalCode: "12" } }).success).toBe(false);
+    expect(registerSchema.safeParse({ ...valid, presentAddress: { ...valid.presentAddress, postalCode: "12a9" } }).success).toBe(false);
   });
 
   it("allows the nominee to be left blank", () => {
