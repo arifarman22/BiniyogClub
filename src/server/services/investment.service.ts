@@ -201,21 +201,6 @@ export const investmentService = {
 
     // Notify admins of new investment (fire-and-forget)
     const { notificationService } = await import("@/server/services/notification.service");
-    const investorUser = await db.user.findUnique({ where: { id: session.id }, select: { name: true } });
-    const project = await db.project.findUnique({ where: { id: input.projectId }, select: { title: true } });
-    notificationService
-      .onInvestmentCreated(
-        investorUser?.name ?? "An investor",
-        session.id,
-        project?.title ?? "a project",
-        input.projectId,
-        input.amountBdt,
-        investment.id,
-      )
-      .catch((err) => console.error("[investment] admin notification failed:", err));
-
-    // Notify admins of new investment (fire-and-forget)
-    const { notificationService } = await import("@/server/services/notification.service");
     const [investorUser, projectInfo] = await Promise.all([
       db.user.findUnique({ where: { id: session.id }, select: { name: true } }),
       db.project.findUnique({ where: { id: input.projectId }, select: { title: true } }),
