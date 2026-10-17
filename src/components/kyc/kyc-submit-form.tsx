@@ -34,7 +34,7 @@ const DOC_LABELS: Record<string, string> = {
 };
 
 type Side = "FRONT" | "BACK";
-type DocGroup = "INVESTOR" | "NOMINEE";
+type DocGroup = "INVESTOR";
 
 function getSideDoc(documents: KycDocumentRecord[], docType: string, side: Side) {
   return documents.find((d) => d.documentType === `${docType}_${side}`) ?? null;
@@ -113,7 +113,7 @@ function UploadSlot({
 export function KycSubmitForm({ existing, prefill }: Props) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const [isUploading, setIsUploading] = useState<`${DocGroup}_${Side}` | null>(null);
+  const [isUploading, setIsUploading] = useState<`INVESTOR_${Side}` | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [kycId, setKycId] = useState<string | null>(existing?.id ?? null);
@@ -209,8 +209,8 @@ export function KycSubmitForm({ existing, prefill }: Props) {
   }
 
   async function handleFileUpload(group: DocGroup, side: Side, file: File) {
-    const docType = group === "NOMINEE" ? "NOMINEE_NID" : form.documentType;
-    if (group === "INVESTOR" && !form.documentType) return;
+    const docType = form.documentType;
+    if (!form.documentType) return;
     if (file.size > 3 * 1024 * 1024) { setError("File must be smaller than 3 MB."); return; }
 
     setIsUploading(`${group}_${side}`);
@@ -324,10 +324,8 @@ export function KycSubmitForm({ existing, prefill }: Props) {
   const canUploadInvestor = !!form.documentType;
   const frontDoc     = getSideDoc(documents, form.documentType, "FRONT");
   const backDoc      = getSideDoc(documents, form.documentType, "BACK");
-  const nomFrontDoc  = getSideDoc(documents, "NOMINEE_NID", "FRONT");
-  const nomBackDoc   = getSideDoc(documents, "NOMINEE_NID", "BACK");
-  const canSubmit    = !!kycId && !!frontDoc && !!nomFrontDoc && !isPending;
-  const uploadedCount = [frontDoc, backDoc, nomFrontDoc, nomBackDoc].filter(Boolean).length;
+  const canSubmit    = !!kycId && !!frontDoc && !isPending;
+  const uploadedCount = [frontDoc, backDoc].filter(Boolean).length;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -601,43 +599,6 @@ export function KycSubmitForm({ existing, prefill }: Props) {
           </div>
         </div>
 
-        {/* Nominee NID upload */}
-        <div className="surface-card">
-          <div className="border-b border-border px-5 py-4">
-            <p className="text-sm font-semibold">Nominee&apos;s NID Photos</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Upload front &amp; back of nominee&apos;s National ID</p>
-          </div>
-          <div className="p-5 space-y-4">
-            <div className="flex gap-3">
-              <UploadSlot
-                inputId="nominee-front"
-                side="FRONT"
-                label="Front side"
-                doc={nomFrontDoc}
-                canUpload={true}
-                isUploading={isUploading === "NOMINEE_FRONT"}
-                onUpload={(side, file) => handleFileUpload("NOMINEE", side, file)}
-                onDelete={handleDeleteDocument}
-              />
-              <UploadSlot
-                inputId="nominee-back"
-                side="BACK"
-                label="Back side"
-                doc={nomBackDoc}
-                canUpload={true}
-                isUploading={isUploading === "NOMINEE_BACK"}
-                onUpload={(side, file) => handleFileUpload("NOMINEE", side, file)}
-                onDelete={handleDeleteDocument}
-              />
-            </div>
-            <div className="flex items-center gap-1.5">
-              <div className={cn("h-1.5 flex-1 rounded-full", nomFrontDoc ? "bg-emerald-500" : "bg-muted")} />
-              <div className={cn("h-1.5 flex-1 rounded-full", nomBackDoc ? "bg-emerald-500" : "bg-muted")} />
-              <span className="text-[10px] text-muted-foreground ml-1">{[nomFrontDoc, nomBackDoc].filter(Boolean).length}/2</span>
-            </div>
-          </div>
-        </div>
-
         {/* Submit card */}
         <div className="surface-card">
           <div className="border-b border-border px-5 py-4">
@@ -650,7 +611,6 @@ export function KycSubmitForm({ existing, prefill }: Props) {
                 { label: "Address", done: !!(presentAddr.address && presentAddr.division && presentAddr.district && presentAddr.upazila) },
                 { label: "Identity document", done: !!(form.documentType && form.documentNumber) },
                 { label: "Your ID front photo", done: !!frontDoc },
-                { label: "Nominee NID front photo", done: !!nomFrontDoc },
                 { label: "Payment method", done: !!(form.bankAccountNumber || form.mobileNumber) },
               ].map(({ label, done }) => (
                 <li key={label} className="flex items-center gap-2 text-xs">

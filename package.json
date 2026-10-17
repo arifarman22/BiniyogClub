@@ -21,6 +21,11 @@
     "db:studio": "prisma studio",
     "db:seed": "ts-node --project tsconfig.seed.json prisma/seed/index.ts",
     "db:reset": "prisma migrate reset",
+    "test:load": "k6 run --env BASE_URL=http://localhost:3000 tests/load/scalability.test.js",
+    "test:stress": "k6 run --env BASE_URL=http://localhost:3000 tests/load/stress.test.js",
+    "test:load:local-build": "k6 run --env BASE_URL=http://localhost:3000 tests/load/scalability.test.js",
+    "test:load:prod": "k6 run --env BASE_URL=https://biniyogclub.com tests/load/scalability.test.js",
+    "test:pentest": "zap.sh -cmd -autorun tests/pentest/zap-config.yaml",
     "postinstall": "prisma generate"
   },
   "prisma": {

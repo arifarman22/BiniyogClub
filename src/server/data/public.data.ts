@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/prisma";
 import type { ProjectStatus } from "@/types/prisma";
 
@@ -5,99 +6,58 @@ const PUBLIC_STATUSES: ProjectStatus[] = [
   "FUNDRAISING", "FUNDED", "ACTIVE", "COMPLETED",
 ];
 
-// ─── Platform Stats ───────────────────────────────────────────────────────────
+export const getPlatformStats = unstable_cache(
+  async () => {
+    const [totalProjects, activeProjects, totalInvestors, fundedResult, completedProjects] =
+      await Promise.all([
+        db.project.count({ where: { deletedAt: null, status: { not: "DRAFT" } } }),
+        db.project.count({ where: { deletedAt: null, status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] } } }),
+        db.user.count({ where: { role: "INVESTOR", deletedAt: null, status: "ACTIVE" } }),
+        db.project.aggregate({ _sum: { fundedAmountBdt: true }, where: { deletedAt: null, status: { not: "DRAFT" } } }),
+        db.project.count({ where: { deletedAt: null, status: "COMPLETED" } }),
+      ]);
+    return {
+      totalProjects,
+      activeProjects,
+      totalInvestors,
+      totalFundedBdt: Number(fundedResult._sum.fundedAmountBdt ?? 0),
+      completedProjects,
+    };
+  },
+  ["platform-stats"],
+  { revalidate: 300, tags: ["platform-stats"] },
+);
 
-export async function getPlatformStats() {
-  const [
-    totalProjects,
-    activeProjects,
-    totalInvestors,
-    fundedResult,
-    completedProjects,
-  ] = await Promise.all([
-    db.project.count({ where: { deletedAt: null, status: { not: "DRAFT" } } }),
-    db.project.count({ where: { deletedAt: null, status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] } } }),
-    db.user.count({ where: { role: "INVESTOR", deletedAt: null, status: "ACTIVE" } }),
-    db.project.aggregate({
-      _sum: { fundedAmountBdt: true },
-      where: { deletedAt: null, status: { not: "DRAFT" } },
+export const getFeaturedProjects = unstable_cache(
+  async (limit = 6) =>
+    db.project.findMany({
+      where: { deletedAt: null, status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] as ProjectStatus[] } },
+      select: {
+        id: true, title: true, slug: true, description: true, category: true,
+        status: true, location: true, fundingGoalBdt: true, fundedAmountBdt: true,
+        minInvestmentBdt: true, expectedReturnPct: true, returnPctMin: true,
+        returnPctMax: true, returnType: true, durationDays: true,
+        fundingDeadline: true, coverImageUrl: true, imageUrls: true,
+        group: { select: { id: true, name: true, slug: true, logoUrl: true } },
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
     }),
-    db.project.count({ where: { deletedAt: null, status: "COMPLETED" } }),
-  ]);
-
-  return {
-    totalProjects,
-    activeProjects,
-    totalInvestors,
-    totalFundedBdt: Number(fundedResult._sum.fundedAmountBdt ?? 0),
-    completedProjects,
-  };
-}
-
-// ─── Featured Projects ────────────────────────────────────────────────────────
-
-export async function getFeaturedProjects(limit = 6) {
-  return db.project.findMany({
-    where: {
-      deletedAt: null,
-      status: { in: ["FUNDRAISING", "FUNDED", "ACTIVE"] as ProjectStatus[] },
-    },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      description: true,
-      category: true,
-      status: true,
-      location: true,
-      fundingGoalBdt: true,
-      fundedAmountBdt: true,
-      minInvestmentBdt: true,
-      expectedReturnPct: true,
-      returnPctMin: true,
-      returnPctMax: true,
-      returnType: true,
-      durationDays: true,
-      fundingDeadline: true,
-      coverImageUrl: true,
-      imageUrls: true,
-      group: { select: { id: true, name: true, slug: true, logoUrl: true } },
-    },
-    orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
-}
-
-// ─── Project by Slug ──────────────────────────────────────────────────────────
+  ["featured-projects"],
+  { revalidate: 300, tags: ["projects"] },
+);
 
 export async function getProjectBySlug(slug: string) {
   return db.project.findUnique({
     where: { slug, deletedAt: null },
     select: {
-      id: true,
-      title: true,
-      slug: true,
-      description: true,
-      category: true,
-      status: true,
-      riskInfo: true,
-      location: true,
-      fundingGoalBdt: true,
-      fundingMinBdt: true,
-      fundedAmountBdt: true,
-      minInvestmentBdt: true,
-      maxInvestmentBdt: true,
-      expectedReturnPct: true,
-      returnPctMin: true,
-      returnPctMax: true,
-      returnType: true,
-      durationDays: true,
-      fundingDeadline: true,
-      startDate: true,
-      endDate: true,
-      coverImageUrl: true,
-      imageUrls: true,
-      publishedAt: true,
+      id: true, title: true, slug: true, description: true, category: true,
+      status: true, riskInfo: true, location: true, fundingGoalBdt: true,
+      fundingMinBdt: true, fundedAmountBdt: true, minInvestmentBdt: true,
+      maxInvestmentBdt: true, expectedReturnPct: true, returnPctMin: true,
+      returnPctMax: true, returnType: true, durationDays: true,
+      fundingDeadline: true, startDate: true, endDate: true,
+      coverImageUrl: true, imageUrls: true, publishedAt: true,
       manager: { select: { name: true, avatarUrl: true } },
       documents: {
         where: { isPublic: true },
@@ -125,8 +85,6 @@ export async function getProjectBySlug(slug: string) {
   });
 }
 
-// ─── Project Slugs (for generateStaticParams) ────────────────────────────────
-
 export async function getAllProjectSlugs() {
   const projects = await db.project.findMany({
     where: { deletedAt: null, status: { notIn: ["DRAFT", "PENDING_APPROVAL"] } },
@@ -135,66 +93,46 @@ export async function getAllProjectSlugs() {
   return projects.map((p) => p.slug);
 }
 
-// ─── Hierarchy: Groups + their Projects ─────────────────────────────────────
-
-export async function getGroupsWithProjects() {
-  return db.businessGroup.findMany({
-    where: { isActive: true },
-    select: {
-      id: true,
-      slug: true,
-      name: true,
-      tagline: true,
-      description: true,
-      logoUrl: true,
-      coverUrl: true,
-      projects: {
-        where: { deletedAt: null, status: { notIn: ["DRAFT", "CANCELLED"] } },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          status: true,
-          category: true,
-          expectedReturnPct: true,
-          returnPctMin: true,
-          returnPctMax: true,
-          durationDays: true,
-          minInvestmentBdt: true,
-          coverImageUrl: true,
-          imageUrls: true,
+export const getGroupsWithProjects = unstable_cache(
+  async () =>
+    db.businessGroup.findMany({
+      where: { isActive: true },
+      select: {
+        id: true, slug: true, name: true, tagline: true,
+        description: true, logoUrl: true, coverUrl: true,
+        projects: {
+          where: { deletedAt: null, status: { notIn: ["DRAFT", "CANCELLED"] } },
+          select: {
+            id: true, title: true, slug: true, status: true, category: true,
+            expectedReturnPct: true, returnPctMin: true, returnPctMax: true,
+            durationDays: true, minInvestmentBdt: true, coverImageUrl: true, imageUrls: true,
+          },
+          orderBy: { publishedAt: "desc" },
         },
-        orderBy: { publishedAt: "desc" },
       },
-    },
-    orderBy: { createdAt: "asc" },
-  });
-}
+      orderBy: { createdAt: "asc" },
+    }),
+  ["groups-with-projects"],
+  { revalidate: 300, tags: ["groups", "projects"] },
+);
 
-// ─── Recent Project Updates ───────────────────────────────────────────────────
-
-export async function getRecentUpdates(limit = 6) {
-  return db.projectUpdate.findMany({
-    where: {
-      isPublished: true,
-      project: { deletedAt: null, status: { notIn: ["DRAFT", "PENDING_APPROVAL", "CANCELLED"] } },
-    },
-    select: {
-      id: true,
-      title: true,
-      content: true,
-      type: true,
-      publishedAt: true,
-      project: {
-        select: { title: true, slug: true, category: true, coverImageUrl: true },
+export const getRecentUpdates = unstable_cache(
+  async (limit = 6) =>
+    db.projectUpdate.findMany({
+      where: {
+        isPublished: true,
+        project: { deletedAt: null, status: { notIn: ["DRAFT", "PENDING_APPROVAL", "CANCELLED"] } },
       },
-    },
-    orderBy: { publishedAt: "desc" },
-    take: limit,
-  });
-}
-
-// ─── Project Categories with counts ──────────────────────────────────────────
+      select: {
+        id: true, title: true, content: true, type: true, publishedAt: true,
+        project: { select: { title: true, slug: true, category: true, coverImageUrl: true } },
+      },
+      orderBy: { publishedAt: "desc" },
+      take: limit,
+    }),
+  ["recent-updates"],
+  { revalidate: 300, tags: ["projects"] },
+);
 
 export async function getProjectCategories() {
   const counts = await db.project.groupBy({

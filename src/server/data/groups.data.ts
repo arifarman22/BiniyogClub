@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/prisma";
 import type { SessionUser } from "@/lib/auth/session";
 
@@ -31,8 +32,8 @@ export async function getTierForPage(entitySlug: string, tierId: string) {
   return tier;
 }
 
-export async function getAllGroups() {
-  return db.businessGroup.findMany({
+export const getAllGroups = unstable_cache(
+  async () => db.businessGroup.findMany({
     where: { isActive: true },
     select: {
       id: true, slug: true, name: true, tagline: true,
@@ -57,11 +58,14 @@ export async function getAllGroups() {
       },
     },
     orderBy: { createdAt: "asc" },
-  });
-}
+  }),
+  ["all-groups"],
+  { revalidate: 300, tags: ["groups"] },
+);
 
 export async function getGroupBySlug(slug: string) {
-  return db.businessGroup.findUnique({
+  return unstable_cache(
+    () => db.businessGroup.findUnique({
     where: { slug: slug.toUpperCase() as never, isActive: true },
     select: {
       id: true, slug: true, name: true, tagline: true,
@@ -86,11 +90,15 @@ export async function getGroupBySlug(slug: string) {
         },
       },
     },
-  });
+  }),
+    [`group-${slug}`],
+    { revalidate: 300, tags: ["groups", `group-${slug}`] },
+  )();
 }
 
 export async function getEntityBySlug(entitySlug: string) {
-  return db.groupEntity.findFirst({
+  return unstable_cache(
+    () => db.groupEntity.findFirst({
     where: { slug: entitySlug, isActive: true, group: { isActive: true } },
     select: {
       id: true, name: true, slug: true, description: true, logoUrl: true,
@@ -107,7 +115,10 @@ export async function getEntityBySlug(entitySlug: string) {
         orderBy: { sortOrder: "asc" },
       },
     },
-  });
+  }),
+    [`entity-${entitySlug}`],
+    { revalidate: 300, tags: ["groups", `entity-${entitySlug}`] },
+  )();
 }
 
 // ─── Investor-scoped ──────────────────────────────────────────────────────────
