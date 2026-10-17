@@ -32,17 +32,6 @@ export async function createGroupInvestmentAction(data: {
   try {
     const session = await requireSession();
 
-    // KYC check
-    const kyc = await db.kyc.findUnique({
-      where: { userId: session.id },
-      select: { status: true },
-    });
-    if (!kyc || kyc.status !== "VERIFIED") {
-      throw new ValidationError(
-        "KYC verification required. Please complete and get your KYC approved before investing.",
-      );
-    }
-
     const tier = await db.groupTier.findUnique({
       where: { id: data.tierId },
       select: {

@@ -182,6 +182,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
                 userId={user.id}
                 userName={user.name}
                 userStatus={user.status}
+                userRole={user.role}
                 isSuperAdmin={session.role === "SUPER_ADMIN"}
               />
             </div>

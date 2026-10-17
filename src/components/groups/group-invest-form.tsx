@@ -22,13 +22,12 @@ type Props = {
   entityName: string;
   groupName: string;
   isLoggedIn: boolean;
-  kycApproved: boolean;
   currentPath: string;
 };
 
 type Step = "cta" | "form" | "payment" | "done";
 
-function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLoggedIn, kycApproved, currentPath }: Props) {
+function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLoggedIn, currentPath }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [step, setStep] = useState<Step>("cta");
@@ -118,20 +117,6 @@ function GroupInvestFormInner({ tier, bankAccounts, entityName, groupName, isLog
         >
           Log in to invest
         </a>
-      );
-    }
-    if (!kycApproved) {
-      return (
-        <div className="rounded-lg border border-warning/40 bg-warning/5 px-4 py-3 space-y-1.5">
-          <p className="text-xs font-semibold text-warning">KYC Verification Required</p>
-          <p className="text-xs text-muted-foreground">Complete your KYC to unlock investing.</p>
-          <a
-            href="/dashboard/kyc"
-            className="block w-full rounded-lg bg-warning/90 px-3 py-2 text-center text-xs font-medium text-white hover:bg-warning transition-colors"
-          >
-            Complete KYC →
-          </a>
-        </div>
       );
     }
     if (bankAccounts.length === 0) {

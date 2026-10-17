@@ -4,10 +4,8 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
 import { getInvestorInvestments, getLatestSubmissionsForInvestments } from "@/server/data/investor.data";
-import { getActiveBankAccounts } from "@/server/data/manual-payment.data";
 import { db } from "@/lib/db/prisma";
 import { PaymentVerifier } from "@/components/shared/payment-verifier";
-import { SubmitPaymentProofDialog } from "@/components/shared/submit-payment-proof-dialog";
 import { DownloadCertificateButton } from "@/components/investments/download-certificate-button";
 import { UserRound, BarChart3 } from "lucide-react";
 import { cn } from "cn";
@@ -121,13 +119,11 @@ function InvestmentCard({
   inv,
   submission,
   certificateDocId,
-  bankAccounts,
   compact = false,
 }: {
   inv: Investment;
   submission: { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date } | null;
   certificateDocId: string | null;
-  bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
   compact?: boolean;
 }) {
   const maturity = maturityDate(inv);
@@ -141,7 +137,6 @@ function InvestmentCard({
   const isActive = ["ACTIVE", "MATURED", "COMPLETED"].includes(inv.status);
   const canSubmitProof =
     inv.status === "PAYMENT_PENDING" &&
-    bankAccounts.length > 0 &&
     (!submission || submission.status === "REJECTED");
 
   return (
@@ -290,30 +285,21 @@ function InvestmentCard({
               )}
             </div>
           )}
-          {canSubmitProof && (
-            <div className="flex items-center gap-3">
-              <p className="text-xs text-muted-foreground flex-1">
-                {submission?.status === "REJECTED"
-                  ? "Please resubmit with the correct details."
-                  : "Transfer the amount to our bank account and submit proof below."}
-              </p>
-              <SubmitPaymentProofDialog
-                investmentId={inv.id}
-                amountBdt={Number(inv.amountBdt)}
-                bankAccounts={bankAccounts}
-              />
-            </div>
-          )}
-          {submission && ["SUBMITTED", "UNDER_REVIEW"].includes(submission.status) && (
-            <p className="text-xs text-muted-foreground">
-              Your proof is being reviewed. This usually takes 1–2 business days.
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-xs text-muted-foreground flex-1">
+              {canSubmitProof
+                ? submission?.status === "REJECTED"
+                  ? "A payment was rejected — please pay the remaining amount."
+                  : "Pay by bank transfer, cheque, cash or mobile banking — or split across methods."
+                : "Your payment is being reviewed. You can see each part's status or pay any remaining amount."}
             </p>
-          )}
-          {!submission && bankAccounts.length === 0 && (
-            <p className="text-xs text-muted-foreground">
-              Bank account details are being set up. Please check back soon.
-            </p>
-          )}
+            <Link
+              href={`/dashboard/investments/${inv.id}/pay`}
+              className="shrink-0 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/80 transition-colors"
+            >
+              {canSubmitProof ? "Submit Payment →" : "Manage Payment →"}
+            </Link>
+          </div>
         </div>
       )}
 
@@ -335,7 +321,6 @@ function ProjectGroup({
   investments,
   submissionMap,
   certMap,
-  bankAccounts,
 }: {
   projectTitle: string;
   projectSlug: string;
@@ -344,7 +329,6 @@ function ProjectGroup({
   investments: Investment[];
   submissionMap: Map<string, { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date }>;
   certMap: Map<string, string>;
-  bankAccounts: { id: string; bankName: string; accountName: string; accountNumber: string; routingNumber: string | null; branchName: string | null; instructions: string | null; mobileNumber: string | null }[];
 }) {
   const totalInvested = investments.reduce((s, i) => s + Number(i.amountBdt), 0);
   const totalExpected = sumExpected(investments);
@@ -387,7 +371,6 @@ function ProjectGroup({
               inv={inv}
               submission={submissionMap.get(inv.id) ?? null}
               certificateDocId={certMap.get(inv.id) ?? null}
-              bankAccounts={bankAccounts}
               compact
             />
           </div>
@@ -408,13 +391,9 @@ export default async function InvestmentsPage({
   const activeView: ViewKey = viewParam === "project" ? "project" : "list";
 
   let investments: Awaited<ReturnType<typeof getInvestorInvestments>>;
-  let bankAccounts: Awaited<ReturnType<typeof getActiveBankAccounts>>;
 
   try {
-    [investments, bankAccounts] = await Promise.all([
-      getInvestorInvestments(session),
-      getActiveBankAccounts(),
-    ]);
+    investments = await getInvestorInvestments(session);
   } catch {
     return (
       <div className="space-y-6">
@@ -603,7 +582,6 @@ export default async function InvestmentsPage({
                     investments={g.items}
                     submissionMap={submissionMap}
                     certMap={certMap}
-                    bankAccounts={bankAccounts}
                   />
                 ))}
               </div>
@@ -617,7 +595,6 @@ export default async function InvestmentsPage({
                 inv={inv}
                 submission={submissionMap.get(inv.id) ?? null}
                 certificateDocId={certMap.get(inv.id) ?? null}
-                bankAccounts={bankAccounts}
               />
             ))}
           </div>

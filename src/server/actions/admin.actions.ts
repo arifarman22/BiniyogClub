@@ -528,6 +528,31 @@ export async function cancelInvestmentAdminAction(investmentId: string, reason: 
   } catch (e) { return svcErr(e); }
 }
 
+// ─── Password management ─────────────────────────────────────────────────────
+
+export async function resetInvestorPasswordAction(userId: string, newPassword: string): Promise<ActionResult<void>> {
+  try {
+    const session = await requireSession();
+    await requirePermission(session, PERMISSIONS.USER_UPDATE);
+
+    const user = await db.user.findUnique({ where: { id: userId }, select: { id: true, role: true } });
+    if (!user) throw new NotFoundError("User");
+    if (user.role !== "INVESTOR") throw new ForbiddenError("Can only reset password for investors");
+
+    const { hashPassword } = await import("@/lib/auth/crypto");
+    const hashed = await hashPassword(newPassword);
+
+    await db.user.update({ where: { id: userId }, data: { passwordHash: hashed } });
+    // Invalidate all existing sessions
+    await db.session.deleteMany({ where: { userId } });
+
+    await auditLog(session.id, "UPDATE", "User", userId, undefined, { action: "password_reset_by_admin" });
+
+    revalidatePath("/admin/users");
+    return { success: true, data: undefined };
+  } catch (e) { return svcErr(e); }
+}
+
 // ─── Notification broadcast ───────────────────────────────────────────────────
 
 export async function sendNotificationAction(data: {

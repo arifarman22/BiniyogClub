@@ -8,6 +8,7 @@ import { AdminSearchBar } from "@/components/admin/admin-search-bar";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { AdminPagination } from "@/components/admin/admin-pagination";
 import { ManualPaymentActions } from "@/components/admin/manual-payment-actions";
+import { cashReceiverLabel, methodLabel } from "@/lib/payments/split-payment";
 import { fmtBdt, fmtDate } from "@/lib/admin/utils";
 import { cn } from "@/lib/utils";
 import type { AsyncComponentProps } from "@/types";
@@ -102,7 +103,7 @@ export default async function ManualPaymentsPage({ searchParams }: AsyncComponen
                     {isGroup ? "Group / Tier" : "Project"}
                   </th>
                   <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-muted-foreground">Amount</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hidden lg:table-cell">Tx Ref</th>
+                  <th className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground ${isGroup ? "hidden lg:table-cell" : ""}`}>{isGroup ? "Tx Ref" : "Payment details"}</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground hidden xl:table-cell">Submitted</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">Actions</th>
@@ -150,35 +151,65 @@ export default async function ManualPaymentsPage({ searchParams }: AsyncComponen
                         </td>
                       </tr>
                     ))
-                  : projectItems.map((s) => (
-                      <tr key={s.id} className="hover:bg-primary/[0.03] transition-colors">
+                  : projectData.batches.map((b) => (
+                      <tr key={b.key} className="align-top hover:bg-primary/[0.03] transition-colors">
                         <td className="px-4 py-3">
-                          <p className="font-medium">{s.investment.investorProfile.user.name}</p>
-                          <p className="text-xs text-muted-foreground">{s.investment.investorProfile.user.email}</p>
+                          <p className="font-medium">{b.investment.investorProfile.user.name}</p>
+                          <p className="text-xs text-muted-foreground">{b.investment.investorProfile.user.email}</p>
                         </td>
                         <td className="px-4 py-3 hidden md:table-cell">
-                          <p className="text-xs line-clamp-1">{s.investment.project.title}</p>
+                          <p className="text-xs line-clamp-1">{b.investment.project.title}</p>
                         </td>
-                        <td className="px-4 py-3 text-right font-mono font-medium">{fmtBdt(s.amountBdt)}</td>
-                        <td className="px-4 py-3 hidden lg:table-cell">
-                          <span className="font-mono text-xs">{s.transactionRef}</span>
+                        <td className="px-4 py-3 text-right">
+                          <p className="font-mono font-medium">{fmtBdt(b.totalBdt)}</p>
+                          {b.totalBdt !== Number(b.investment.amountBdt) && (
+                            <p className="whitespace-nowrap text-[11px] text-muted-foreground">
+                              of {fmtBdt(b.investment.amountBdt)} · {fmtBdt(b.approvedBdt)} verified
+                            </p>
+                          )}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", STATUS_COLORS[s.status])}>
-                            {s.status.replace(/_/g, " ")}
+                          <ul className="space-y-2">
+                            {b.parts.map((p) => (
+                              <li key={p.id} className="text-xs">
+                                <p className="font-medium">
+                                  {methodLabel(p.paymentMethod)}
+                                  {b.parts.length > 1 && <span className="font-mono"> · {fmtBdt(p.amountBdt)}</span>}
+                                </p>
+                                {p.bank && (
+                                  <p className="text-muted-foreground">{p.bank.bankName} · {p.bank.accountNumber}</p>
+                                )}
+                                {p.paymentMethod === "CASH" && (
+                                  <p className="text-muted-foreground">Handed to {cashReceiverLabel(p.cashReceivedBy)}</p>
+                                )}
+                                {p.transactionRef && p.transactionRef !== "CASH" && (
+                                  <p className="font-mono text-muted-foreground">Ref {p.transactionRef}</p>
+                                )}
+                                {p.notes && <p className="text-muted-foreground italic">{p.notes}</p>}
+                                {p.proofFileUrl && (
+                                  <a href={p.proofFileUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    View proof ↗
+                                  </a>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={cn("rounded-full border px-2 py-0.5 text-[10px] font-medium", STATUS_COLORS[b.status])}>
+                            {b.status.replace(/_/g, " ")}
                           </span>
                         </td>
                         <td className="px-4 py-3 hidden xl:table-cell">
-                          <span className="text-xs text-muted-foreground">{fmtDate(s.createdAt)}</span>
+                          <span className="text-xs text-muted-foreground">{fmtDate(b.createdAt)}</span>
                         </td>
                         <td className="px-4 py-3">
                           <ManualPaymentActions
-                            submissionId={s.id}
-                            status={s.status}
-                            proofFileUrl={s.proofFileUrl}
-                            proofMimeType={s.proofMimeType}
-                            notes={s.notes ?? undefined}
-                            rejectionReason={s.rejectionReason ?? undefined}
+                            submissionId={b.submissionId}
+                            status={b.status}
+                            proofFileUrl=""
+                            proofMimeType=""
+                            rejectionReason={b.rejectionReason ?? undefined}
                           />
                         </td>
                       </tr>

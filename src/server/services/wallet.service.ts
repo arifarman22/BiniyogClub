@@ -521,11 +521,6 @@ export const walletService = {
     await requirePermission(session, PERMISSIONS.INVESTMENT_CREATE);
     assertPositiveBdt(input.amountBdt, "Investment amount");
 
-    const kyc = await db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } });
-    if (!kyc || kyc.status !== "VERIFIED") {
-      throw new ForbiddenError("KYC verification required before investing.");
-    }
-
     const existing = await db.investment.findUnique({
       where: { idempotencyKey: input.idempotencyKey },
       select: { id: true, receiptNumber: true },

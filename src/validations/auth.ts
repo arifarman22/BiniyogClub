@@ -17,6 +17,23 @@ export const phoneSchema = z
 
 // ─── Registration ─────────────────────────────────────────────────────────────
 
+const nidSchema = (label: string) =>
+  z
+    .string()
+    .trim()
+    .min(10, `${label} must be at least 10 digits`)
+    .max(17, `${label} must be at most 17 digits`)
+    .regex(/^\d+$/, `${label} must contain only digits`);
+
+/** True when a YYYY-MM-DD birth date is at least 18 years ago (and not absurdly old). */
+function isAdult(isoDate: string) {
+  const dob = new Date(`${isoDate}T00:00:00Z`);
+  if (Number.isNaN(dob.getTime())) return false;
+  const now = new Date();
+  const eighteen = new Date(Date.UTC(dob.getUTCFullYear() + 18, dob.getUTCMonth(), dob.getUTCDate()));
+  return eighteen <= now && dob.getUTCFullYear() >= 1900;
+}
+
 export const registerSchema = z
   .object({
     name: z
@@ -31,20 +48,16 @@ export const registerSchema = z
     role: z.enum(["INVESTOR", "FARMER"], {
       error: "Select a valid role",
     }),
-    nidNumber: z
+    nidNumber: nidSchema("NID number"),
+    dateOfBirth: z
       .string()
-      .min(10, "NID number must be at least 10 digits")
-      .max(17, "NID number must be at most 17 digits")
-      .regex(/^\d+$/, "NID number must contain only digits"),
-    nomineeNidNumber: z
-      .string()
-      .min(10, "Nominee NID number must be at least 10 digits")
-      .max(17, "Nominee NID number must be at most 17 digits")
-      .regex(/^\d+$/, "Nominee NID number must contain only digits"),
-    nomineeRelation: z
-      .string()
-      .min(2, "Relation is required")
-      .max(50, "Relation must be at most 50 characters"),
+      .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter your date of birth")
+      .refine((v) => isAdult(v), "You must be at least 18 years old"),
+    presentAddress: z.string().trim().min(5, "Enter your present address").max(300, "Address is too long"),
+    permanentAddress: z.string().trim().min(5, "Enter your permanent address").max(300, "Address is too long"),
+    // Nominee is optional — blank fields are allowed
+    nomineeName: z.string().trim().max(100, "Name must be at most 100 characters").optional().or(z.literal("")),
+    nomineeNidNumber: nidSchema("Nominee NID number").optional().or(z.literal("")),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",

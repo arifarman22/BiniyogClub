@@ -33,8 +33,11 @@ export type RegisterInput = {
   password: string;
   role: UserRole;
   nidNumber: string;
-  nomineeNidNumber: string;
-  nomineeRelation: string;
+  dateOfBirth: string;        // YYYY-MM-DD
+  presentAddress: string;
+  permanentAddress: string;
+  nomineeName?: string;
+  nomineeNidNumber?: string;
 };
 
 export type LoginInput = {
@@ -53,32 +56,66 @@ export const authService = {
   // ── Registration ────────────────────────────────────────────────────────────
 
   async register(input: RegisterInput) {
-    const { name, email, phone, password, role, nidNumber, nomineeNidNumber, nomineeRelation } = input;
+    const {
+      name, email, phone, password, role, nidNumber,
+      dateOfBirth, presentAddress, permanentAddress, nomineeName, nomineeNidNumber,
+    } = input;
+    const { db } = await import("@/lib/db/prisma");
 
-    const [existingEmail, existingPhone] = await Promise.all([
+    const [existingEmail, existingPhone, existingNid] = await Promise.all([
       userRepository.findByEmail(email),
       userRepository.findByPhone(phone),
+      role === "INVESTOR" ? db.investorProfile.findUnique({ where: { nationalId: nidNumber }, select: { id: true } }) : null,
     ]);
 
     if (existingEmail) throw new ConflictError("An account with this email already exists");
     if (existingPhone) throw new ConflictError("An account with this phone number already exists");
+    if (existingNid) throw new ConflictError("An account with this NID number already exists");
 
     const passwordHash = await hashPassword(password);
     const user = await userRepository.create({ email, passwordHash, name, phone, role });
     await userRepository.verifyEmail(user.id);
 
     if (role === "INVESTOR") {
-      await import("@/lib/db/prisma").then(({ db }) =>
-        db.investorProfile.create({
-          data: {
-            userId: user.id,
-            nationalId: nidNumber,
-            nomineeNationalId: nomineeNidNumber,
-            nomineeRelation,
-            country: "BD",
-          },
-        })
-      );
+      // Signup collects the identity details KYC used to, so the account is
+      // verified straight away and can invest without a separate KYC step.
+      const dob = new Date(`${dateOfBirth}T00:00:00Z`);
+      const now = new Date();
+      try {
+        await db.$transaction([
+          db.investorProfile.create({
+            data: {
+              userId: user.id,
+              nationalId: nidNumber,
+              dateOfBirth: dob,
+              address: presentAddress,
+              nomineeName: nomineeName?.trim() || null,
+              nomineeNationalId: nomineeNidNumber?.trim() || null,
+              country: "BD",
+            },
+          }),
+          db.kyc.create({
+            data: {
+              userId: user.id,
+              status: "VERIFIED",
+              submittedAt: now,
+              reviewedAt: now,
+              reviewNote: "Verified from signup details",
+              fullName: name,
+              dateOfBirth: dob,
+              presentAddress,
+              permanentAddress,
+              documentType: "NATIONAL_ID",
+              documentNumber: nidNumber,
+              mobileNumber: phone,
+            },
+          }),
+        ]);
+      } catch (e) {
+        // Don't leave a half-created account behind.
+        await db.user.delete({ where: { id: user.id } }).catch(() => {});
+        throw e;
+      }
     }
 
     return user;

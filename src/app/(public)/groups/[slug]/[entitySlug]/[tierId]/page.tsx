@@ -4,7 +4,6 @@ import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock } from "lucide-react";
 import { getTierForPage } from "@/server/data/groups.data";
 import { getSession } from "@/lib/auth/session";
-import { db } from "@/lib/db/prisma";
 import { GroupInvestForm } from "@/components/groups/group-invest-form";
 import { FiguresGrid, tierFigures } from "@/components/groups/tier-card";
 import {
@@ -34,12 +33,6 @@ export default async function TierDetailPage({ params }: Props) {
   const { slug, entitySlug, tierId } = await params;
   const [tier, session] = await Promise.all([getTierForPage(entitySlug, tierId), getSession()]);
   if (!tier || tier.entity.group.slug.toLowerCase() !== slug.toLowerCase()) notFound();
-
-  let kycApproved = false;
-  if (session) {
-    const kyc = await db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } });
-    kycApproved = kyc?.status === "VERIFIED";
-  }
 
   const { entity } = tier;
   const group = entity.group;
@@ -165,7 +158,6 @@ export default async function TierDetailPage({ params }: Props) {
                         entityName={entity.name}
                         groupName={group.name}
                         isLoggedIn={!!session}
-                        kycApproved={kycApproved}
                         currentPath={tierHref}
                       />
                     </div>

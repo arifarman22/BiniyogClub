@@ -2,15 +2,17 @@
 
 import { AdminActionButton } from "@/components/admin/admin-action-button";
 import { suspendUserAction, activateUserAction, deleteUserAction } from "@/server/actions/admin.actions";
+import { ChangeInvestorPasswordDialog } from "@/components/admin/change-investor-password-dialog";
 
 interface Props {
   userId: string;
   userName: string;
   userStatus: string;
+  userRole: string;
   isSuperAdmin: boolean;
 }
 
-export function UserActionButtons({ userId, userName, userStatus, isSuperAdmin }: Props) {
+export function UserActionButtons({ userId, userName, userStatus, userRole, isSuperAdmin }: Props) {
   return (
     <div className="flex flex-wrap gap-2">
       {userStatus === "ACTIVE" ? (
@@ -31,6 +33,10 @@ export function UserActionButtons({ userId, userName, userStatus, isSuperAdmin }
           size="sm"
         />
       ) : null}
+
+      {userRole === "INVESTOR" && (
+        <ChangeInvestorPasswordDialog userId={userId} userName={userName} />
+      )}
 
       {(isSuperAdmin || true) && (
         <AdminActionButton

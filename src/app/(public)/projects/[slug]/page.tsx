@@ -116,17 +116,14 @@ export default async function ProjectDetailPage({ params }: Props) {
   const [project, session] = await Promise.all([getProjectBySlug(slug), getSession()]);
   if (!project) notFound();
 
-  let kycApproved = false;
   let existingInvestment: ExistingInvestment | null = null;
   let walletBalance = 0;
 
   if (session) {
-    const [kyc, profile, wallet] = await Promise.all([
-      db.kyc.findUnique({ where: { userId: session.id }, select: { status: true } }),
+    const [profile, wallet] = await Promise.all([
       db.investorProfile.findUnique({ where: { userId: session.id }, select: { id: true } }),
       db.wallet.findUnique({ where: { userId: session.id }, select: { cachedBalance: true } }),
     ]);
-    kycApproved = kyc?.status === "VERIFIED";
     walletBalance = Number(wallet?.cachedBalance ?? 0);
 
     if (profile) {
@@ -476,7 +473,6 @@ export default async function ProjectDetailPage({ params }: Props) {
                         durationDays: project.durationDays,
                       }}
                       isLoggedIn={!!session}
-                      kycApproved={kycApproved}
                       currentPath={`/projects/${slug}`}
                       walletBalance={walletBalance}
                     />

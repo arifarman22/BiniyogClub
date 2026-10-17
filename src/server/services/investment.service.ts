@@ -78,7 +78,7 @@ export const investmentService = {
    *
    * Checks (in order):
    *  1. Authentication (session required)
-   *  2. KYC must be APPROVED
+   *  2. (No KYC gate — identity details are collected at signup)
    *  3. Project must be FUNDRAISING
    *  4. Amount validated against project min/max
    *  5. Remaining capacity check (inside serializable tx with row lock)
@@ -89,16 +89,7 @@ export const investmentService = {
     // 1. Permission check
     await requirePermission(session, PERMISSIONS.INVESTMENT_CREATE);
 
-    // 2. KYC check
-    const kyc = await db.kyc.findUnique({
-      where: { userId: session.id },
-      select: { status: true },
-    });
-    if (!kyc || kyc.status !== "VERIFIED") {
-      throw new ForbiddenError(
-        "KYC verification required. Please complete and get your KYC approved before investing.",
-      );
-    }
+    // 2. No separate KYC step — identity details are collected at signup.
 
     // 7. Idempotency: if this key was already used, return the existing investment
     const existing = await investmentRepository.findByIdempotencyKey(input.idempotencyKey);

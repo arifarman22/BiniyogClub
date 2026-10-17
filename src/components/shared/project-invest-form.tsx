@@ -29,12 +29,10 @@ const RETURN_TYPE_LABELS: Record<string, string> = {
 function ProjectInvestFormInner({
   project,
   isLoggedIn,
-  kycApproved,
   currentPath,
 }: {
   project: Project;
   isLoggedIn: boolean;
-  kycApproved: boolean;
   currentPath: string;
   walletBalance?: number;
 }) {
@@ -89,17 +87,6 @@ function ProjectInvestFormInner({
           <a href={`/auth/register?callbackUrl=${encodeURIComponent(`${currentPath}?invest=${project.id}`)}`}
             className="block w-full rounded-lg border border-border px-4 py-2.5 text-center text-sm font-medium hover:bg-muted/40 transition-colors">
             Create Account
-          </a>
-        </div>
-      );
-    }
-    if (!kycApproved) {
-      return (
-        <div className="rounded-lg border border-warning/40 bg-warning/5 px-4 py-3 space-y-1.5">
-          <p className="text-xs font-semibold text-warning">KYC Verification Required</p>
-          <p className="text-xs text-muted-foreground">Complete your KYC to unlock investing.</p>
-          <a href="/dashboard/kyc" className="block w-full rounded-lg bg-warning/90 px-3 py-2 text-center text-xs font-medium text-white hover:bg-warning transition-colors">
-            Complete KYC →
           </a>
         </div>
       );
@@ -185,7 +172,6 @@ function ProjectInvestFormInner({
 type ProjectInvestFormProps = {
   project: Project;
   isLoggedIn: boolean;
-  kycApproved: boolean;
   currentPath: string;
   walletBalance?: number;
 };

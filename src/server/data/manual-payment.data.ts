@@ -120,15 +120,62 @@ export async function getManualPaymentSubmissions(
           },
         },
         bankAccountId: true,
+        paymentMethod: true,
+        batchId: true,
+        cashReceivedBy: true,
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
       skip: skip(page),
       take: PAGE_SIZE,
     }),
     db.manualPaymentSubmission.count({ where }),
   ]);
 
-  return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
+  // Per-investment approved totals, so a batch can show how much is already verified.
+  const [sums, banks] = await Promise.all([
+    db.manualPaymentSubmission.groupBy({
+      by: ["investmentId"],
+      where: { investmentId: { in: [...new Set(items.map((i) => i.investment.id))] }, status: "APPROVED" },
+      _sum: { amountBdt: true },
+    }),
+    db.projectBankAccount.findMany({
+      where: { id: { in: items.map((i) => i.bankAccountId).filter((id): id is string => !!id) } },
+      select: { id: true, bankName: true, accountName: true, accountNumber: true },
+    }),
+  ]);
+  const approvedByInvestment = new Map(sums.map((s) => [s.investmentId, Number(s._sum.amountBdt ?? 0)]));
+  const bankById = new Map(banks.map((b) => [b.id, b]));
+
+  // Group parts submitted together (same batchId) into one review item.
+  type Item = (typeof items)[number];
+  const batches: { key: string; first: Item; parts: (Item & { bank: (typeof banks)[number] | null })[] }[] = [];
+  const byKey = new Map<string, (typeof batches)[number]>();
+  for (const item of items) {
+    const key = item.batchId ?? item.id;
+    let batch = byKey.get(key);
+    if (!batch) {
+      batch = { key, first: item, parts: [] };
+      byKey.set(key, batch);
+      batches.push(batch);
+    }
+    batch.parts.push({ ...item, bank: item.bankAccountId ? bankById.get(item.bankAccountId) ?? null : null });
+  }
+
+  return {
+    items,
+    batches: batches.map((b) => ({
+      key: b.key,
+      submissionId: b.first.id,
+      status: b.first.status,
+      createdAt: b.first.createdAt,
+      rejectionReason: b.first.rejectionReason,
+      investment: b.first.investment,
+      approvedBdt: approvedByInvestment.get(b.first.investment.id) ?? 0,
+      totalBdt: b.parts.reduce((s, p) => s + Number(p.amountBdt), 0),
+      parts: b.parts,
+    })),
+    total, page, totalPages: Math.ceil(total / PAGE_SIZE),
+  };
 }
 
 // ─── Investor: their own submissions for a given investment ──────────────────

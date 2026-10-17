@@ -45,7 +45,8 @@ export function ManualPaymentActions({
       : await approveManualPaymentAction(submissionId);
     setLoading(null);
     if (result.success) {
-      setMsg(`Approved — Receipt: ${result.data?.receiptNumber}`);
+      const data = result.data as { receiptNumber: string | null; message?: string } | undefined;
+      setMsg(data?.message ?? `Approved — Receipt: ${data?.receiptNumber}`);
     } else {
       setMsg(`Error: ${result.error}`);
     }
@@ -80,12 +81,14 @@ export function ManualPaymentActions({
         <p className="mb-1 text-xs text-muted-foreground">{msg}</p>
       )}
       <div className="flex items-center gap-2 flex-wrap">
-        <button
-          onClick={() => setProofOpen(true)}
-          className="rounded border border-border px-2 py-1 text-xs hover:bg-muted/40 transition-colors"
-        >
-          View Proof
-        </button>
+        {proofFileUrl && (
+          <button
+            onClick={() => setProofOpen(true)}
+            className="rounded border border-border px-2 py-1 text-xs hover:bg-muted/40 transition-colors"
+          >
+            View Proof
+          </button>
+        )}
 
         {!isTerminal && (
           <>

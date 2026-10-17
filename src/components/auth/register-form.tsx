@@ -7,7 +7,7 @@ import { registerAction } from "@/server/actions/auth.actions";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight, CreditCard, Users } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight, CreditCard, Users, CalendarDays, MapPin, Home } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -25,12 +25,27 @@ export function RegisterForm() {
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
+  const [sameAddress, setSameAddress] = useState(false);
+
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password", "");
+  const presentAddress = watch("presentAddress", "");
 
   useEffect(() => {
     setValue("role", "INVESTOR");
   }, [setValue]);
+
+  // Keep the permanent address in step with the present one while "Same as present" is ticked.
+  useEffect(() => {
+    if (sameAddress) setValue("permanentAddress", presentAddress, { shouldValidate: !!presentAddress });
+  }, [sameAddress, presentAddress, setValue]);
+
+  // Latest allowed birth date: 18 years ago today.
+  const maxDob = (() => {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().slice(0, 10);
+  })();
 
   async function onSubmit(data: RegisterInput) {
     setServerError(null);
@@ -137,18 +152,110 @@ export function RegisterForm() {
         </div>
       </div>
 
-      {/* Nominee Section */}
+      {/* Date of birth */}
+      <div className="space-y-1.5">
+        <label htmlFor="dateOfBirth" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Date of Birth <span className="text-destructive">*</span>
+        </label>
+        <div className="relative">
+          <CalendarDays className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="dateOfBirth"
+            type="date"
+            autoComplete="bday"
+            max={maxDob}
+            className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
+            aria-invalid={!!errors.dateOfBirth}
+            {...register("dateOfBirth")}
+          />
+        </div>
+        {errors.dateOfBirth && <p className="text-xs text-destructive font-medium">{errors.dateOfBirth.message}</p>}
+      </div>
+
+      {/* Addresses */}
+      <div className="space-y-4">
+        <div className="space-y-1.5">
+          <label htmlFor="presentAddress" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Present Address <span className="text-destructive">*</span>
+          </label>
+          <div className="relative">
+            <MapPin className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" />
+            <textarea
+              id="presentAddress"
+              rows={2}
+              autoComplete="street-address"
+              placeholder="House, road, area, upazila, district"
+              className="w-full resize-none rounded-xl border border-border/80 bg-background py-2.5 pl-10 pr-3 text-sm shadow-xs placeholder:text-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              aria-invalid={!!errors.presentAddress}
+              {...register("presentAddress")}
+            />
+          </div>
+          {errors.presentAddress && <p className="text-xs text-destructive font-medium">{errors.presentAddress.message}</p>}
+        </div>
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-2">
+            <label htmlFor="permanentAddress" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Permanent Address <span className="text-destructive">*</span>
+            </label>
+            <label className="flex cursor-pointer items-center gap-1.5 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={sameAddress}
+                onChange={(e) => setSameAddress(e.target.checked)}
+                className="h-3.5 w-3.5 rounded border-border accent-primary"
+              />
+              Same as present
+            </label>
+          </div>
+          <div className="relative">
+            <Home className="absolute left-3.5 top-3.5 size-4 text-muted-foreground" />
+            <textarea
+              id="permanentAddress"
+              rows={2}
+              readOnly={sameAddress}
+              placeholder="Village/house, post office, upazila, district"
+              className={`w-full resize-none rounded-xl border border-border/80 py-2.5 pl-10 pr-3 text-sm shadow-xs placeholder:text-muted-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${sameAddress ? "bg-muted/40" : "bg-background"}`}
+              aria-invalid={!!errors.permanentAddress}
+              {...register("permanentAddress")}
+            />
+          </div>
+          {errors.permanentAddress && <p className="text-xs text-destructive font-medium">{errors.permanentAddress.message}</p>}
+        </div>
+      </div>
+
+      {/* Nominee (optional) */}
       <div className="rounded-xl border border-amber-400/40 bg-amber-50/60 dark:bg-amber-950/20 p-4 space-y-4">
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-          <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">Nominee Details</p>
+          <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+            Nominee Details <span className="font-normal normal-case tracking-normal">(optional)</span>
+          </p>
         </div>
         <p className="text-[11px] text-amber-700/80 dark:text-amber-400/70 -mt-2">Your nominee will receive your investment in case of an emergency.</p>
 
         <div className="grid grid-cols-1 gap-4">
           <div className="space-y-1.5">
+            <label htmlFor="nomineeName" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
+              Nominee Name
+            </label>
+            <div className="relative">
+              <User className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
+              <Input
+                id="nomineeName"
+                type="text"
+                placeholder="Nominee's full name"
+                className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
+                aria-invalid={!!errors.nomineeName}
+                {...register("nomineeName")}
+              />
+            </div>
+            {errors.nomineeName && <p className="text-xs text-destructive font-medium">{errors.nomineeName.message}</p>}
+          </div>
+
+          <div className="space-y-1.5">
             <label htmlFor="nomineeNidNumber" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-              Nominee NID Number <span className="text-destructive">*</span>
+              Nominee NID Number
             </label>
             <div className="relative">
               <CreditCard className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
@@ -163,24 +270,6 @@ export function RegisterForm() {
               />
             </div>
             {errors.nomineeNidNumber && <p className="text-xs text-destructive font-medium">{errors.nomineeNidNumber.message}</p>}
-          </div>
-
-          <div className="space-y-1.5">
-            <label htmlFor="nomineeRelation" className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400">
-              Relation with Nominee <span className="text-destructive">*</span>
-            </label>
-            <div className="relative">
-              <Users className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-amber-500" />
-              <Input
-                id="nomineeRelation"
-                type="text"
-                placeholder="e.g. Father, Mother, Spouse"
-                className="h-11 rounded-xl border-amber-300/60 bg-white dark:bg-slate-900 pl-10 text-sm focus-visible:ring-amber-400 shadow-xs placeholder:text-muted-foreground/30"
-                aria-invalid={!!errors.nomineeRelation}
-                {...register("nomineeRelation")}
-              />
-            </div>
-            {errors.nomineeRelation && <p className="text-xs text-destructive font-medium">{errors.nomineeRelation.message}</p>}
           </div>
         </div>
       </div>
