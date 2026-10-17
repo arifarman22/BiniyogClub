@@ -16,6 +16,7 @@ import {
   changePasswordAction,
 } from "@/server/actions/auth.actions";
 import { useRouter } from "next/navigation";
+import { PasswordRequirements } from "@/components/auth/password-requirements";
 
 interface ProfileData {
   id: string;
@@ -387,6 +388,8 @@ function ChangePasswordSection() {
   const [success, setSuccess] = useState(false);
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
+  const [newPw, setNewPw] = useState("");
+  const [confirmPw, setConfirmPw] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -401,6 +404,7 @@ function ChangePasswordSection() {
       if (res.success) {
         setSuccess(true);
         formRef.current?.reset();
+        setNewPw(""); setConfirmPw("");
         setTimeout(() => { setEditing(false); setSuccess(false); }, 1000);
       } else {
         setError(res.error);
@@ -443,6 +447,7 @@ function ChangePasswordSection() {
               <label className="text-xs font-medium text-muted-foreground">New Password<span className="text-destructive ml-0.5">*</span></label>
               <div className="relative">
                 <input name="newPassword" type={showNew ? "text" : "password"} required minLength={8}
+                  value={newPw} onChange={(e) => setNewPw(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
                 <button type="button" onClick={() => setShowNew(v => !v)}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -453,10 +458,11 @@ function ChangePasswordSection() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Confirm New Password<span className="text-destructive ml-0.5">*</span></label>
               <input name="confirmPassword" type="password" required minLength={8}
+                value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
             </div>
           </div>
-          <p className="text-xs text-muted-foreground">Minimum 8 characters.</p>
+          <PasswordRequirements password={newPw} confirmPassword={confirmPw} />
           <SaveBar saving={saving} error={error} success={success} onCancel={() => { setEditing(false); setError(null); }} />
         </form>
       )}

@@ -2,13 +2,27 @@ import { z } from "zod";
 
 // ─── Shared ───────────────────────────────────────────────────────────────────
 
+/**
+ * Password rules — the single source for both validation and the live
+ * checklist shown while typing, so the two can never disagree.
+ */
+export const PASSWORD_RULES = [
+  { id: "length", label: "At least 8 characters", test: (p: string) => p.length >= 8, error: "Password must be at least 8 characters" },
+  { id: "upper", label: "One uppercase letter (A–Z)", test: (p: string) => /[A-Z]/.test(p), error: "Must contain at least one uppercase letter" },
+  { id: "lower", label: "One lowercase letter (a–z)", test: (p: string) => /[a-z]/.test(p), error: "Must contain at least one lowercase letter" },
+  { id: "number", label: "One number (0–9)", test: (p: string) => /[0-9]/.test(p), error: "Must contain at least one number" },
+] as const;
+
+export const PASSWORD_MAX_LENGTH = 72; // bcrypt limit
+
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(72, "Password must be at most 72 characters") // bcrypt limit
-  .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-  .regex(/[a-z]/, "Must contain at least one lowercase letter")
-  .regex(/[0-9]/, "Must contain at least one number");
+  .max(PASSWORD_MAX_LENGTH, `Password must be at most ${PASSWORD_MAX_LENGTH} characters`)
+  .superRefine((password, ctx) => {
+    for (const rule of PASSWORD_RULES) {
+      if (!rule.test(password)) ctx.addIssue({ code: "custom", message: rule.error });
+    }
+  });
 
 // BD phone: +8801XXXXXXXXX or 01XXXXXXXXX
 export const phoneSchema = z

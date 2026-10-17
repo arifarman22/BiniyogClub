@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/loading";
 import { AlertTriangle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { PasswordRequirements } from "@/components/auth/password-requirements";
 
 interface ResetPasswordFormProps {
   token: string;
@@ -25,11 +26,16 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<ResetPasswordInput>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: { token },
   });
+
+  // eslint-disable-next-line react-hooks/incompatible-library
+  const password = watch("password", "");
+  const confirmPassword = watch("confirmPassword", "");
 
   async function onSubmit(data: ResetPasswordInput) {
     setServerError(null);
@@ -118,6 +124,8 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           {...register("confirmPassword")}
         />
       </FormField>
+
+      <PasswordRequirements password={password} confirmPassword={confirmPassword} />
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <Spinner size="xs" className="mr-2" />}

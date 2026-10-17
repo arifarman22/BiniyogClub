@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { BdAddressFields, EMPTY_BD_ADDRESS } from "@/components/auth/bd-address-fields";
+import { PasswordRequirements } from "@/components/auth/password-requirements";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -33,6 +34,7 @@ export function RegisterForm() {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const password = watch("password", "");
+  const confirmPassword = watch("confirmPassword", "");
   const presentAddress = watch("presentAddress") ?? EMPTY_BD_ADDRESS;
   const permanentAddress = watch("permanentAddress") ?? EMPTY_BD_ADDRESS;
 
@@ -311,6 +313,11 @@ export function RegisterForm() {
           {errors.confirmPassword && (
             <p className="text-xs text-destructive font-medium">{errors.confirmPassword.message}</p>
           )}
+        </div>
+
+        {/* Live password rules — spans both columns */}
+        <div className="sm:col-span-2 -mt-1">
+          <PasswordRequirements password={password} confirmPassword={confirmPassword} />
         </div>
       </div>
 
