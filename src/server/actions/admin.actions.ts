@@ -220,7 +220,7 @@ export async function publishProjectAction(projectId: string): Promise<ActionRes
     const session = await requireSession();
     await requirePermission(session, PERMISSIONS.PROJECT_PUBLISH);
 
-    const project = await db.project.findUnique({ where: { id: projectId }, select: { id: true, status: true } });
+    const project = await db.project.findUnique({ where: { id: projectId }, select: { id: true, status: true, title: true, slug: true, description: true } });
     if (!project) throw new NotFoundError("Project");
     if (project.status !== "APPROVED") throw new ValidationError("Project must be APPROVED to publish");
 
@@ -229,6 +229,11 @@ export async function publishProjectAction(projectId: string): Promise<ActionRes
       data: { status: "FUNDRAISING", publishedAt: new Date() },
     });
     await auditLog(session.id, "UPDATE", "Project", projectId, { status: project.status }, { status: "FUNDRAISING" });
+
+    // Notify all investors (fire-and-forget)
+    const { notificationService: ns } = await import("@/server/services/notification.service");
+    ns.onProjectPublished(project.title, project.slug, project.id, project.description)
+      .catch((err) => console.error("[publish project] notification failed:", err));
 
     revalidatePath("/admin/projects");
     revalidatePath(`/admin/projects/${projectId}`);
@@ -253,6 +258,18 @@ export async function approveWithdrawalAction(withdrawalId: string): Promise<Act
     });
     await auditLog(session.id, "APPROVE", "Withdrawal", withdrawalId, { status: w.status }, { status: "APPROVED" });
 
+    // Notify investor (fire-and-forget)
+    const { notificationService: ns } = await import("@/server/services/notification.service");
+    const wallet = await db.wallet.findUnique({ where: { id: withdrawalId }, select: { userId: true } }).catch(() => null);
+    const wFull = await db.withdrawal.findUnique({ where: { id: withdrawalId }, select: { amountBdt: true, wallet: { select: { userId: true } } } });
+    if (wFull?.wallet.userId) {
+      const investor = await db.user.findUnique({ where: { id: wFull.wallet.userId }, select: { id: true, name: true, email: true } });
+      if (investor) {
+        ns.onWithdrawalStatusChanged(investor.id, investor.name, investor.email, "APPROVED", Number(wFull.amountBdt), withdrawalId)
+          .catch((err) => console.error("[withdrawal] notification failed:", err));
+      }
+    }
+
     revalidatePath("/admin/withdrawals");
     return { success: true, data: undefined };
   } catch (e) { return svcErr(e); }
@@ -272,6 +289,17 @@ export async function rejectWithdrawalAction(withdrawalId: string, reason: strin
       data: { status: "REJECTED", rejectedAt: new Date(), rejectionReason: reason },
     });
     await auditLog(session.id, "REJECT", "Withdrawal", withdrawalId, { status: w.status }, { status: "REJECTED", reason });
+
+    // Notify investor (fire-and-forget)
+    const { notificationService: ns2 } = await import("@/server/services/notification.service");
+    const wFull2 = await db.withdrawal.findUnique({ where: { id: withdrawalId }, select: { amountBdt: true, wallet: { select: { userId: true } } } });
+    if (wFull2?.wallet.userId) {
+      const investor = await db.user.findUnique({ where: { id: wFull2.wallet.userId }, select: { id: true, name: true, email: true } });
+      if (investor) {
+        ns2.onWithdrawalStatusChanged(investor.id, investor.name, investor.email, "REJECTED", Number(wFull2.amountBdt), withdrawalId, reason)
+          .catch((err) => console.error("[withdrawal] notification failed:", err));
+      }
+    }
 
     revalidatePath("/admin/withdrawals");
     return { success: true, data: undefined };
@@ -411,6 +439,16 @@ export async function approveInvestmentAdminAction(investmentId: string): Promis
         .catch((err) => console.error("[approve investment] document generation failed:", err)),
     );
 
+    // Email + notify investor (fire-and-forget)
+    const { notificationService } = await import("@/server/services/notification.service");
+    const investorUser = await db.user.findUnique({ where: { id: investorUserId }, select: { name: true, email: true } });
+    if (investorUser) {
+      notificationService.onInvestmentApproved(
+        investorUserId, investorUser.name, investorUser.email,
+        inv.project.title, amountBdt, receiptNumber, investmentId,
+      ).catch((err) => console.error("[approve investment] notification failed:", err));
+    }
+
     await auditLog(session.id, "APPROVE", "Investment", investmentId, { status: "PENDING" }, { status: "ACTIVE", receiptNumber });
 
     revalidatePath("/admin/investments");
@@ -480,6 +518,16 @@ export async function cancelInvestmentAdminAction(investmentId: string, reason: 
     }
 
     await auditLog(session.id, "UPDATE", "Investment", investmentId, { status: inv.status }, { status: "CANCELLED", reason });
+
+    // Email + notify investor (fire-and-forget)
+    const { notificationService: ns } = await import("@/server/services/notification.service");
+    const investorUser = await db.user.findUnique({ where: { id: investorUserId }, select: { name: true, email: true } });
+    if (investorUser) {
+      ns.onInvestmentCancelledByAdmin(
+        investorUserId, investorUser.name, investorUser.email,
+        inv.project.title, reason, investmentId,
+      ).catch((err) => console.error("[cancel investment] notification failed:", err));
+    }
 
     revalidatePath("/admin/investments");
     revalidatePath("/dashboard/investments");

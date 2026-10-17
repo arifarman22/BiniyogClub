@@ -41,7 +41,10 @@ export function AuthCard({
     <div className="flex min-h-dvh w-full bg-background">
       {/* ── Desktop brand panel ── */}
       <aside className="relative hidden w-[44%] max-w-[640px] shrink-0 overflow-hidden bg-[#040d09] text-white lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col">
-        <Image src={image} alt="" fill priority className="object-cover opacity-25" sizes="44vw" />
+        {/* fill images need an absolute/relative parent; the aside itself is sticky on desktop */}
+        <div className="absolute inset-0">
+          <Image src={image} alt="" fill priority className="object-cover opacity-25" sizes="44vw" />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-b from-[#040d09]/80 via-[#040d09]/70 to-[#040d09]" />
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_0%_0%,rgba(16,185,129,0.22),transparent)]" />
 

@@ -23,7 +23,7 @@ export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions
 
 // ─── Layout ───────────────────────────────────────────────────────────────────
 
-function emailLayout(content: string): string {
+export function emailLayout(content: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -57,7 +57,7 @@ function emailLayout(content: string): string {
 </html>`;
 }
 
-function ctaButton(href: string, label: string): string {
+export function ctaButton(href: string, label: string): string {
   return `<a href="${href}" style="display:inline-block;background:#1a6b3c;color:#ffffff;font-size:15px;font-weight:600;padding:13px 28px;border-radius:8px;text-decoration:none;margin:20px 0;">${label}</a>`;
 }
 

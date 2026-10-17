@@ -150,6 +150,16 @@ export async function verifyKycAction(formData: unknown): Promise<ActionResult<v
   try {
     const session = await requireSession();
     await kycService.verify(session, parsed.data.kycId);
+
+    // Notify investor (fire-and-forget)
+    const { db } = await import("@/lib/db/prisma");
+    const { notificationService } = await import("@/server/services/notification.service");
+    const kyc = await db.kyc.findUnique({ where: { id: parsed.data.kycId }, select: { userId: true, user: { select: { name: true, email: true } } } });
+    if (kyc) {
+      notificationService.onKycStatusChanged(kyc.userId, kyc.user.name, kyc.user.email, "VERIFIED")
+        .catch((err) => console.error("[kyc] notification failed:", err));
+    }
+
     revalidatePath("/admin/kyc");
     revalidatePath(`/admin/kyc/${parsed.data.kycId}`);
     return { success: true, data: undefined };
@@ -165,6 +175,16 @@ export async function rejectKycAction(formData: unknown): Promise<ActionResult<v
   try {
     const session = await requireSession();
     await kycService.reject(session, parsed.data.kycId, parsed.data.reviewNote);
+
+    // Notify investor (fire-and-forget)
+    const { db } = await import("@/lib/db/prisma");
+    const { notificationService } = await import("@/server/services/notification.service");
+    const kyc = await db.kyc.findUnique({ where: { id: parsed.data.kycId }, select: { userId: true, user: { select: { name: true, email: true } } } });
+    if (kyc) {
+      notificationService.onKycStatusChanged(kyc.userId, kyc.user.name, kyc.user.email, "REJECTED", parsed.data.reviewNote)
+        .catch((err) => console.error("[kyc] notification failed:", err));
+    }
+
     revalidatePath("/admin/kyc");
     revalidatePath(`/admin/kyc/${parsed.data.kycId}`);
     return { success: true, data: undefined };
