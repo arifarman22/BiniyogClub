@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { requireSession } from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 import { getAdminDashboardKpis, getAdminRecentActivity, getAdminAnalytics } from "@/server/data/admin.data";
 import { StatCard } from "@/components/ui/stat-card";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -130,6 +131,11 @@ function Initials({ name }: { name: string | null | undefined }) {
 
 export default async function AdminDashboardPage() {
   const session = await requireSession();
+
+  if (session.role === "PROJECT_MANAGER") {
+    redirect("/admin/projects");
+  }
+
   const kpis = await getAdminDashboardKpis(session);
   const activity = await getAdminRecentActivity(session);
   const analytics = await getAdminAnalytics(session);

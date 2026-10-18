@@ -11,6 +11,7 @@ import { AdminPagination } from "@/components/admin/admin-pagination";
 import { SuspendUserButton, ActivateUserButton, DeleteUserButton } from "@/components/admin/user-action-buttons";
 import { fmtDate } from "@/lib/admin/utils";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { Suspense } from "react";
 import type { AsyncComponentProps } from "@/types";
 
 export const metadata: Metadata = { title: "Users — Admin" };
@@ -127,7 +128,9 @@ export default async function AdminUsersPage({ searchParams }: AsyncComponentPro
         )}
       </div>
 
-      <AdminPagination page={page} totalPages={totalPages} total={total} />
+      <Suspense fallback={null}>
+        <AdminPagination page={page} totalPages={totalPages} total={total} />
+      </Suspense>
     </div>
   );
 }

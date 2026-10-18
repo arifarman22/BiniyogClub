@@ -235,7 +235,7 @@ export async function getInvestorPortfolio(session: SessionUser) {
   const profileId = await resolveProfile(session);
 
   const investments = await db.investment.findMany({
-    where: { investorProfileId: profileId },
+    where: { investorProfileId: profileId, status: { in: ["ACTIVE", "MATURED", "COMPLETED"] } },
     select: {
       id: true,
       status: true,

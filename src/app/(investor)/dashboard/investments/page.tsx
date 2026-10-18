@@ -7,7 +7,7 @@ import { getInvestorInvestments, getLatestSubmissionsForInvestments } from "@/se
 import { db } from "@/lib/db/prisma";
 import { PaymentVerifier } from "@/components/shared/payment-verifier";
 import { DownloadCertificateButton } from "@/components/investments/download-certificate-button";
-import { UserRound, BarChart3 } from "lucide-react";
+import { UserRound, BarChart3, FileDown } from "lucide-react";
 import { cn } from "cn";
 import { formatReturnPct, getExpectedReturnBdt } from "@/lib/financial/return-range";
 
@@ -481,6 +481,26 @@ export default async function InvestmentsPage({
         <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">Investments</h1>
         <p className="text-sm text-muted-foreground">{investments.length} total investment{investments.length !== 1 ? "s" : ""}</p>
       </div>
+
+      {/* Document ready banners — one per investment with a generated receipt */}
+      {confirmedInvs.filter((i) => certMap.has(i.id)).map((inv) => (
+        <div key={inv.id} className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/5 px-4 py-3">
+          <FileDown className="h-5 w-5 shrink-0 text-success" />
+          <p className="flex-1 text-sm">
+            Your Investment Document for{" "}
+            <span className="font-semibold">{inv.project.title}</span>{" "}
+            has been generated.{" "}
+            <Link
+              href={`/api/documents/${certMap.get(inv.id)}/download`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-success underline underline-offset-2 hover:text-success/80"
+            >
+              Download from here
+            </Link>
+          </p>
+        </div>
+      ))}
 
       {/* KPI strip */}
       <div className="grid gap-3 grid-cols-3">

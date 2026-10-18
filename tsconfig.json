@@ -1,8 +1,14 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["node"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "types": [
+      "node"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
@@ -20,19 +26,35 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"],
-      "@/db/*": ["./src/db/*"],
-      "@/server/*": ["./src/server/*"],
-      "@/features/*": ["./src/features/*"],
-      "@/validations/*": ["./src/validations/*"],
-      "@/types": ["./src/types/index.ts"]
+      "@/*": [
+        "./src/*"
+      ],
+      "@/db/*": [
+        "./src/db/*"
+      ],
+      "@/server/*": [
+        "./src/server/*"
+      ],
+      "@/features/*": [
+        "./src/features/*"
+      ],
+      "@/validations/*": [
+        "./src/validations/*"
+      ],
+      "@/types": [
+        "./src/types/index.ts"
+      ]
     }
   },
   "include": [
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "src/__tests__"]
+  "exclude": [
+    "node_modules",
+    "src/__tests__"
+  ]
 }

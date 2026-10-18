@@ -15,10 +15,8 @@ import { getProjectBySlug, getAllProjectSlugs } from "@/server/data/public.data"
 import { getSession } from "@/lib/auth/session";
 import { db } from "@/lib/db/prisma";
 import { ProjectInvestForm } from "@/components/shared/project-invest-form";
-import { ProjectBankDetails } from "@/components/shared/project-bank-details";
 import { ProjectStatusBadge } from "@/components/shared/project-status-badge";
 import { ProjectInvestmentStatus } from "@/components/shared/project-investment-status";
-import type { ExistingInvestment } from "@/components/shared/project-investment-status";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -116,7 +114,7 @@ export default async function ProjectDetailPage({ params }: Props) {
   const [project, session] = await Promise.all([getProjectBySlug(slug), getSession()]);
   if (!project) notFound();
 
-  let existingInvestment: ExistingInvestment | null = null;
+  let existingInvestment: { id: string; status: string; amountBdt: number; expectedReturnBdt: number; lastSubmission: { id: string; status: string; transactionRef: string; rejectionReason: string | null; createdAt: Date } | null } | null = null;
   let walletBalance = 0;
 
   if (session) {
@@ -441,7 +439,7 @@ export default async function ProjectDetailPage({ params }: Props) {
 
           {/* Sidebar */}
           <aside className="min-w-0 space-y-5 lg:col-span-4">
-            <div id="invest" className="scroll-mt-32 lg:sticky lg:top-32">
+            <div id="invest" className="scroll-mt-32">
               <div className="border border-border bg-card shadow-xl shadow-slate-900/5">
                 <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
                   <h2 className="text-base font-semibold">
@@ -457,7 +455,7 @@ export default async function ProjectDetailPage({ params }: Props) {
                     </p>
                   )}
                   {existingInvestment && (
-                    <ProjectInvestmentStatus investment={existingInvestment} bankAccounts={project.bankAccounts} />
+                    <ProjectInvestmentStatus investment={existingInvestment} />
                   )}
                   {canInvestNow ? (
                     <ProjectInvestForm
@@ -506,12 +504,6 @@ export default async function ProjectDetailPage({ params }: Props) {
                   </div>
                 ))}
               </dl>
-
-              {project.bankAccounts && project.bankAccounts.length > 0 && (
-                <div className="mt-5">
-                  <ProjectBankDetails bankAccounts={project.bankAccounts} />
-                </div>
-              )}
 
               <div className="mt-5 flex items-center gap-4 border border-border bg-muted/40 p-5">
                 <MessageSquare className="h-5 w-5 shrink-0 text-primary" />

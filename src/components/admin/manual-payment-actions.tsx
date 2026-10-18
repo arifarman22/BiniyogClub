@@ -78,50 +78,35 @@ export function ManualPaymentActions({
   return (
     <>
       {msg && (
-        <p className="mb-1 text-xs text-muted-foreground">{msg}</p>
+        <p className="mb-1 max-w-[200px] text-[11px] text-muted-foreground">{msg}</p>
       )}
-      <div className="flex items-center gap-2 flex-wrap">
-        {proofFileUrl && (
-          <button
-            onClick={() => setProofOpen(true)}
-            className="rounded border border-border px-2 py-1 text-xs hover:bg-muted/40 transition-colors"
-          >
-            View Proof
-          </button>
-        )}
-
+      <div className="flex items-center gap-1.5 flex-wrap">
         {!isTerminal && (
           <>
             {status === "SUBMITTED" && !isGroupPayment && (
               <button
                 onClick={handleMarkReview}
                 disabled={loading === "review"}
-                className="rounded border border-border px-2 py-1 text-xs hover:bg-muted/40 disabled:opacity-50 transition-colors"
+                className="rounded-lg border border-border px-2.5 py-1.5 text-[11px] font-medium hover:bg-muted/60 disabled:opacity-50 transition-colors"
               >
-                {loading === "review" ? "…" : "Mark Review"}
+                {loading === "review" ? "…" : "Review"}
               </button>
             )}
             <button
               onClick={handleApprove}
               disabled={!!loading}
-              className="rounded bg-success/10 border border-success/30 px-2 py-1 text-xs text-success hover:bg-success/20 disabled:opacity-50 transition-colors"
+              className="rounded-lg border border-success/40 bg-success/10 px-2.5 py-1.5 text-[11px] font-semibold text-success hover:bg-success/20 disabled:opacity-50 transition-colors"
             >
               {loading === "approve" ? "…" : "Approve"}
             </button>
             <button
               onClick={() => setRejectOpen(true)}
               disabled={!!loading}
-              className="rounded bg-destructive/10 border border-destructive/30 px-2 py-1 text-xs text-destructive hover:bg-destructive/20 disabled:opacity-50 transition-colors"
+              className="rounded-lg border border-destructive/40 bg-destructive/10 px-2.5 py-1.5 text-[11px] font-semibold text-destructive hover:bg-destructive/20 disabled:opacity-50 transition-colors"
             >
               Reject
             </button>
           </>
-        )}
-
-        {status === "REJECTED" && rejectionReason && (
-          <span className="text-xs text-muted-foreground italic truncate max-w-[120px]" title={rejectionReason}>
-            {rejectionReason}
-          </span>
         )}
       </div>
 

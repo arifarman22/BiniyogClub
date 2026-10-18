@@ -7,7 +7,7 @@ export async function seedPermissions(db: PrismaClient) {
 
   const permEntries = Object.values(PERMISSIONS) as Permission[];
 
-  // Batch upsert all permissions in one query
+  // Upsert all permission definitions
   await db.permission.createMany({
     data: permEntries.map((key) => ({ key, description: PERMISSION_DESCRIPTIONS[key] })),
     skipDuplicates: true,
@@ -17,7 +17,9 @@ export async function seedPermissions(db: PrismaClient) {
   const allPerms = await db.permission.findMany();
   const permMap = new Map(allPerms.map((p) => [p.key, p.id]));
 
-  // Build all role-permission rows
+  // Full sync: delete ALL existing role-permission rows then recreate from static map
+  await db.rolePermission.deleteMany({});
+
   const rolePermRows: { role: UserRole; permissionId: string }[] = [];
   for (const [role, permissions] of Object.entries(ROLE_PERMISSIONS) as [UserRole, Permission[]][]) {
     for (const permKey of permissions) {
@@ -26,11 +28,7 @@ export async function seedPermissions(db: PrismaClient) {
     }
   }
 
-  // Batch insert all role-permissions in one query
-  await db.rolePermission.createMany({
-    data: rolePermRows,
-    skipDuplicates: true,
-  });
+  await db.rolePermission.createMany({ data: rolePermRows });
 
   console.log(`  ✓ ${permEntries.length} permissions seeded across ${Object.keys(ROLE_PERMISSIONS).length} roles`);
 }

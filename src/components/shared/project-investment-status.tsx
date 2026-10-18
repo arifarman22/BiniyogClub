@@ -1,22 +1,8 @@
 "use client";
 
 import { Clock, CheckCircle2, TrendingUp, XCircle, AlertCircle } from "lucide-react";
-import { PaymentProofForm } from "@/components/investments/payment-proof-form";
 import Link from "next/link";
 import { cn } from "cn";
-
-type BankAccount = {
-  id: string;
-  bankName: string;
-  accountName: string;
-  accountNumber: string;
-  routingNumber: string | null;
-  branchName: string | null;
-  swiftCode: string | null;
-  mobileNumber: string | null;
-  email: string | null;
-  branchAddress: string | null;
-};
 
 type Submission = {
   id: string;
@@ -36,7 +22,6 @@ export type ExistingInvestment = {
 
 type Props = {
   investment: ExistingInvestment;
-  bankAccounts: BankAccount[];
 };
 
 const STATUS_CONFIG: Record<string, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
@@ -59,7 +44,7 @@ function fmt(n: number) {
   return `৳${n.toLocaleString("en-BD")}`;
 }
 
-export function ProjectInvestmentStatus({ investment, bankAccounts }: Props) {
+export function ProjectInvestmentStatus({ investment }: Props) {
   const cfg = STATUS_CONFIG[investment.status] ?? STATUS_CONFIG.PENDING;
   const sub = investment.lastSubmission;
 
@@ -118,13 +103,13 @@ export function ProjectInvestmentStatus({ investment, bankAccounts }: Props) {
         </p>
       )}
 
-      {/* Payment proof form for PENDING/PAYMENT_PENDING with no submission or rejected */}
       {canSubmitProof && (
-        <PaymentProofForm
-          investmentId={investment.id}
-          bankAccounts={bankAccounts}
-          amountBdt={investment.amountBdt}
-        />
+        <Link
+          href={`/dashboard/investments/${investment.id}/pay`}
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/80"
+        >
+          Complete Payment
+        </Link>
       )}
     </div>
   );

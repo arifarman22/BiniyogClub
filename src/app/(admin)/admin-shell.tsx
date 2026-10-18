@@ -15,7 +15,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "Overview",
     items: [
-      { href: "/admin",         label: "Dashboard", icon: LayoutDashboard, exact: true, permission: null },
+      { href: "/admin",         label: "Dashboard", icon: LayoutDashboard, exact: true, permission: "user.view" },
       { href: "/admin/reports", label: "Reports",   icon: BarChart3,        permission: "report.view" },
     ],
   },
@@ -46,7 +46,7 @@ const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "System",
     items: [
-      { href: "/admin/notifications", label: "Notifications",   icon: Bell,       permission: null },
+      { href: "/admin/notifications", label: "Notifications",   icon: Bell,       permission: "user.view" },
       { href: "/admin/documents",     label: "Documents",       icon: FileText,   permission: "document.view" },
       { href: "/admin/audit-logs",    label: "Audit Logs",      icon: ScrollText, permission: "audit.view" },
       { href: "/admin/settings/bank-accounts", label: "Bank Accounts", icon: Landmark, permission: "project.update" },

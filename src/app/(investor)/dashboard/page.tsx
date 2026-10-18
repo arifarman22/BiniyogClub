@@ -10,12 +10,13 @@ import {
   getAvailableProjects,
   getInvestorGroupDashboard,
 } from "@/server/data/investor.data";
+import { db } from "@/lib/db/prisma";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "cn";
 import {
   TrendingUp, Clock, BarChart3,
   ArrowRight, AlertCircle, Bell, ArrowUpRight,
-  Layers, MapPin, Sparkles, Building2, FileText,
+  Layers, MapPin, Sparkles, Building2, FileText, FileDown,
 } from "lucide-react";
 import { InvestorAnalyticsCharts } from "./investor-analytics-charts-lazy";
 import { StatCard } from "@/components/ui/stat-card";
@@ -92,6 +93,36 @@ export default async function DashboardPage() {
   // No separate KYC step — identity details are collected at signup.
   const canInvest = session.emailVerified;
 
+  // Fetch receipt documents for confirmed investments
+  const confirmedInvs = investments.filter((i) => ["ACTIVE", "MATURED", "COMPLETED"].includes(i.status) && i.receiptNumber);
+  const confirmedProjectIds = [...new Set(confirmedInvs.map((i) => i.project.id))];
+  const receiptDocs = confirmedProjectIds.length > 0
+    ? await db.document.findMany({
+        where: {
+          entityType: "PROJECT",
+          entityId: { in: confirmedProjectIds },
+          category: "INVESTMENT_RECEIPT",
+          ownerUserId: session.id,
+          deletedAt: null,
+        },
+        select: { id: true, description: true },
+      })
+    : [];
+  const receiptByNumber = new Map<string, string>();
+  for (const doc of receiptDocs) {
+    if (doc.description) {
+      const match = doc.description.match(/Receipt #(.+)$/);
+      if (match) receiptByNumber.set(match[1], doc.id);
+    }
+  }
+  const certMap = new Map<string, string>();
+  for (const inv of confirmedInvs) {
+    if (inv.receiptNumber) {
+      const docId = receiptByNumber.get(inv.receiptNumber);
+      if (docId) certMap.set(inv.id, docId);
+    }
+  }
+
   // Distribution history (12 months)
   const now = new Date();
   const distributionHistory = Array.from({ length: 12 }, (_, i) => {
@@ -131,6 +162,28 @@ export default async function DashboardPage() {
 
   return (
     <div className="space-y-8">
+
+      {/* ── Document ready banners ── */}
+      {confirmedInvs.filter((i) => certMap.has(i.id)).map((inv) => (
+        <div key={inv.id} className="flex items-center gap-3 rounded-2xl border border-success/30 bg-success/5 px-4 py-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-success/15 text-success">
+            <FileDown className="h-4 w-4" />
+          </span>
+          <p className="flex-1 text-sm">
+            Your Investment Document for{" "}
+            <span className="font-semibold">{inv.project.title}</span>{" "}
+            has been generated.{" "}
+            <Link
+              href={`/api/documents/${certMap.get(inv.id)}/download`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-success underline underline-offset-2 hover:text-success/80"
+            >
+              Download from here
+            </Link>
+          </p>
+        </div>
+      ))}
 
       {/* ── Email verification warning (KYC reminders live in the shell banner) ── */}
       {!session.emailVerified && (
