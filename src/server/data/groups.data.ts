@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { db } from "@/lib/db/prisma";
 import type { SessionUser } from "@/lib/auth/session";
+import { secureProof } from "@/lib/storage/payment-proof";
 
 const BANK_ACCOUNT_SELECT = {
   id: true, bankName: true, accountName: true, accountNumber: true,
@@ -166,7 +167,7 @@ export async function getAdminGroupInvestments(opts: {
     }),
   };
 
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db.groupInvestment.findMany({
       where,
       select: {
@@ -191,6 +192,7 @@ export async function getAdminGroupInvestments(opts: {
     }),
     db.groupInvestment.count({ where }),
   ]);
+  const items = rows.map((r) => ({ ...r, manualPayments: r.manualPayments.map((p) => secureProof("group", p)) }));
 
   return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
 }

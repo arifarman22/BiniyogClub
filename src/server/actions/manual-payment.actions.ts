@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { documentService } from "@/server/services/document.service";
 import type { ActionResult } from "./auth.actions";
+import { parseProofUrl } from "@/lib/storage/payment-proof";
 
 function svcErr<T>(e: unknown): ActionResult<T> {
   if (e instanceof AppError) return { success: false, error: e.message, code: e.code };
@@ -161,6 +162,7 @@ export async function submitPaymentPartsAction(data: {
       if (!(p.amountBdt > 0)) throw new ValidationError(`${n}amount must be greater than 0`);
       if (meta.refRequired && !p.transactionRef?.trim()) throw new ValidationError(`${n}${meta.refLabel.toLowerCase()} is required`);
       if (meta.proofRequired && !p.proofFileUrl?.trim()) throw new ValidationError(`${n}proof file is required`);
+      if (p.proofFileUrl?.trim() && !parseProofUrl(p.proofFileUrl.trim())) throw new ValidationError(`${n}please re-upload the proof file`);
       if (p.paymentMethod === "BANK_TRANSFER") {
         if (!p.bankAccountId) throw new ValidationError(`${n}select the bank account you paid into`);
         bankIds.add(p.bankAccountId);
@@ -370,7 +372,7 @@ export async function approveManualPaymentAction(
       }
 
       // Mark the pending payment record as completed
-      const refs = progress.parts.filter((p) => p.status === "APPROVED").map((p) => p.transactionRef).join(", ");
+      const refs = progress.parts.filter((p) => p.status === "APPROVED").map((p) => p.transactionRef).filter(Boolean).join(", ");
       await tx.payment.updateMany({
         where: {
           wallet: { userId: investorUserId },
@@ -437,7 +439,7 @@ export async function approveManualPaymentAction(
       investmentId: inv.id,
       idempotencyKey: generateIdempotencyKey(IDEMPOTENCY_PREFIXES.INVESTMENT),
       projectTitle: inv.project.title,
-      metadata: { approvedBy: session.id, transactionRef: rows.map((r) => r.transactionRef).join(", ") },
+      metadata: { approvedBy: session.id, transactionRef: rows.map((r) => r.transactionRef).filter(Boolean).join(", ") },
     });
 
     // Generate receipt PDF after the response is sent. A bare un-awaited promise

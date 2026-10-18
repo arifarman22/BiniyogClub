@@ -40,8 +40,8 @@ export const METHOD_META: Record<string, { label: string; refLabel: string; refP
   BANK_TRANSFER: {
     label: "Bank Transfer",
     refLabel: "Transaction reference / TxID",
-    refPlaceholder: "e.g. TXN123456789",
-    refRequired: true,
+    refPlaceholder: "e.g. TXN123456789 (if you have one)",
+    refRequired: false,
     proofLabel: "Transfer receipt or screenshot",
     proofRequired: true,
     notesPlaceholder: "Anything the reviewer should know",

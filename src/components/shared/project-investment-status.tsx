@@ -89,7 +89,9 @@ export function ProjectInvestmentStatus({ investment }: Props) {
             }
             <p className="text-xs font-medium">{SUBMISSION_LABELS[sub.status] ?? sub.status}</p>
           </div>
-          <p className="text-xs text-muted-foreground">Ref: <span className="font-mono">{sub.transactionRef}</span></p>
+          {sub.transactionRef && (
+            <p className="text-xs text-muted-foreground">Ref: <span className="font-mono">{sub.transactionRef}</span></p>
+          )}
           {sub.status === "REJECTED" && sub.rejectionReason && (
             <p className="text-xs text-destructive mt-1">Reason: {sub.rejectionReason}</p>
           )}

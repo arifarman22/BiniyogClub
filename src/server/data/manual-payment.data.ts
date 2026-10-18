@@ -2,6 +2,7 @@ import { db } from "@/lib/db/prisma";
 import { requirePermission } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import type { SessionUser } from "@/lib/auth/session";
+import { secureProof } from "@/lib/storage/payment-proof";
 
 const PAGE_SIZE = 20;
 const skip = (page: number) => (page - 1) * PAGE_SIZE;
@@ -97,7 +98,7 @@ export async function getManualPaymentSubmissions(
     }),
   };
 
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db.manualPaymentSubmission.findMany({
       where,
       select: {
@@ -130,6 +131,7 @@ export async function getManualPaymentSubmissions(
     }),
     db.manualPaymentSubmission.count({ where }),
   ]);
+  const items = rows.map((r) => secureProof("manual", r));
 
   // Per-investment approved totals, so a batch can show how much is already verified.
   const [sums, banks] = await Promise.all([
@@ -181,7 +183,7 @@ export async function getManualPaymentSubmissions(
 // ─── Investor: their own submissions for a given investment ──────────────────
 
 export async function getSubmissionsForInvestment(investmentId: string, userId: string) {
-  return db.manualPaymentSubmission.findMany({
+  const rows = await db.manualPaymentSubmission.findMany({
     where: { investmentId, submittedBy: userId },
     select: {
       id: true,
@@ -196,6 +198,7 @@ export async function getSubmissionsForInvestment(investmentId: string, userId: 
     },
     orderBy: { createdAt: "desc" },
   });
+  return rows.map((r) => secureProof("manual", r));
 }
 
 // ─── Pending count for admin badge ───────────────────────────────────────────
@@ -231,7 +234,7 @@ export async function getGroupPaymentSubmissions(
     }),
   };
 
-  const [items, total] = await Promise.all([
+  const [rows, total] = await Promise.all([
     db.groupInvestmentPayment.findMany({
       where,
       select: {
@@ -267,5 +270,6 @@ export async function getGroupPaymentSubmissions(
     db.groupInvestmentPayment.count({ where }),
   ]);
 
+  const items = rows.map((r) => secureProof("group", r));
   return { items, total, page, totalPages: Math.ceil(total / PAGE_SIZE) };
 }

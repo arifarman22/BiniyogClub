@@ -7,6 +7,7 @@ import { PERMISSIONS } from "@/lib/authz/permissions";
 import { AppError, NotFoundError, ValidationError, ForbiddenError } from "@/lib/errors";
 import { revalidatePath } from "next/cache";
 import type { ActionResult } from "./auth.actions";
+import { parseProofUrl } from "@/lib/storage/payment-proof";
 
 function svcErr<T>(e: unknown): ActionResult<T> {
   if (e instanceof AppError) return { success: false, error: e.message, code: e.code };
@@ -97,6 +98,7 @@ export async function submitGroupPaymentProofAction(data: {
     });
     if (!inv) throw new NotFoundError("Group investment");
     if (inv.investorUserId !== session.id) throw new ForbiddenError("Access denied");
+    if (!parseProofUrl(data.proofFileUrl)) throw new ValidationError("Please re-upload the proof file");
     if (inv.status !== "PAYMENT_PENDING") {
       throw new ValidationError(`Cannot submit proof for investment in status: ${inv.status}`);
     }
