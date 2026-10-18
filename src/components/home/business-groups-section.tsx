@@ -18,9 +18,9 @@ export function BusinessGroupsSection({ groups }: BusinessGroupsSectionProps) {
         <AnimatedSection animation="fade-down" className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <SectionHeading
             align="left"
-            eyebrow="Partner enterprises"
-            title="Invest in"
-            highlight="Business Groups"
+            eyebrow="Our portfolio"
+            title="Explore the Businesses"
+            highlight="Behind the Opportunities"
             description="Partner with vetted corporate enterprises and multi-sector conglomerates driving verified economic growth across Bangladesh."
           />
 

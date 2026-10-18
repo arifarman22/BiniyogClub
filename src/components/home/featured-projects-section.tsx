@@ -20,9 +20,9 @@ export function FeaturedProjectsSection({
         <AnimatedSection animation="fade-down" className="mb-12 flex flex-col md:flex-row md:items-end md:justify-between gap-6">
           <SectionHeading
             align="left"
-            eyebrow="Open for investment"
-            title="Investment"
-            highlight="Projects"
+            eyebrow="Investment opportunities"
+            title="Explore Businesses"
+            highlight="You Can Be Part Of"
             description="Explore admin-vetted, asset-backed commercial ventures with legally binding contracts and transparent milestone distributions."
           />
 

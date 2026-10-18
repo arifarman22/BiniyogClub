@@ -62,9 +62,9 @@ export function SecuritySection() {
               <SectionHeading
                 align="left"
                 tone="dark"
-                eyebrow="Security & trust"
-                title="Your trust."
-                highlight="Our responsibility."
+                eyebrow="Transparency"
+                title="Clarity, Accountability"
+                highlight="& Informed Decisions"
                 description="Bangladeshi co-investors deserve uncompromising rigor. Biniyog Club pairs ledger precision with enforceable legal contracts to safeguard your capital at every step."
                 className="mb-8"
               />

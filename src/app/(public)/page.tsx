@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { getPlatformStats, getRecentUpdates, getFeaturedProjects, getGroupsWithProjects } from "@/server/data/public.data";
+import { getPlatformStats, getFeaturedProjects, getGroupsWithProjects } from "@/server/data/public.data";
 import { getAllGroups } from "@/server/data/groups.data";
-import { JsonLd, organizationSchema, websiteSchema, faqSchema } from "@/components/shared/json-ld";
-import { HOME_FAQS } from "@/components/shared/faq-data";
+import { JsonLd, organizationSchema, websiteSchema } from "@/components/shared/json-ld";
 
 import { HeroSection } from "@/components/home/hero-section";
-import { HierarchySection } from "@/components/home/hierarchy-section";
 import { AboutSection } from "@/components/home/about-section";
-import { WhyChooseSection } from "@/components/home/why-choose-section";
-import { HowItWorksSection } from "@/components/home/how-it-works-section";
+import { HierarchySection } from "@/components/home/hierarchy-section";
 import { FeaturedProjectsSection } from "@/components/home/featured-projects-section";
+import { HowItWorksSection } from "@/components/home/how-it-works-section";
 import { BusinessGroupsSection } from "@/components/home/business-groups-section";
-import { PlatformFeaturesSection } from "@/components/home/platform-features-section";
 import { SecuritySection } from "@/components/home/security-section";
-import { CommunitySection } from "@/components/home/community-section";
-import { CalculatorSection } from "@/components/home/calculator-section";
-import { UpdatesSection } from "@/components/home/updates-section";
-import { FaqSection } from "@/components/home/faq-section";
 import { FinalCtaSection } from "@/components/home/final-cta-section";
 
 export const metadata: Metadata = {
@@ -26,9 +19,8 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [stats, rawUpdates, rawGroups, rawProjects, rawHierarchy] = await Promise.all([
+  const [stats, rawGroups, rawProjects, rawHierarchy] = await Promise.all([
     getPlatformStats(),
-    getRecentUpdates(3),
     getAllGroups(),
     getFeaturedProjects(6),
     getGroupsWithProjects(),
@@ -36,57 +28,38 @@ export default async function HomePage() {
 
   const groups = JSON.parse(JSON.stringify(rawGroups));
   const featuredProjects = JSON.parse(JSON.stringify(rawProjects));
-  const recentUpdates = JSON.parse(JSON.stringify(rawUpdates));
   const hierarchyGroups = JSON.parse(JSON.stringify(rawHierarchy));
 
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyog.club";
 
-  // Section backgrounds alternate plain → tinted, with dark "anchor" sections
-  // (Security, Final CTA) breaking up the page. Keep that rhythm when reordering.
+  // Section backgrounds alternate plain → tinted, closing on the two dark
+  // sections (Transparency, Registration). Keep that rhythm when reordering.
   return (
     <>
-      <JsonLd data={[organizationSchema(BASE_URL), websiteSchema(BASE_URL), faqSchema(HOME_FAQS)]} />
+      <JsonLd data={[organizationSchema(BASE_URL), websiteSchema(BASE_URL)]} />
 
-      {/* ── SECTION 01 — HERO VIDEO ── */}
+      {/* ── 01 HERO — Your Gateway to Real Business Opportunities ── */}
       <HeroSection />
 
-      {/* ── SECTION 02 — PLATFORM HIERARCHY (tinted) ── */}
-      <HierarchySection groups={hierarchyGroups} />
-
-      {/* ── SECTION 03 — INVESTMENT PROJECTS (plain) ── */}
-      <FeaturedProjectsSection featuredProjects={featuredProjects} />
-
-      {/* ── SECTION 04 — HOW IT WORKS (tinted) ── */}
-      <HowItWorksSection />
-
-      {/* ── SECTION 05 — BUSINESS GROUPS (plain) ── */}
-      <BusinessGroupsSection groups={groups} />
-
-      {/* ── SECTION 06 — ABOUT BINIYOGCLUB (tinted) ── */}
+      {/* ── 02 ABOUT — Discover the Power of Collective Opportunities (plain) ── */}
       <AboutSection />
 
-      {/* ── SECTION 07 — WHY CHOOSE BINIYOGCLUB (plain) ── */}
-      <WhyChooseSection />
+      {/* ── 03 BUSINESS SEGMENTS — One Platform. Six Business Segments. (tinted) ── */}
+      <HierarchySection groups={hierarchyGroups} />
 
-      {/* ── SECTION 08 — SECURITY & TRUST (dark) ── */}
+      {/* ── 04 INVESTMENT OPPORTUNITIES — Explore Businesses You Can Be Part Of (plain) ── */}
+      <FeaturedProjectsSection featuredProjects={featuredProjects} />
+
+      {/* ── 05 HOW IT WORKS — Your Investment Journey, Simplified (tinted) ── */}
+      <HowItWorksSection />
+
+      {/* ── 06 OUR PORTFOLIO — Explore the Businesses Behind the Opportunities (plain) ── */}
+      <BusinessGroupsSection groups={groups} />
+
+      {/* ── 07 TRANSPARENCY — Clarity, Accountability & Informed Decisions (dark) ── */}
       <SecuritySection />
 
-      {/* ── SECTION 09 — PLATFORM FEATURES (plain) ── */}
-      <PlatformFeaturesSection />
-
-      {/* ── SECTION 11 — INTERACTIVE RETURN SIMULATOR (plain) ── */}
-      <CalculatorSection />
-
-      {/* ── SECTION 12 — COMMUNITY / REFERRAL / NETWORK (tinted) ── */}
-      <CommunitySection />
-
-      {/* ── SECTION 13 — LIVE PROJECT DISCLOSURES (plain) ── */}
-      <UpdatesSection recentUpdates={recentUpdates} />
-
-      {/* ── SECTION 14 — FREQUENTLY ASKED QUESTIONS (tinted) ── */}
-      <FaqSection />
-
-      {/* ── SECTION 15 — FINAL CTA (dark) ── */}
+      {/* ── 08 REGISTRATION — Join the Biniyog Club Ecosystem (dark) ── */}
       <FinalCtaSection totalInvestors={stats.totalInvestors} />
     </>
   );

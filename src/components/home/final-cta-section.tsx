@@ -33,9 +33,9 @@ export function FinalCtaSection({ totalInvestors }: FinalCtaSectionProps) {
         </div>
 
         <h2 className="mb-6 text-4xl sm:text-5xl lg:text-6xl font-light text-white tracking-tight leading-[1.15]">
-          Ready to Invest in <br />
+          Join the Biniyog Club <br />
           <span className="font-semibold bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-400 bg-clip-text text-transparent">
-            Bangladesh&apos;s Real Economy?
+            Ecosystem
           </span>
         </h2>
 

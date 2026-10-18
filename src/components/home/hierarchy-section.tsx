@@ -20,6 +20,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
+import { SectionHeading } from "@/components/home/section-heading";
 import { cn } from "@/lib/utils";
 
 export type Project = {
@@ -449,6 +450,10 @@ export function HierarchySection({ groups }: HierarchySectionProps) {
       <div className="absolute top-40 right-10 w-96 h-96 bg-primary/5 blur-[120px] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <AnimatedSection animation="fade-down" className="mb-12">
+          <SectionHeading eyebrow="Business segments" title="One Platform." highlight="Six Business Segments." />
+        </AnimatedSection>
+
         <AnimatedSection animation="fade-down" delay={100} className="flex flex-col items-center mb-12">
           {/* Master Hub Card */}
           <div className="relative group w-full max-w-xl rounded-none border border-primary/30 bg-card/95 backdrop-blur-md p-5 sm:p-6 shadow-2xl shadow-primary/5 hover:border-primary/50 transition-all duration-300">

@@ -35,7 +35,7 @@ const ABOUT_PILLARS = [
 
 export function AboutSection() {
   return (
-    <section className="relative py-24 lg:py-28 bg-muted/40 overflow-hidden" id="about">
+    <section className="relative py-24 lg:py-28 bg-background overflow-hidden" id="about">
       {/* Background ambient orbs */}
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-96 h-96 rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
 
@@ -99,8 +99,8 @@ export function AboutSection() {
               <SectionHeading
                 align="left"
                 eyebrow="About Biniyog Club"
-                title="Democratizing direct institutional investment in"
-                highlight="Bangladesh"
+                title="Discover the Power of"
+                highlight="Collective Opportunities"
                 description="Biniyog Club was established with a clear mandate: to bridge the gap between conscientious co-investors and high-potential, vetted commercial opportunities in Bangladesh."
                 className="mb-4 max-w-none"
               />

@@ -44,8 +44,8 @@ export function HowItWorksSection() {
         <AnimatedSection animation="fade-down" className="mb-16">
           <SectionHeading
             eyebrow="Four simple steps"
-            title="How Biniyog Club"
-            highlight="Works"
+            title="Your Investment Journey,"
+            highlight="Simplified"
             description="From registration to scheduled profit payouts directly into your bank or mobile wallet."
           />
         </AnimatedSection>

@@ -2,10 +2,12 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 /**
- * Hero — the brand video, with the main calls to action overlaid on it.
+ * Hero — the brand video, with the main calls to action overlaid on it, and
+ * the page headline beneath (the logo animation fills the video itself).
  */
 export function HeroSection() {
   return (
+    <>
     <section className="relative w-full overflow-hidden bg-background h-[50vh] sm:h-[65vh] md:h-[75vh] lg:h-[82vh] max-h-[850px]">
       <video
         src="/logo with money.mp4"
@@ -34,5 +36,12 @@ export function HeroSection() {
         </a>
       </div>
     </section>
+
+    <div className="border-b border-border bg-background px-4 py-10 text-center sm:py-12">
+      <h1 className="mx-auto max-w-3xl text-3xl font-light tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+        Your Gateway to <span className="font-semibold text-primary">Real Business Opportunities</span>
+      </h1>
+    </div>
+    </>
   );
 }
