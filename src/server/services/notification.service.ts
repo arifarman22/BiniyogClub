@@ -1,5 +1,3 @@
-"use server";
-
 import { db } from "@/lib/db/prisma";
 import { sendEmail, emailLayout, ctaButton } from "@/lib/email/mailer";
 import { env } from "@/config/env";
