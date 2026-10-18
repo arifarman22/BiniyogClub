@@ -16,9 +16,16 @@ export async function GET() {
           city: true, country: true, occupation: true,
           annualIncomeRange: true, investmentExperience: true,
           riskTolerance: true, address: true,
+          nationalId: true, dateOfBirth: true, nomineeName: true, nomineeNationalId: true,
         },
       },
-      kyc: { select: { status: true } },
+      kyc: {
+        select: {
+          status: true,
+          presentAddress: true, presentDivision: true, presentDistrict: true, presentUpazila: true, presentPostalCode: true,
+          permanentAddress: true, permanentDivision: true, permanentDistrict: true, permanentUpazila: true, permanentPostalCode: true,
+        },
+      },
     },
   });
 

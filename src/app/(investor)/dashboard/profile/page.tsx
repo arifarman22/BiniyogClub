@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import {
-  User, Mail, Phone, MapPin, ShieldCheck, CheckCircle2, XCircle,
+  User, MapPin, ShieldCheck,
   Camera, Trash2, Pencil, X, Check, Lock, Eye, EyeOff,
 } from "lucide-react";
 import { cn } from "cn";
@@ -16,12 +16,13 @@ import {
   changePasswordAction,
 } from "@/server/actions/auth.actions";
 import { useRouter } from "next/navigation";
-import { PasswordRequirements } from "@/components/auth/password-requirements";
+import { ACCOUNT_PASSWORD_MIN } from "@/validations/auth";
+import { IdentityDetailsSection, type IdentityData } from "@/components/profile/identity-details-section";
 
 interface ProfileData {
   id: string;
   name: string;
-  email: string;
+  email: string | null;
   phone: string | null;
   avatarUrl: string | null;
   emailVerified: boolean;
@@ -35,8 +36,43 @@ interface ProfileData {
     investmentExperience: string | null;
     riskTolerance: string | null;
     address: string | null;
+    nationalId?: string | null;
+    dateOfBirth?: string | null;
+    nomineeName?: string | null;
+    nomineeNationalId?: string | null;
   } | null;
-  kyc: { status: string } | null;
+  kyc: ({ status: string } & Partial<Record<KycAddressKey, string | null>>) | null;
+}
+
+type KycAddressKey =
+  | "presentAddress" | "presentDivision" | "presentDistrict" | "presentUpazila" | "presentPostalCode"
+  | "permanentAddress" | "permanentDivision" | "permanentDistrict" | "permanentUpazila" | "permanentPostalCode";
+
+/** Builds the identity section's data from the /api/me payload. */
+function toIdentity(user: ProfileData): IdentityData {
+  const addr = (p: "present" | "permanent") => {
+    const k = user.kyc;
+    const a = {
+      line: k?.[`${p}Address`] ?? "",
+      division: k?.[`${p}Division`] ?? "",
+      district: k?.[`${p}District`] ?? "",
+      thana: k?.[`${p}Upazila`] ?? "",
+      postalCode: k?.[`${p}PostalCode`] ?? "",
+    };
+    return Object.values(a).some(Boolean) ? a : null;
+  };
+  return {
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    emailVerified: user.emailVerified,
+    dateOfBirth: user.investorProfile?.dateOfBirth ?? null,
+    nationalId: user.investorProfile?.nationalId ?? null,
+    nomineeName: user.investorProfile?.nomineeName ?? null,
+    nomineeNationalId: user.investorProfile?.nomineeNationalId ?? null,
+    presentAddress: addr("present"),
+    permanentAddress: addr("permanent"),
+  };
 }
 
 const KYC_STATUS_COLORS: Record<string, string> = {
@@ -195,87 +231,6 @@ function AvatarEditor({ user }: { user: ProfileData }) {
 
 // ── Personal Info Section ─────────────────────────────────────────────────────
 
-function PersonalInfoSection({ user, onSaved }: { user: ProfileData; onSaved: (patch: Partial<ProfileData>) => void }) {
-  const [editing, setEditing] = useState(false);
-  const [saving, startSave] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
-
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    setError(null); setSuccess(false);
-    startSave(async () => {
-      const res = await updateProfileAction({
-        name: fd.get("name") as string,
-        phone: fd.get("phone") as string,
-      });
-      if (res.success) {
-        setSuccess(true);
-        onSaved({ name: fd.get("name") as string, phone: (fd.get("phone") as string) || null });
-        setTimeout(() => { setEditing(false); setSuccess(false); }, 800);
-      } else {
-        setError(res.error);
-      }
-    });
-  }
-
-  return (
-    <div className="surface-card p-6 space-y-5">
-      <div className="flex items-center justify-between">
-        <h2 className="font-semibold">Personal Information</h2>
-        {!editing && (
-          <button onClick={() => setEditing(true)}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium hover:bg-muted transition-colors">
-            <Pencil className="h-3 w-3" /> Edit
-          </button>
-        )}
-      </div>
-
-      <AvatarEditor user={user} />
-
-      <div className="border-t border-border pt-5">
-        {editing ? (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Input label="Full Name" name="name" defaultValue={user.name} required />
-              <Input label="Phone Number" name="phone" defaultValue={user.phone} type="tel" />
-            </div>
-            <div className="rounded-lg bg-muted/40 p-3">
-              <p className="text-xs text-muted-foreground">Email</p>
-              <p className="text-sm font-medium text-muted-foreground">{user.email} <span className="text-xs">(cannot be changed)</span></p>
-            </div>
-            <SaveBar saving={saving} error={error} success={success} onCancel={() => { setEditing(false); setError(null); }} />
-          </form>
-        ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {[
-              { icon: <User className="h-4 w-4" />, label: "Full Name", value: user.name, verified: true },
-              { icon: <Mail className="h-4 w-4" />, label: "Email", value: user.email, verified: user.emailVerified },
-              { icon: <Phone className="h-4 w-4" />, label: "Phone", value: user.phone ?? "Not provided", verified: user.phoneVerified },
-            ].map(({ icon, label, value, verified }) => (
-              <div key={label} className="flex items-start gap-3 rounded-lg bg-muted/40 p-3">
-                <div className="mt-0.5 text-muted-foreground">{icon}</div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground">{label}</p>
-                  <p className="text-sm font-medium truncate">{value}</p>
-                </div>
-                {verified
-                  ? <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-                  : <XCircle className="h-4 w-4 shrink-0 text-muted-foreground/40" />}
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <p className="text-xs text-muted-foreground border-t border-border pt-3">
-        Member since {new Date(user.createdAt).toLocaleDateString("en-BD", { month: "long", year: "numeric" })}
-      </p>
-    </div>
-  );
-}
-
 // ── Investor Profile Section ──────────────────────────────────────────────────
 
 function InvestorProfileSection({ user, onSaved }: {
@@ -397,6 +352,7 @@ function ChangePasswordSection() {
     const fd = new FormData(e.currentTarget);
     const newPw = fd.get("newPassword") as string;
     const confirm = fd.get("confirmPassword") as string;
+    if (newPw.length < ACCOUNT_PASSWORD_MIN) { setError(`Password must be at least ${ACCOUNT_PASSWORD_MIN} characters`); return; }
     if (newPw !== confirm) { setError("Passwords do not match"); return; }
     setError(null); setSuccess(false);
     startSave(async () => {
@@ -446,7 +402,8 @@ function ChangePasswordSection() {
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">New Password<span className="text-destructive ml-0.5">*</span></label>
               <div className="relative">
-                <input name="newPassword" type={showNew ? "text" : "password"} required minLength={8}
+                <input name="newPassword" type={showNew ? "text" : "password"} required minLength={ACCOUNT_PASSWORD_MIN}
+                  placeholder={`At least ${ACCOUNT_PASSWORD_MIN} characters`}
                   value={newPw} onChange={(e) => setNewPw(e.target.value)}
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 pr-9 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
                 <button type="button" onClick={() => setShowNew(v => !v)}
@@ -457,12 +414,15 @@ function ChangePasswordSection() {
             </div>
             <div className="space-y-1">
               <label className="text-xs font-medium text-muted-foreground">Confirm New Password<span className="text-destructive ml-0.5">*</span></label>
-              <input name="confirmPassword" type="password" required minLength={8}
+              <input name="confirmPassword" type="password" required minLength={ACCOUNT_PASSWORD_MIN}
+                placeholder="Re-enter your new password"
                 value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/50 transition-all" />
             </div>
           </div>
-          <PasswordRequirements password={newPw} confirmPassword={confirmPw} />
+          {confirmPw && newPw !== confirmPw && (
+            <p className="text-xs font-medium text-destructive">Passwords do not match</p>
+          )}
           <SaveBar saving={saving} error={error} success={success} onCancel={() => { setEditing(false); setError(null); }} />
         </form>
       )}
@@ -501,9 +461,36 @@ export default function ProfilePage() {
       {/* Top row: Personal Info + KYC side by side */}
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <PersonalInfoSection
-            user={user}
-            onSaved={(patch) => setUser(u => u ? { ...u, ...patch } : u)}
+          <IdentityDetailsSection
+            data={toIdentity(user)}
+            avatar={<AvatarEditor user={user} />}
+            onSaved={(next) => setUser((u) => u ? {
+              ...u,
+              name: next.name,
+              email: next.email,
+              phone: next.phone,
+              emailVerified: next.emailVerified,
+              investorProfile: u.investorProfile ? {
+                ...u.investorProfile,
+                nationalId: next.nationalId,
+                dateOfBirth: next.dateOfBirth,
+                nomineeName: next.nomineeName,
+                nomineeNationalId: next.nomineeNationalId,
+              } : u.investorProfile,
+              kyc: {
+                status: u.kyc?.status ?? "NOT_STARTED",
+                ...(next.presentAddress ? {
+                  presentAddress: next.presentAddress.line, presentDivision: next.presentAddress.division,
+                  presentDistrict: next.presentAddress.district, presentUpazila: next.presentAddress.thana,
+                  presentPostalCode: next.presentAddress.postalCode,
+                } : {}),
+                ...(next.permanentAddress ? {
+                  permanentAddress: next.permanentAddress.line, permanentDivision: next.permanentAddress.division,
+                  permanentDistrict: next.permanentAddress.district, permanentUpazila: next.permanentAddress.thana,
+                  permanentPostalCode: next.permanentAddress.postalCode,
+                } : {}),
+              },
+            } : u)}
           />
         </div>
 
@@ -522,7 +509,7 @@ export default function ProfilePage() {
               )}
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
-              Your identity details were collected at signup. Your account is active and ready to invest.
+              Your account is active and ready to invest. Add your NID and address under Personal &amp; Identity Details.
             </p>
           </div>
 

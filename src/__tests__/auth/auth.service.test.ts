@@ -148,57 +148,39 @@ describe("authService.register", () => {
     expect(result).not.toHaveProperty("passwordHash");
   });
 
-  it("creates a verified KYC record from the signup details", async () => {
+  it("starts the profile and KYC record from the short signup", async () => {
     mockUserRepo.findByEmail.mockResolvedValue(null);
     mockUserRepo.findByPhone.mockResolvedValue(null);
     mockUserRepo.create.mockResolvedValue(baseUser);
-    mockDb.investorProfile.findUnique.mockResolvedValue(null);
     mockDb.kyc.create.mockClear();
+    mockDb.investorProfile.create.mockClear();
 
     await authService.register({
       name: "Test User", email: "test@example.com", phone: "01712345678",
-      password: "SecurePass1", role: "INVESTOR",
-      nidNumber: "1234567890", nomineeName: "Rahima", nomineeNidNumber: "0987654321",
-      dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
+      password: "SecurePass1", role: "INVESTOR", dateOfBirth: "1990-01-01",
     });
 
-    expect(mockDb.kyc.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({
-        status: "VERIFIED",
-        documentType: "NATIONAL_ID",
-        documentNumber: "1234567890",
-        presentAddress: "House 1, Road 2",
-        presentDivision: "Dhaka",
-        presentDistrict: "Dhaka",
-        presentUpazila: "Dhanmondi",
-        presentPostalCode: "1209",
-        permanentAddress: "Village X",
-        permanentDistrict: "Comilla",
-        permanentUpazila: "Debidwar",
-        permanentPostalCode: "3530",
-      }),
-    }));
     expect(mockDb.investorProfile.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({
-        nationalId: "1234567890", nomineeName: "Rahima", nomineeNationalId: "0987654321",
-        address: "House 1, Road 2, Dhanmondi, Dhaka, Dhaka - 1209",
-      }),
+      data: expect.objectContaining({ userId: baseUser.id, dateOfBirth: new Date("1990-01-01T00:00:00Z") }),
+    }));
+    expect(mockDb.kyc.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ fullName: "Test User", mobileNumber: "01712345678" }),
     }));
   });
 
-  it("throws ConflictError when the NID is already registered", async () => {
-    mockUserRepo.findByEmail.mockResolvedValue(null);
+  it("creates an account without an email", async () => {
     mockUserRepo.findByPhone.mockResolvedValue(null);
-    mockDb.investorProfile.findUnique.mockResolvedValueOnce({ id: "existing-profile" });
-    mockUserRepo.create.mockClear();
+    mockUserRepo.create.mockResolvedValue(baseUser);
+    mockUserRepo.findByEmail.mockClear();
+    mockUserRepo.verifyEmail?.mockClear?.();
 
-    await expect(
-      authService.register({
-        name: "X", email: "new@example.com", phone: "01712345678", password: "Pass1234", role: "INVESTOR",
-        nidNumber: "1234567890", dateOfBirth: "1990-01-01", presentAddress: { line: "House 1, Road 2", division: "Dhaka", district: "Dhaka", thana: "Dhanmondi", postalCode: "1209" }, permanentAddress: { line: "Village X", division: "Chattagram", district: "Comilla", thana: "Debidwar", postalCode: "3530" },
-      }),
-    ).rejects.toThrow(ConflictError);
-    expect(mockUserRepo.create).not.toHaveBeenCalled();
+    await authService.register({
+      name: "Test User", email: null, phone: "01712345678",
+      password: "SecurePass1", role: "INVESTOR", dateOfBirth: "1990-01-01",
+    });
+
+    expect(mockUserRepo.findByEmail).not.toHaveBeenCalled();
+    expect(mockUserRepo.create).toHaveBeenCalledWith(expect.objectContaining({ email: null }));
   });
 });
 

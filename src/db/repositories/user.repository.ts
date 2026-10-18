@@ -2,7 +2,7 @@ import { db } from "@/lib/db/prisma";
 import type { UserRole, UserStatus, User } from "@/types/prisma";
 
 export type CreateUserInput = {
-  email: string;
+  email: string | null;
   passwordHash: string;
   name: string;
   phone: string;
@@ -43,6 +43,11 @@ export const userRepository = {
       where: { email, deletedAt: null },
       select: safeUserSelect,
     });
+  },
+
+  /** Full record (incl. password hash) — for login by phone only. */
+  findByPhoneWithHash(phone: string): Promise<User | null> {
+    return db.user.findUnique({ where: { phone } });
   },
 
   findByPhone(phone: string): Promise<SafeUser | null> {

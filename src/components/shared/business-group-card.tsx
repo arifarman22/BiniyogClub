@@ -46,9 +46,9 @@ export type BusinessGroupCardProps = {
 };
 
 const GROUP_COVER: Record<string, string> = {
-  MARINERS: "/2.png",
-  MOHS: "/3.png",
-  MARINOZZ: "/4.png",
+  MARINERS: "/4.png",
+  MOHS: "/2.png",
+  MARINOZZ: "/3.png",
 };
 
 const GROUP_META: Record<

@@ -5,7 +5,7 @@ import type { UserRole } from "@/types/prisma";
 
 export interface SessionUser {
   id: string;
-  email: string;
+  email: string | null;
   name: string;
   phone: string | null;
   role: UserRole;

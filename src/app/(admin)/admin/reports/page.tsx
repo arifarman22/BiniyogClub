@@ -287,7 +287,7 @@ async function InvestorsTab({ session, filters }: { session: SessionUser; filter
         title={`Investors (${totalInvestors})`}
         headers={["Name", "Email", "KYC", "Country", "Investments", "Joined"]}
         rows={data.investors.map((u) => [
-          u.name, u.email,
+          u.name, u.email ?? "—",
           u.kyc?.status.replace(/_/g, " ") ?? "—",
           u.investorProfile?.country ?? "—",
           String(u.investorProfile?._count.investments ?? 0),

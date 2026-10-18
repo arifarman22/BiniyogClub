@@ -20,7 +20,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
-import { SectionHeading } from "@/components/home/section-heading";
 import { cn } from "@/lib/utils";
 
 export type Project = {
@@ -450,63 +449,30 @@ export function HierarchySection({ groups }: HierarchySectionProps) {
       <div className="absolute top-40 right-10 w-96 h-96 bg-primary/5 blur-[120px] pointer-events-none" />
 
       <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* ── Section Heading ── */}
-        <AnimatedSection animation="fade-down" className="text-center max-w-3xl mx-auto mb-14">
-          <SectionHeading
-            eyebrow="Institutional architecture"
-            title="Two-tier co-investment"
-            highlight="structure & ecosystem"
-          />
-        </AnimatedSection>
-
-        {/* ── Tier 1: Platform Root Node Architecture ── */}
         <AnimatedSection animation="fade-down" delay={100} className="flex flex-col items-center mb-12">
           {/* Master Hub Card */}
           <div className="relative group w-full max-w-xl rounded-none border border-primary/30 bg-card/95 backdrop-blur-md p-5 sm:p-6 shadow-2xl shadow-primary/5 hover:border-primary/50 transition-all duration-300">
             {/* Top glowing line */}
             <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-emerald-500 via-teal-400 to-primary" />
 
-            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left">
-              {/* Official Platform Emblem */}
-              <div className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-none bg-primary text-white shadow-md shadow-primary/30">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center bg-primary shadow-md shadow-primary/30">
                 <Image
                   src="/Biniyog Club Logo Icon PNG.png"
-                  alt="Biniyog Club Emblem"
-                  width={34}
-                  height={34}
+                  alt="Biniyog Club"
+                  width={28}
+                  height={28}
                   className="object-contain brightness-0 invert"
                 />
               </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center justify-center sm:justify-between gap-2 mb-1">
-                  <span className="text-[10px] font-bold tracking-widest text-primary uppercase bg-primary/10 px-2 py-0.5 border border-primary/20">
-                    Tier-1 Master Custody
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                    Central Escrow Active
-                  </span>
-                </div>
-
-                <h3 className="text-lg font-bold text-foreground">Biniyog Club Core Platform</h3>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  Centralized institutional due diligence, legally binding digital contracts, verified KYC onboarding, and automated wallet escrow distributions.
-                </p>
+              <div>
+                <h3 className="text-base font-bold text-foreground">Biniyog Club</h3>
+                <p className="text-xs text-muted-foreground">Central investment platform</p>
               </div>
-            </div>
-
-            {/* Platform Guarantees Badges */}
-            <div className="mt-4 pt-3 border-t border-border/60 grid grid-cols-3 gap-2 text-center text-[10px] font-medium text-muted-foreground">
-              <div className="px-1 py-1 bg-muted/40 border border-border/40">
-                Contract Act 1872 Compliant
-              </div>
-              <div className="px-1 py-1 bg-muted/40 border border-border/40">
-                100% Shariah-Vetted
-              </div>
-              <div className="px-1 py-1 bg-muted/40 border border-border/40">
-                Multi-Sign Escrow
-              </div>
+              <span className="ml-auto inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
+                Live
+              </span>
             </div>
           </div>
 

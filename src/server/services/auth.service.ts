@@ -23,22 +23,16 @@ import {
 } from "@/lib/errors";
 import { env } from "@/config/env";
 import type { UserRole } from "@/types/prisma";
-import { formatBdAddress, type BdAddress } from "@/validations/auth";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type RegisterInput = {
   name: string;
-  email: string;
+  email?: string | null;     // optional
   phone: string;
   password: string;
   role: UserRole;
-  nidNumber: string;
-  dateOfBirth: string;        // YYYY-MM-DD
-  presentAddress: BdAddress;
-  permanentAddress: BdAddress;
-  nomineeName?: string;
-  nomineeNidNumber?: string;
+  dateOfBirth: string;       // YYYY-MM-DD
 };
 
 export type LoginInput = {
@@ -57,72 +51,33 @@ export const authService = {
   // ── Registration ────────────────────────────────────────────────────────────
 
   async register(input: RegisterInput) {
-    const {
-      name, email, phone, password, role, nidNumber,
-      dateOfBirth, presentAddress, permanentAddress, nomineeName, nomineeNidNumber,
-    } = input;
+    const { name, phone, password, role, dateOfBirth } = input;
+    const email = input.email?.trim().toLowerCase() || null;
     const { db } = await import("@/lib/db/prisma");
 
-    const [existingEmail, existingPhone, existingNid] = await Promise.all([
-      userRepository.findByEmail(email),
+    const [existingEmail, existingPhone] = await Promise.all([
+      email ? userRepository.findByEmail(email) : null,
       userRepository.findByPhone(phone),
-      role === "INVESTOR" ? db.investorProfile.findUnique({ where: { nationalId: nidNumber }, select: { id: true } }) : null,
     ]);
 
     if (existingEmail) throw new ConflictError("An account with this email already exists");
     if (existingPhone) throw new ConflictError("An account with this phone number already exists");
-    if (existingNid) throw new ConflictError("An account with this NID number already exists");
 
     const passwordHash = await hashPassword(password);
     const user = await userRepository.create({ email, passwordHash, name, phone, role });
-    await userRepository.verifyEmail(user.id);
+    if (email) await userRepository.verifyEmail(user.id);
 
     if (role === "INVESTOR") {
-      // Signup collects the identity details KYC used to, so the account is
-      // verified straight away and can invest without a separate KYC step.
+      // Signup is short; NID, addresses and nominee are added later from the
+      // profile page. The KYC record starts with what we already know.
       const dob = new Date(`${dateOfBirth}T00:00:00Z`);
-      const now = new Date();
       try {
         await db.$transaction([
           db.investorProfile.create({
-            data: {
-              userId: user.id,
-              nationalId: nidNumber,
-              dateOfBirth: dob,
-              address: formatBdAddress(presentAddress),
-              city: presentAddress.district,
-              nomineeName: nomineeName?.trim() || null,
-              nomineeNationalId: nomineeNidNumber?.trim() || null,
-              country: "BD",
-            },
+            data: { userId: user.id, dateOfBirth: dob, country: "BD" },
           }),
           db.kyc.create({
-            data: {
-              userId: user.id,
-              status: "VERIFIED",
-              submittedAt: now,
-              reviewedAt: now,
-              reviewNote: "Verified from signup details",
-              fullName: name,
-              dateOfBirth: dob,
-              presentAddress: presentAddress.line,
-              presentDivision: presentAddress.division,
-              presentDistrict: presentAddress.district,
-              presentUpazila: presentAddress.thana,
-              presentPostalCode: presentAddress.postalCode,
-              permanentAddress: permanentAddress.line,
-              permanentDivision: permanentAddress.division,
-              permanentDistrict: permanentAddress.district,
-              permanentUpazila: permanentAddress.thana,
-              permanentPostalCode: permanentAddress.postalCode,
-              city: presentAddress.district,
-              district: presentAddress.district,
-              division: presentAddress.division,
-              postalCode: presentAddress.postalCode,
-              documentType: "NATIONAL_ID",
-              documentNumber: nidNumber,
-              mobileNumber: phone,
-            },
+            data: { userId: user.id, fullName: name, dateOfBirth: dob, mobileNumber: phone },
           }),
         ]);
       } catch (e) {
@@ -138,9 +93,16 @@ export const authService = {
   // ── Login ────────────────────────────────────────────────────────────────────
 
   async login(input: LoginInput, meta?: SessionMeta) {
-    const { email, password } = input;
+    const { email: identifier, password } = input;
 
-    const user = await userRepository.findByEmail(email);
+    // The identifier is an email or a phone number (stored as 01… or +8801…).
+    let user;
+    if (identifier.includes("@")) {
+      user = await userRepository.findByEmail(identifier);
+    } else {
+      const local = identifier.replace(/^\+88/, "");
+      user = (await userRepository.findByPhoneWithHash(local)) ?? (await userRepository.findByPhoneWithHash(`+88${local}`));
+    }
 
     // Always run bcrypt even on miss — prevents timing-based user enumeration
     const dummyHash = "$2b$12$invalidhashfortimingprotection000000000000000000000000";

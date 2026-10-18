@@ -73,18 +73,19 @@ export function LoginForm() {
         </Alert>
       )}
 
-      {/* Email */}
+      {/* Email or phone */}
       <div className="space-y-1.5">
         <label htmlFor="email" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Email Address <span className="text-destructive">*</span>
+          Email or Phone <span className="text-destructive">*</span>
         </label>
         <div className="relative">
           <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="email"
-            type="email"
-            autoComplete="email"
-            placeholder="investor@example.com"
+            type="text"
+            inputMode="email"
+            autoComplete="username"
+            placeholder="you@example.com or 01712345678"
             className="h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs"
             aria-invalid={!!errors.email}
             {...register("email")}

@@ -1,17 +1,22 @@
 import { Resend } from "resend";
 import { env } from "@/config/env";
 
-const resend = new Resend(env.RESEND_API_KEY);
+// Created on first send: `new Resend()` throws without a key, which would break
+// every module that merely imports the mailer (tests, builds without secrets).
+let resend: Resend | null = null;
+const client = () => (resend ??= new Resend(env.RESEND_API_KEY));
 
 interface SendEmailOptions {
-  to: string;
+  /** Recipient. Investors may sign up without an email — then nothing is sent. */
+  to: string | null | undefined;
   subject: string;
   html: string;
   replyTo?: string;
 }
 
 export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions): Promise<void> {
-  const { error } = await resend.emails.send({
+  if (!to) return;
+  const { error } = await client().emails.send({
     from: env.EMAIL_FROM,
     to,
     subject,

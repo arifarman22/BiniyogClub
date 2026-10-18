@@ -52,6 +52,11 @@ vi.mock("@/lib/authz", () => ({
   can: vi.fn().mockResolvedValue(true),
 }));
 
+// Notifications are fire-and-forget side effects, out of scope here
+vi.mock("@/server/services/notification.service", () => ({
+  notificationService: { onInvestmentCreated: vi.fn().mockResolvedValue(undefined) },
+}));
+
 const { investmentService } = await import("@/server/services/investment.service");
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────

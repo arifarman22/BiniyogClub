@@ -66,10 +66,11 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
 
       {/* ── Hero card ── */}
       <div className="surface-card overflow-hidden">
-        <div className="relative h-28 overflow-hidden bg-[#06140f]"><div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_100%_at_100%_0%,rgba(16,185,129,0.35),transparent_60%)]" /><div className="absolute inset-0 fintech-grid-pattern opacity-30" /></div>
+        <div className="relative h-14 overflow-hidden bg-[#06140f]"><div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_100%_at_100%_0%,rgba(16,185,129,0.35),transparent_60%)]" /><div className="absolute inset-0 fintech-grid-pattern opacity-30" /></div>
         <div className="px-6 pb-6">
-          <div className="flex items-end justify-between -mt-10 mb-4">
-            <div className="flex h-20 w-20 items-center justify-center rounded-2xl border-4 border-card bg-brand-600 text-white text-2xl font-bold shadow-md">
+          <div className="flex items-end justify-between -mt-8 mb-4">
+            {/* relative z-10 keeps the photo above the (positioned) banner */}
+            <div className="relative z-10 flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl border-4 border-card bg-brand-600 text-white text-2xl font-bold shadow-md">
               {user.avatarUrl
                 // eslint-disable-next-line @next/next/no-img-element
                 ? <img src={user.avatarUrl} alt={user.name} className="h-full w-full rounded-xl object-cover" />
@@ -81,7 +82,7 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
             </div>
           </div>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-[1.75rem]">{user.name}</h1>
-          <p className="text-sm text-muted-foreground">{user.email}</p>
+          <p className="text-sm text-muted-foreground">{user.email ?? user.phone}</p>
           <div className="mt-2 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
               <Shield className="h-3 w-3" /> {user.role.replace(/_/g, " ")}
@@ -193,9 +194,9 @@ export default async function AdminUserDetailPage({ params }: AsyncComponentProp
             <h2 className="mb-3 font-semibold text-sm">Quick Links</h2>
             <div className="space-y-1">
               {[
-                { href: `/admin/investments?search=${encodeURIComponent(user.email)}`, label: "View Investments" },
-                { href: `/admin/payments?search=${encodeURIComponent(user.email)}`, label: "View Payments" },
-                { href: `/admin/audit-logs?search=${encodeURIComponent(user.email)}`, label: "Audit Logs" },
+                { href: `/admin/investments?search=${encodeURIComponent(user.email ?? user.phone ?? user.name)}`, label: "View Investments" },
+                { href: `/admin/payments?search=${encodeURIComponent(user.email ?? user.phone ?? user.name)}`, label: "View Payments" },
+                { href: `/admin/audit-logs?search=${encodeURIComponent(user.email ?? user.phone ?? user.name)}`, label: "Audit Logs" },
               ].map(({ href, label }) => (
                 <Link
                   key={href}

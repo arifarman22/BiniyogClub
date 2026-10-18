@@ -239,7 +239,8 @@ async function generateInvestmentReceipt(
   const receiptNumber = investment.receiptNumber ?? investment.id;
   const amountBdt = Number(investment.amountBdt);
   const activatedAt = (investment.activatedAt ?? investment.createdAt).toISOString();
-  const investorEmail = investment.investorProfile.user.email;
+  // Investors may have no email; "" keeps the receipt signature stable either way.
+  const investorEmail = investment.investorProfile.user.email ?? "";
   const appUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://biniyogclub.com").replace("http://localhost:3000", "https://biniyogclub.com");
 
   const verificationHash = signReceipt({
@@ -257,7 +258,7 @@ async function generateInvestmentReceipt(
     verificationUrl: `${appUrl}/verify/${receiptNumber}`,
     investor: {
       name:  investment.investorProfile.user.name ?? "Investor",
-      email: investorEmail,
+      email: investorEmail || "—",
       phone: investment.investorProfile.user.phone,
     },
     project: {
@@ -402,7 +403,7 @@ async function issueInvestmentAgreement(
     verificationUrl: `${appUrl}/verify/${investment.receiptNumber}`,
     investor: {
       name: investment.investorProfile.user.name ?? "Investor",
-      email: investment.investorProfile.user.email,
+      email: investment.investorProfile.user.email ?? "—",
       phone: investment.investorProfile.user.phone,
       nationalId: investment.investorProfile.nationalId,
       address: investment.investorProfile.address,

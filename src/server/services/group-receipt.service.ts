@@ -82,7 +82,7 @@ export async function renderGroupReceipt(session: SessionUser, groupInvestmentId
     investmentId: inv.id,
     generatedAt: new Date().toISOString(),
     verificationUrl: `${appUrl}/verify/${f.receiptNumber}`,
-    investor: { name: inv.investor.name ?? "Investor", email: inv.investor.email, phone: inv.investor.phone },
+    investor: { name: inv.investor.name ?? "Investor", email: inv.investor.email ?? "—", phone: inv.investor.phone },
     project: {
       title: f.title,
       expectedReturnPct: f.returnPct,

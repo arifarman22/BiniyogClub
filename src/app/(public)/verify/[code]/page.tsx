@@ -68,7 +68,7 @@ async function getVerificationResult(code: string) {
       investmentId:   investment.id,
       amountBdt:      Number(investment.amountBdt),
       activatedAt,
-      investorEmail:  investment.investorProfile.user.email,
+      investorEmail:  investment.investorProfile.user.email ?? "",
     },
     doc.verificationHash,
   );

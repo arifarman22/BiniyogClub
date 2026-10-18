@@ -62,41 +62,94 @@ function isAdult(isoDate: string) {
   return eighteen <= now && dob.getUTCFullYear() >= 1900;
 }
 
+/** "DD/MM/YYYY" → "YYYY-MM-DD", or null when it isn't a real calendar date. */
+export function dmyToIso(dmy: string): string | null {
+  const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(dmy.trim());
+  if (!m) return null;
+  const [, dd, mm, yyyy] = m;
+  const d = new Date(Date.UTC(+yyyy, +mm - 1, +dd));
+  if (d.getUTCFullYear() !== +yyyy || d.getUTCMonth() !== +mm - 1 || d.getUTCDate() !== +dd) return null;
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+const nameSchema = z
+  .string()
+  .trim()
+  .min(2, "Name must be at least 2 characters")
+  .max(100, "Name must be at most 100 characters")
+  .regex(/^[\p{L}\s.'-]+$/u, "Name contains invalid characters");
+
+/** Optional email — blank is allowed. */
+const optionalEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .email("Enter a valid email address")
+  .optional()
+  .or(z.literal(""));
+
+/** Date of birth typed as DD/MM/YYYY; must be a real date and 18+. */
+const dobDmySchema = z
+  .string()
+  .trim()
+  .regex(/^\d{2}\/\d{2}\/\d{4}$/, "Enter your date of birth as DD/MM/YYYY")
+  .refine((v) => dmyToIso(v) !== null, "Enter a real date (DD/MM/YYYY)")
+  .refine((v) => isAdult(dmyToIso(v) ?? ""), "You must be at least 18 years old");
+
+/**
+ * Signup is kept short. Identity details (NID, addresses, nominee) are added
+ * later from the investor's profile — see investorProfileSchema.
+ */
+/** Account password rule — shared by signup and the profile's change-password form. */
+export const ACCOUNT_PASSWORD_MIN = 6;
+export const accountPasswordSchema = z
+  .string()
+  .min(ACCOUNT_PASSWORD_MIN, `Password must be at least ${ACCOUNT_PASSWORD_MIN} characters`);
+
 export const registerSchema = z
   .object({
-    name: z
-      .string()
-      .min(2, "Name must be at least 2 characters")
-      .max(100, "Name must be at most 100 characters")
-      .regex(/^[\p{L}\s'-]+$/u, "Name contains invalid characters"),
-    email: z.string().email("Enter a valid email address").toLowerCase(),
+    name: nameSchema,
+    email: optionalEmailSchema,
     phone: phoneSchema,
-    password: passwordSchema,
+    dateOfBirth: dobDmySchema,
+    password: accountPasswordSchema,
     confirmPassword: z.string(),
     role: z.enum(["INVESTOR", "FARMER"], {
       error: "Select a valid role",
     }),
-    nidNumber: nidSchema("NID number"),
-    dateOfBirth: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/, "Enter your date of birth")
-      .refine((v) => isAdult(v), "You must be at least 18 years old"),
-    presentAddress: bdAddressSchema,
-    permanentAddress: bdAddressSchema,
-    // Nominee is optional — blank fields are allowed
-    nomineeName: z.string().trim().max(100, "Name must be at most 100 characters").optional().or(z.literal("")),
-    nomineeNidNumber: nidSchema("Nominee NID number").optional().or(z.literal("")),
-    nomineeRelation: z.string().trim().max(100, "Relation must be at most 100 characters").optional().or(z.literal("")),
   })
   .refine((d) => d.password === d.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
 
+/** Everything an investor can edit on their profile (the former signup details). */
+export const investorProfileSchema = z.object({
+  name: nameSchema,
+  email: optionalEmailSchema,
+  phone: phoneSchema,
+  dateOfBirth: dobDmySchema,
+  nidNumber: nidSchema("NID number").optional().or(z.literal("")),
+  presentAddress: bdAddressSchema.optional(),
+  permanentAddress: bdAddressSchema.optional(),
+  nomineeName: z.string().trim().max(100, "Name must be at most 100 characters").optional().or(z.literal("")),
+  nomineeNidNumber: nidSchema("Nominee NID number").optional().or(z.literal("")),
+});
+export type InvestorProfileInput = z.infer<typeof investorProfileSchema>;
+
 // ─── Login ────────────────────────────────────────────────────────────────────
 
+/** Login identifier: an email address or a Bangladeshi phone number. */
 export const loginSchema = z.object({
-  email: z.string().email("Enter a valid email address").toLowerCase(),
+  email: z
+    .string()
+    .trim()
+    .min(1, "Enter your email or phone number")
+    .refine(
+      (v) => z.string().email().safeParse(v).success || /^(\+8801|01)[3-9]\d{8}$/.test(v.replace(/[\s-]/g, "")),
+      "Enter a valid email or Bangladeshi phone number",
+    )
+    .transform((v) => (v.includes("@") ? v.toLowerCase() : v.replace(/[\s-]/g, ""))),
   password: z.string().min(1, "Password is required"),
 });
 
@@ -122,7 +175,7 @@ export const resetPasswordSchema = z
 export const changePasswordSchema = z
   .object({
     currentPassword: z.string().min(1, "Current password is required"),
-    newPassword: passwordSchema,
+    newPassword: accountPasswordSchema,
     confirmPassword: z.string(),
   })
   .refine((d) => d.newPassword === d.confirmPassword, {

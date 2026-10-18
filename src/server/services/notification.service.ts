@@ -156,13 +156,13 @@ export const notificationService = {
   },
 
   /** Investment approved by admin → in-app + email investor */
-  async onInvestmentApproved(investorUserId: string, investorName: string, investorEmail: string, projectTitle: string, amountBdt: number, receiptNumber: string, investmentId: string) {
+  async onInvestmentApproved(investorUserId: string, investorName: string, investorEmail: string | null, projectTitle: string, amountBdt: number, receiptNumber: string, investmentId: string) {
     await notifyUser(investorUserId, "INVESTMENT_CONFIRMED", "Investment Approved", `Your investment of ৳${amountBdt.toLocaleString()} in "${projectTitle}" has been approved. Receipt: ${receiptNumber}`, { investmentId, receiptNumber });
     await sendEmail({ to: investorEmail, subject: "Your Biniyog Club investment has been approved", html: tplInvestmentApproved(investorName, projectTitle, amountBdt, receiptNumber) });
   },
 
   /** Investment cancelled by admin → in-app + email investor */
-  async onInvestmentCancelledByAdmin(investorUserId: string, investorName: string, investorEmail: string, projectTitle: string, reason: string, investmentId: string) {
+  async onInvestmentCancelledByAdmin(investorUserId: string, investorName: string, investorEmail: string | null, projectTitle: string, reason: string, investmentId: string) {
     await notifyUser(investorUserId, "INVESTMENT_CONFIRMED", "Investment Cancelled", `Your investment in "${projectTitle}" has been cancelled. Reason: ${reason}`, { investmentId });
     await sendEmail({ to: investorEmail, subject: "Your Biniyog Club investment has been cancelled", html: tplInvestmentCancelled(investorName, projectTitle, reason) });
   },
@@ -175,21 +175,21 @@ export const notificationService = {
   },
 
   /** Withdrawal approved or rejected → in-app + email investor */
-  async onWithdrawalStatusChanged(investorUserId: string, investorName: string, investorEmail: string, status: "APPROVED" | "REJECTED", amountBdt: number, withdrawalId: string, reason?: string) {
+  async onWithdrawalStatusChanged(investorUserId: string, investorName: string, investorEmail: string | null, status: "APPROVED" | "REJECTED", amountBdt: number, withdrawalId: string, reason?: string) {
     const notifType: NotificationType = status === "APPROVED" ? "WITHDRAWAL_APPROVED" : "SYSTEM";
     await notifyUser(investorUserId, notifType, `Withdrawal ${status === "APPROVED" ? "Approved" : "Rejected"}`, `Your withdrawal of ৳${amountBdt.toLocaleString()} has been ${status.toLowerCase()}.${reason ? ` Reason: ${reason}` : ""}`, { withdrawalId });
     await sendEmail({ to: investorEmail, subject: `Your Biniyog Club withdrawal has been ${status.toLowerCase()}`, html: tplWithdrawalStatus(investorName, status, amountBdt, reason) });
   },
 
   /** KYC verified or rejected → in-app + email investor */
-  async onKycStatusChanged(investorUserId: string, investorName: string, investorEmail: string, status: "VERIFIED" | "REJECTED", note?: string) {
+  async onKycStatusChanged(investorUserId: string, investorName: string, investorEmail: string | null, status: "VERIFIED" | "REJECTED", note?: string) {
     const notifType: NotificationType = status === "VERIFIED" ? "KYC_APPROVED" : "KYC_REJECTED";
     await notifyUser(investorUserId, notifType, `KYC ${status === "VERIFIED" ? "Verified" : "Rejected"}`, `Your KYC submission has been ${status.toLowerCase()}.${note ? ` Note: ${note}` : ""}`, { status });
     await sendEmail({ to: investorEmail, subject: `Your Biniyog Club KYC has been ${status.toLowerCase()}`, html: tplKycStatus(investorName, status, note) });
   },
 
   /** Distribution posted → in-app + email each investor in the batch */
-  async onDistributionPosted(lines: { investorUserId: string; investorEmail: string; investorName: string; netAmountBdt: number; projectTitle: string; batchId: string }[]) {
+  async onDistributionPosted(lines: { investorUserId: string; investorEmail: string | null; investorName: string; netAmountBdt: number; projectTitle: string; batchId: string }[]) {
     await Promise.allSettled(lines.map(async (l) => {
       await notifyUser(l.investorUserId, "DISTRIBUTION_POSTED", "Profit Distribution Posted", `৳${l.netAmountBdt.toLocaleString()} from "${l.projectTitle}" has been posted to your wallet.`, { batchId: l.batchId });
       await sendEmail({ to: l.investorEmail, subject: `Profit distribution from ${l.projectTitle}`, html: tplDistributionPosted(l.investorName, l.projectTitle, l.netAmountBdt, l.batchId) });

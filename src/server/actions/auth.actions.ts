@@ -3,6 +3,9 @@
 import { authService } from "@/server/services/auth.service";
 import {
   registerSchema,
+  dmyToIso,
+  investorProfileSchema,
+  formatBdAddress,
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
@@ -63,9 +66,13 @@ export async function registerAction(formData: unknown): Promise<ActionResult> {
   if (!parsed.success) return validationError(parsed.error.issues);
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { confirmPassword: _confirm, ...input } = parsed.data;
-    await authService.register({ ...input, role: input.role as "INVESTOR" });
+    const input = parsed.data;
+    await authService.register({
+      ...input,
+      email: input.email || null,
+      dateOfBirth: dmyToIso(input.dateOfBirth)!, // validated as DD/MM/YYYY
+      role: input.role as "INVESTOR",
+    });
     return { success: true, data: undefined };
   } catch (error) {
     return serviceError(error);
@@ -118,6 +125,9 @@ export async function resendVerificationEmailAction(): Promise<ActionResult> {
     const session = await requireSession();
     if (session.emailVerified) {
       return { success: false, error: "Email is already verified", code: "ALREADY_VERIFIED" };
+    }
+    if (!session.email) {
+      return { success: false, error: "Add an email address to your profile first", code: "NO_EMAIL" };
     }
     await authService.sendVerificationEmail(session.id, session.email, session.name);
     return { success: true, data: undefined };
@@ -207,6 +217,89 @@ export async function updateAvatarAction(formData: FormData): Promise<ActionResu
     return { success: true, data: { avatarUrl: result.secure_url } };
   } catch (error) {
     return serviceError(error) as ActionResult<{ avatarUrl: string }>;
+  }
+}
+
+/**
+ * Investor identity details — the fields that used to be part of signup
+ * (email, DOB, NID, addresses, nominee). Saved to the user, investor profile
+ * and KYC record together.
+ */
+export async function updateIdentityDetailsAction(formData: unknown): Promise<ActionResult> {
+  const parsed = investorProfileSchema.safeParse(formData);
+  if (!parsed.success) return validationError(parsed.error.issues);
+
+  try {
+    const session = await requireSession();
+    const d = parsed.data;
+    const email = d.email?.trim().toLowerCase() || null;
+    const nid = d.nidNumber?.trim() || null;
+    const dob = new Date(`${dmyToIso(d.dateOfBirth)}T00:00:00Z`);
+
+    const [emailTaken, phoneTaken, nidTaken] = await Promise.all([
+      email ? db.user.findFirst({ where: { email, id: { not: session.id } }, select: { id: true } }) : null,
+      db.user.findFirst({ where: { phone: d.phone, id: { not: session.id } }, select: { id: true } }),
+      nid ? db.investorProfile.findFirst({ where: { nationalId: nid, userId: { not: session.id } }, select: { id: true } }) : null,
+    ]);
+    if (emailTaken) return { success: false, error: "That email is already used by another account" };
+    if (phoneTaken) return { success: false, error: "That phone number is already used by another account" };
+    if (nidTaken) return { success: false, error: "That NID number is already registered" };
+
+    const present = d.presentAddress;
+    const permanent = d.permanentAddress;
+
+    await db.$transaction(async (tx) => {
+      const current = await tx.user.findUnique({ where: { id: session.id }, select: { email: true } });
+      await tx.user.update({
+        where: { id: session.id },
+        data: {
+          name: d.name,
+          phone: d.phone,
+          email,
+          // A changed email isn't verified until confirmed again.
+          ...(email !== current?.email ? { emailVerified: false } : {}),
+        },
+      });
+
+      const profile = {
+        nationalId: nid,
+        dateOfBirth: dob,
+        nomineeName: d.nomineeName?.trim() || null,
+        nomineeNationalId: d.nomineeNidNumber?.trim() || null,
+        ...(present ? { address: formatBdAddress(present), city: present.district } : {}),
+      };
+      await tx.investorProfile.upsert({
+        where: { userId: session.id },
+        create: { userId: session.id, country: "BD", ...profile },
+        update: profile,
+      });
+
+      const kyc = {
+        fullName: d.name,
+        dateOfBirth: dob,
+        mobileNumber: d.phone,
+        documentType: nid ? ("NATIONAL_ID" as const) : null,
+        documentNumber: nid,
+        ...(present ? {
+          presentAddress: present.line, presentDivision: present.division, presentDistrict: present.district,
+          presentUpazila: present.thana, presentPostalCode: present.postalCode,
+          city: present.district, district: present.district, division: present.division, postalCode: present.postalCode,
+        } : {}),
+        ...(permanent ? {
+          permanentAddress: permanent.line, permanentDivision: permanent.division, permanentDistrict: permanent.district,
+          permanentUpazila: permanent.thana, permanentPostalCode: permanent.postalCode,
+        } : {}),
+      };
+      await tx.kyc.upsert({
+        where: { userId: session.id },
+        create: { userId: session.id, ...kyc },
+        update: kyc,
+      });
+    });
+
+    return { success: true, data: undefined };
+  } catch (error) {
+    return serviceError(error);
   }
 }
 

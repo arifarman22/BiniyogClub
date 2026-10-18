@@ -22,7 +22,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
   const avatarUrl = userRow?.avatarUrl ?? null;
 
   return (
-    <DashboardShell initials={initials} name={session.name} email={session.email} avatarUrl={avatarUrl}>
+    <DashboardShell initials={initials} name={session.name} email={session.email ?? session.phone ?? ""} avatarUrl={avatarUrl}>
       {children}
     </DashboardShell>
   );

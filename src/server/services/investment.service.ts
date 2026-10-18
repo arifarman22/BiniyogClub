@@ -199,19 +199,22 @@ export const investmentService = {
       },
     );
 
-    // Notify admins of new investment (fire-and-forget)
-    const { notificationService } = await import("@/server/services/notification.service");
-    const [investorUser, projectInfo] = await Promise.all([
-      db.user.findUnique({ where: { id: session.id }, select: { name: true } }),
-      db.project.findUnique({ where: { id: input.projectId }, select: { title: true } }),
-    ]);
-    notificationService.onInvestmentCreated(
-      investorUser?.name ?? "An investor",
-      projectInfo?.title ?? "a project",
-      input.projectId,
-      input.amountBdt,
-      investment.id,
-    ).catch((err) => console.error("[investment] admin notification failed:", err));
+    // Notify admins of new investment (fire-and-forget). The investment is already
+    // committed, so nothing in here — lookups included — may fail the request.
+    void (async () => {
+      const { notificationService } = await import("@/server/services/notification.service");
+      const [investorUser, projectInfo] = await Promise.all([
+        db.user.findUnique({ where: { id: session.id }, select: { name: true } }),
+        db.project.findUnique({ where: { id: input.projectId }, select: { title: true } }),
+      ]);
+      await notificationService.onInvestmentCreated(
+        investorUser?.name ?? "An investor",
+        projectInfo?.title ?? "a project",
+        input.projectId,
+        input.amountBdt,
+        investment.id,
+      );
+    })().catch((err) => console.error("[investment] admin notification failed:", err));
 
     return { investment, idempotent: false };
   },
