@@ -28,7 +28,7 @@ const NAV_BEFORE = [
   { href: "/how-it-works", label: "How It Works" },
 ];
 const NAV_AFTER = [
-  { href: "/projects", label: "Projects" },
+  { href: "/projects", label: "All Projects" },
   { href: "/faq", label: "FAQ" },
   { href: "/contact", label: "Contact" },
 ];
