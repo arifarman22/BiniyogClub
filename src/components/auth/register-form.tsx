@@ -96,7 +96,7 @@ export function RegisterForm() {
         {/* Email (optional) */}
         <div className="space-y-1.5">
           <label htmlFor="email" className={labelCls}>
-            Email <span className="font-normal normal-case tracking-normal">(optional)</span>
+            Email
           </label>
           <div className="relative">
             <Mail className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
