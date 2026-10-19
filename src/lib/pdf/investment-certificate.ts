@@ -10,6 +10,7 @@ import PDFDocument from "pdfkit";
 import * as QRCode from "qrcode";
 import * as fs from "fs";
 import * as path from "path";
+import { getMaturityDate } from "@/lib/financial/maturity-date";
 
 export interface InvestmentCertificateData {
   receiptNumber: string;
@@ -106,12 +107,7 @@ export async function renderInvestmentCertificate(
   const retMax = isRange ? Math.round(amountBdt * returnPctMax!) / 100 : null;
   const rateLabel = isRange ? `${fmtPct(returnPctMin!)} – ${fmtPct(returnPctMax!)}` : fmtPct(data.project.expectedReturnPct);
   const returnLabel = retMax != null ? `${fmtBdt(retMin)} – ${fmtBdt(retMax)}` : fmtBdt(retMin);
-  const totalLabel = retMax != null
-    ? `${fmtBdt(amountBdt + retMin)} – ${fmtBdt(amountBdt + retMax)}`
-    : fmtBdt(amountBdt + retMin);
-
-  const maturity = new Date(data.investment.activatedAt);
-  maturity.setDate(maturity.getDate() + data.project.durationDays);
+  const maturity = getMaturityDate(data.investment.activatedAt, data.project.durationDays);
 
   return new Promise((resolve, reject) => {
     const doc = new PDFDocument({
@@ -222,7 +218,7 @@ export async function renderInvestmentCertificate(
       {
         label: "EXPECTED RETURN",
         value: retMax != null ? `${fmtBdt(retMin)} –\n${fmtBdt(retMax)}` : fmtBdt(retMin),
-        sub: `${rateLabel} of principal`,
+        sub: "Annually",
       },
       { label: "MATURITY DATE", value: fmtDate(maturity.toISOString()), sub: `${data.project.durationDays}-day term` },
     ];
@@ -286,11 +282,10 @@ export async function renderInvestmentCertificate(
     if (data.project.location) investmentRows.push({ label: "Location", value: data.project.location });
     investmentRows.push(
       { label: "Return type", value: RETURN_LABELS[data.investment.returnType] ?? data.investment.returnType },
-      { label: isRange ? "Return range" : "Return rate", value: rateLabel },
+      { label: "Return rate", value: rateLabel },
       { label: "Effective date", value: fmtDate(data.investment.activatedAt) },
       { label: "Maturity date", value: fmtDate(maturity.toISOString()) },
-      { label: "Expected return", value: returnLabel },
-      { label: "Total expected", value: totalLabel },
+      { label: "Expected return", value: `${returnLabel}\n(annually)` },
     );
 
     const leftEnd = detailColumn(M, y, "Investor", investorRows, 70);

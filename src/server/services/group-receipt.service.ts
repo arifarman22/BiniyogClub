@@ -12,6 +12,7 @@ import { can } from "@/lib/authz";
 import { PERMISSIONS } from "@/lib/authz/permissions";
 import { ForbiddenError, NotFoundError, ValidationError } from "@/lib/errors";
 import { renderInvestmentCertificate } from "@/lib/pdf/investment-certificate";
+import { getMaturityDate } from "@/lib/financial/maturity-date";
 import type { SessionUser } from "@/lib/auth/session";
 
 const RECEIPT_STATUSES = ["ACTIVE", "COMPLETED"] as const;
@@ -105,8 +106,7 @@ export async function verifyGroupReceipt(receiptNumber: string) {
   const inv = await loadByReceiptNumber(receiptNumber);
   if (!inv) return null;
   const f = receiptFields(inv);
-  const maturity = new Date(f.activatedAt);
-  maturity.setDate(maturity.getDate() + f.durationDays);
+  const maturity = getMaturityDate(f.activatedAt, f.durationDays);
   return {
     active: (RECEIPT_STATUSES as readonly string[]).includes(inv.status),
     data: {

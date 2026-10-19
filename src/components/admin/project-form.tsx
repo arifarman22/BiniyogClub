@@ -107,6 +107,11 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
   const [returnMode, setReturnMode] = useState<"fixed" | "range">(
     defaultValues.returnPctMin ? "range" : "fixed"
   );
+  const [annualReturnPct, setAnnualReturnPct] = useState({
+    fixed: String(defaultValues.expectedReturnPct ?? ""),
+    min: String(defaultValues.returnPctMin ?? ""),
+    max: String(defaultValues.returnPctMax ?? ""),
+  });
   const [customCategory, setCustomCategory] = useState<string>(
     defaultValues.category === "OTHER" && defaultValues.riskInfo?.startsWith("Category: ")
       ? defaultValues.riskInfo.split("\n")[0].replace("Category: ", "")
@@ -326,7 +331,7 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
           </div>
           <div className="sm:col-span-2">
             <div className="flex items-center justify-between mb-1.5">
-              <Label>Expected Return (%) *</Label>
+              <Label>Expected Annual Return (%) *</Label>
               <div className="flex rounded-lg border border-input overflow-hidden text-xs">
                 <button type="button" onClick={() => setReturnMode("fixed")}
                   className={`px-3 py-1 transition-colors ${returnMode === "fixed" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`}>
@@ -341,26 +346,51 @@ export function ProjectForm({ mode, projectId, managers, groups, defaultValues =
             {returnMode === "fixed" ? (
               <div>
                 <Input name="expectedReturnPct" type="number" min="0.01" max="100" step="0.01"
-                  defaultValue={String(defaultValues.expectedReturnPct ?? "")} placeholder="18.5" />
+                  value={annualReturnPct.fixed} placeholder="18.5"
+                  onChange={(e) => setAnnualReturnPct((prev) => ({ ...prev, fixed: e.target.value }))} />
                 <FieldError msg={fieldErrors.expectedReturnPct} />
               </div>
             ) : (
               <div className="flex items-center gap-2">
                 <div className="flex-1">
                   <Input name="returnPctMin" type="number" min="0.01" max="100" step="0.01"
-                    defaultValue={String(defaultValues.returnPctMin ?? "")} placeholder="10" />
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">Min %</p>
+                    value={annualReturnPct.min} placeholder="10"
+                    onChange={(e) => setAnnualReturnPct((prev) => ({ ...prev, min: e.target.value }))} />
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Annual min %</p>
                   <FieldError msg={fieldErrors.returnPctMin} />
                 </div>
                 <span className="text-muted-foreground text-sm mt-[-14px]">–</span>
                 <div className="flex-1">
                   <Input name="returnPctMax" type="number" min="0.01" max="100" step="0.01"
-                    defaultValue={String(defaultValues.returnPctMax ?? "")} placeholder="15" />
-                  <p className="mt-0.5 text-[10px] text-muted-foreground">Max %</p>
+                    value={annualReturnPct.max} placeholder="15"
+                    onChange={(e) => setAnnualReturnPct((prev) => ({ ...prev, max: e.target.value }))} />
+                  <p className="mt-0.5 text-[10px] text-muted-foreground">Annual max %</p>
                   <FieldError msg={fieldErrors.returnPctMax} />
                 </div>
               </div>
             )}
+            <div className="mt-3">
+              <Label htmlFor="monthlyReturnPct">Expected Monthly Return (%)</Label>
+              <Input
+                id="monthlyReturnPct"
+                value={
+                  returnMode === "fixed"
+                    ? annualReturnPct.fixed
+                      ? (Number(annualReturnPct.fixed) / 12).toFixed(2)
+                      : ""
+                    : annualReturnPct.min || annualReturnPct.max
+                      ? `${annualReturnPct.min ? (Number(annualReturnPct.min) / 12).toFixed(2) : "—"} – ${annualReturnPct.max ? (Number(annualReturnPct.max) / 12).toFixed(2) : "—"}`
+                      : ""
+                }
+                readOnly
+                tabIndex={-1}
+                className="mt-1.5 bg-muted/50"
+                aria-describedby="monthlyReturnHelp"
+              />
+              <p id="monthlyReturnHelp" className="mt-0.5 text-[10px] text-muted-foreground">
+                Automatically calculated from the annual return ÷ 12
+              </p>
+            </div>
           </div>
         </div>
       </SectionCard>

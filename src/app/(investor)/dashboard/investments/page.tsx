@@ -10,6 +10,7 @@ import { DownloadCertificateButton } from "@/components/investments/download-cer
 import { UserRound, BarChart3, FileDown } from "lucide-react";
 import { cn } from "cn";
 import { formatReturnPct, getExpectedReturnBdt } from "@/lib/financial/return-range";
+import { getMaturityDate } from "@/lib/financial/maturity-date";
 
 export const metadata: Metadata = { title: "Investments — Dashboard" };
 
@@ -83,9 +84,7 @@ function fmtDate(d: Date | string | null | undefined) {
 
 function maturityDate(inv: { activatedAt: Date | null; project: { durationDays: number } }) {
   if (!inv.activatedAt) return null;
-  const d = new Date(inv.activatedAt);
-  d.setDate(d.getDate() + inv.project.durationDays);
-  return d;
+  return getMaturityDate(inv.activatedAt, inv.project.durationDays);
 }
 
 function daysRemaining(maturity: Date | null) {

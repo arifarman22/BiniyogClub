@@ -12,6 +12,7 @@ import PDFDocument from "pdfkit";
 import * as QRCode from "qrcode";
 import * as fs from "fs";
 import * as path from "path";
+import { getMaturityDate } from "@/lib/financial/maturity-date";
 
 export interface InvestmentAgreementData {
   agreementNumber: string;   // same as the investment receipt number
@@ -123,8 +124,7 @@ export async function renderInvestmentAgreement(data: InvestmentAgreementData): 
   });
   const logoPath = getLogoPath();
 
-  const maturityDate = new Date(data.investment.activatedAt);
-  maturityDate.setDate(maturityDate.getDate() + data.project.durationDays);
+  const maturityDate = getMaturityDate(data.investment.activatedAt, data.project.durationDays);
   const maturity = fmtDate(maturityDate.toISOString());
 
   return new Promise((resolve, reject) => {

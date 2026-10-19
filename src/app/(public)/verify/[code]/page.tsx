@@ -1,5 +1,6 @@
 import { db } from "@/lib/db/prisma";
 import { verifyReceipt } from "@/lib/pdf/verify";
+import { getMaturityDate } from "@/lib/financial/maturity-date";
 import { verifyGroupReceipt } from "@/server/services/group-receipt.service";
 import { CheckCircle, XCircle, ShieldAlert } from "lucide-react";
 
@@ -75,8 +76,7 @@ async function getVerificationResult(code: string) {
 
   if (!isValid) return { valid: false, reason: "hash_mismatch" as const };
 
-  const maturityDate = new Date(activatedAt);
-  maturityDate.setDate(maturityDate.getDate() + investment.project.durationDays);
+  const maturityDate = getMaturityDate(activatedAt, investment.project.durationDays);
 
   return {
     valid: true,
