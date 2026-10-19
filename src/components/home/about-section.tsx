@@ -2,11 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ShieldCheck,
-  ChevronRight,
-  CheckCircle2,
-} from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
 import { SectionHeading } from "@/components/home/section-heading";
 
@@ -41,55 +37,16 @@ export function AboutSection() {
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:items-center">
-          {/* ── Left: Real Due Diligence Image & Governance Card ── */}
+          {/* ── Left: Biniyog Club image ── */}
           <AnimatedSection animation="fade-right" delay={100} className="lg:col-span-5">
-            <div className="relative rounded-none border border-border/80 bg-card overflow-hidden shadow-2xl group">
-              {/* Photorealistic Real Due Diligence Photo */}
-              <div className="relative h-72 sm:h-80 w-full overflow-hidden">
-                <Image
-                  src="/images/about-due-diligence.jpg"
-                  alt="Biniyog Club Financial Analysts and Legal Auditors in Dhaka"
-                  fill
-                  className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 40vw"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-                
-                {/* Floating Top Badge */}
-                <div className="absolute top-4 left-4 inline-flex items-center gap-2 rounded-none bg-slate-900/80 backdrop-blur-md border border-white/15 px-3.5 py-1 text-xs text-white">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" />
-                  <span>On-Site Due Diligence Team</span>
-                </div>
-
-                <div className="absolute bottom-4 left-4 right-4">
-                  <span className="text-[10px] font-bold tracking-wider text-emerald-400 uppercase">Dhaka Headquarters</span>
-                  <p className="text-sm font-semibold text-white mt-0.5">Physical Site & Financial Audits</p>
-                </div>
-              </div>
-
-              {/* Bottom Card Summary */}
-              <div className="p-6 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white">
-                <div className="grid grid-cols-2 gap-3 text-xs mb-4">
-                  <div className="rounded-none border border-white/10 bg-white/5 p-3">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Governance</p>
-                    <p className="text-sm font-bold text-white mt-0.5">Bangladesh Law</p>
-                    <p className="text-[10px] text-emerald-400 mt-1">Contract Act 1872</p>
-                  </div>
-                  <div className="rounded-none border border-white/10 bg-white/5 p-3">
-                    <p className="text-[10px] text-slate-400 uppercase font-semibold">Ledger Audit</p>
-                    <p className="text-sm font-bold text-white mt-0.5">Double-Entry</p>
-                    <p className="text-[10px] text-emerald-400 mt-1">Zero Tampering</p>
-                  </div>
-                </div>
-
-                <div className="rounded-none bg-emerald-950/50 border border-emerald-500/30 p-3 flex items-center justify-between text-xs text-slate-200">
-                  <span className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
-                    Multi-tier physical checks on every asset
-                  </span>
-                  <span className="font-bold text-emerald-400">Verified</span>
-                </div>
-              </div>
+            <div className="relative mx-auto aspect-[4/5] w-full max-w-md overflow-hidden border border-border/80 shadow-2xl">
+              <Image
+                src="/images/biniyog.png"
+                alt="Invest today, reap tomorrow — Biniyog Club"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 28rem, 40vw"
+              />
             </div>
           </AnimatedSection>
 

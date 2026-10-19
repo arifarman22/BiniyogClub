@@ -44,17 +44,7 @@ export function FinalCtaSection({ totalInvestors }: FinalCtaSectionProps) {
         </p>
 
         {/* Key Value Assurances */}
-        <div className="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-slate-300/90 mb-10">
-          <span className="inline-flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Start from ৳5,000
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <ShieldCheck className="h-4 w-4 text-emerald-400" /> Legally Enforceable Contracts
-          </span>
-          <span className="inline-flex items-center gap-1.5">
-            <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Direct Bank & MFS Payouts
-          </span>
-        </div>
+       
 
         {/* Action CTAs */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

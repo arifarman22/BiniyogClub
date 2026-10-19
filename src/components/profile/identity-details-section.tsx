@@ -4,6 +4,7 @@ import { useState, useTransition, type ReactNode } from "react";
 import { CalendarDays, CheckCircle2, CreditCard, Home, Mail, MapPin, Pencil, Phone, User, Users } from "lucide-react";
 import { updateIdentityDetailsAction } from "@/server/actions/auth.actions";
 import { BdAddressFields, EMPTY_BD_ADDRESS } from "@/components/auth/bd-address-fields";
+import { DobInput } from "@/components/ui/dob-input";
 import { dmyToIso, formatBdAddress, type BdAddress } from "@/validations/auth";
 
 export type IdentityData = {
@@ -23,13 +24,6 @@ const isoToDmy = (iso: string | null) => {
   if (!iso) return "";
   const d = new Date(iso);
   return `${String(d.getUTCDate()).padStart(2, "0")}/${String(d.getUTCMonth() + 1).padStart(2, "0")}/${d.getUTCFullYear()}`;
-};
-
-const maskDmy = (raw: string) => {
-  const d = raw.replace(/\D/g, "").slice(0, 8);
-  if (d.length <= 2) return d;
-  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
-  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
 };
 
 const inputCls =
@@ -143,7 +137,12 @@ export function IdentityDetailsSection({ data, avatar, onSaved }: {
             <Text label="Full Name" value={name} onChange={setName} required />
             <Text label="Phone Number" value={phone} onChange={setPhone} type="tel" inputMode="tel" required />
             <Text label="Email" value={email} onChange={setEmail} type="email" hint="optional" />
-            <Text label="Date of Birth" value={dob} onChange={(v) => setDob(maskDmy(v))} inputMode="numeric" placeholder="DD/MM/YYYY" maxLength={10} required />
+            <div className="space-y-1">
+              <label htmlFor="profile-dob" className="text-xs font-medium text-muted-foreground">
+                Date of Birth<span className="ml-0.5 text-destructive">*</span>
+              </label>
+              <DobInput id="profile-dob" value={dob} onChange={setDob} inputClassName="rounded-xl border-border focus-visible:ring-4 focus-visible:ring-primary/10" />
+            </div>
             <Text label="NID Number" value={nid} onChange={setNid} inputMode="numeric" placeholder="10 or 17 digits" hint="optional" />
           </div>
 

@@ -1,13 +1,14 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, type RegisterInput } from "@/validations/auth";
 import { registerAction } from "@/server/actions/auth.actions";
 import { Input } from "@/components/ui/input";
+import { DobInput } from "@/components/ui/dob-input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Spinner } from "@/components/ui/loading";
-import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight, CalendarDays } from "lucide-react";
+import { AlertTriangle, Eye, EyeOff, Mail, Phone, User, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -15,14 +16,6 @@ import { useRouter } from "next/navigation";
 const inputCls =
   "h-11 rounded-xl border-border/80 pl-10 text-sm focus-visible:ring-primary shadow-xs placeholder:text-muted-foreground/30";
 const labelCls = "text-xs font-semibold uppercase tracking-wider text-muted-foreground";
-
-/** Format typed digits as DD/MM/YYYY (slashes inserted automatically). */
-function maskDmy(raw: string) {
-  const d = raw.replace(/\D/g, "").slice(0, 8);
-  if (d.length <= 2) return d;
-  if (d.length <= 4) return `${d.slice(0, 2)}/${d.slice(2)}`;
-  return `${d.slice(0, 2)}/${d.slice(2, 4)}/${d.slice(4)}`;
-}
 
 /**
  * Short signup: name, optional email, phone, date of birth and password.
@@ -38,14 +31,13 @@ export function RegisterForm() {
     register,
     handleSubmit,
     setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema) });
 
   useEffect(() => {
     setValue("role", "INVESTOR");
   }, [setValue]);
-
-  const dob = register("dateOfBirth");
 
   async function onSubmit(data: RegisterInput) {
     setServerError(null);
@@ -111,24 +103,21 @@ export function RegisterForm() {
         <label htmlFor="dateOfBirth" className={labelCls}>
           Date of Birth <span className="text-destructive">*</span>
         </label>
-        <div className="relative">
-          <CalendarDays className="absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            id="dateOfBirth"
-            type="text"
-            inputMode="numeric"
-            autoComplete="bday"
-            placeholder="DD/MM/YYYY"
-            maxLength={10}
-            className={inputCls}
-            aria-invalid={!!errors.dateOfBirth}
-            {...dob}
-            onChange={(e) => {
-              e.target.value = maskDmy(e.target.value);
-              dob.onChange(e);
-            }}
-          />
-        </div>
+        <Controller
+          control={control}
+          name="dateOfBirth"
+          render={({ field }) => (
+            <DobInput
+              id="dateOfBirth"
+              name={field.name}
+              value={field.value ?? ""}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              invalid={!!errors.dateOfBirth}
+              inputClassName="h-11 rounded-xl border-border/80 shadow-xs"
+            />
+          )}
+        />
         {errors.dateOfBirth && <p className="text-xs text-destructive font-medium">{errors.dateOfBirth.message}</p>}
       </div>
 

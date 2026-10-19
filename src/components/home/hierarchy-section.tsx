@@ -15,8 +15,6 @@ import {
   Landmark,
   Users,
   Briefcase,
-  CheckCircle2,
-  Lock,
   ArrowRight,
 } from "lucide-react";
 import { AnimatedSection } from "@/components/shared/animated-section";
@@ -83,21 +81,21 @@ const GROUP_VISUAL_MAP: Record<
   }
 > = {
   MARINERS: {
-    cover: "/2.png",
+    cover: "/4.png",
     sector: "Maritime & Supply Chain",
     code: "GRP-01",
     icon: Landmark,
     color: "from-blue-600/90 to-blue-950/90",
   },
   MOHS: {
-    cover: "/3.png",
+    cover: "/2.png",
     sector: "Real Estate & Commercial Holdings",
     code: "GRP-02",
     icon: Building2,
     color: "from-amber-600/90 to-amber-950/90",
   },
   MARINOZZ: {
-    cover: "/4.png",
+    cover: "/3.png",
     sector: "Hospitality & Agro Enterprise",
     code: "GRP-03",
     icon: Sparkles,
@@ -277,68 +275,20 @@ function ProjectMiniCard({ project, index }: { project: Project; index: number }
 function GroupCard({ group, index }: { group: Group; index: number }) {
   const isLive = Boolean(group.slug);
   const visual = getGroupVisual(group);
-  const GroupIcon = visual.icon;
   const coverImage = group.coverUrl || visual.cover;
 
   return (
     <AnimatedSection delay={index * 80} animation="fade-up" className="flex flex-col h-full">
       <div className="flex flex-col h-full rounded-none border border-border/80 bg-card shadow-sm overflow-hidden hover:border-primary/40 hover:shadow-xl transition-all duration-300 group">
-        {/* Cover Image & Header Banner */}
-        <div className="relative h-36 w-full overflow-hidden bg-slate-900">
+        {/* Cover image only — the banners carry their own branding */}
+        <div className="relative aspect-[3/1] w-full overflow-hidden bg-muted">
           <Image
             src={coverImage}
             alt={group.name}
             fill
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover opacity-80 group-hover:scale-105 transition-transform duration-700 ease-out"
+            className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           />
-          {/* Multi-stage gradient overlays for high contrast */}
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950/80 via-transparent to-slate-950/40" />
-
-          {/* Top badges bar */}
-          <div className="absolute top-3 inset-x-3 flex items-center justify-between gap-2">
-            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-widest uppercase px-2 py-0.5 rounded-none bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-ping" />
-              {visual.code}
-            </span>
-
-            {isLive ? (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-300 bg-emerald-950/80 backdrop-blur-md px-2 py-0.5 border border-emerald-500/30">
-                <CheckCircle2 className="h-3 w-3 text-emerald-400" />
-                Active Holding
-              </span>
-            ) : (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-300 bg-amber-950/80 backdrop-blur-md px-2 py-0.5 border border-amber-500/30">
-                <Lock className="h-2.5 w-2.5 text-amber-400" />
-                Incubating
-              </span>
-            )}
-          </div>
-
-          {/* Bottom Banner Content */}
-          <div className="absolute bottom-3 inset-x-3 flex items-end justify-between gap-2">
-            <div className="flex items-center gap-2.5 min-w-0">
-              {/* Group Brand Logo / Icon Box */}
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-none bg-white/95 dark:bg-card/95 border border-primary/30 shadow-lg text-primary backdrop-blur-md">
-                {group.logoUrl ? (
-                  <div className="relative h-7 w-7">
-                    <Image src={group.logoUrl} alt={group.name} fill className="object-contain" />
-                  </div>
-                ) : (
-                  <GroupIcon className="h-5 w-5 text-primary" />
-                )}
-              </div>
-              <div className="min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-300 truncate">
-                  {visual.sector}
-                </p>
-                <h3 className="text-base font-bold text-white leading-tight truncate drop-shadow-sm">
-                  {group.name}
-                </h3>
-              </div>
-            </div>
-          </div>
         </div>
 
         {/* Card Sub-header & Description */}

@@ -176,10 +176,6 @@ export function BusinessGroupCard({ group, priority = false }: BusinessGroupCard
           className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
         />
 
-        {/* Cinematic Vignette Overlays */}
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-black/30 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-transparent pointer-events-none" />
-
         {/* Top Badges Bar */}
         <div className="absolute top-4 left-4 right-4 flex items-center justify-between gap-2 z-10">
           <div className="inline-flex items-center gap-2 rounded-none bg-slate-950/80 backdrop-blur-md border border-white/20 px-3 py-1.5 text-[11px] font-mono tracking-wider text-white shadow-sm">
@@ -210,10 +206,11 @@ export function BusinessGroupCard({ group, priority = false }: BusinessGroupCard
               <GroupIcon className="h-5 w-5 text-emerald-400" />
             </div>
             <div className="min-w-0 flex-1">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-emerald-400 block truncate">
+              {/* No shade over the image, so a text shadow keeps these legible on light covers */}
+              <span className="text-[10px] font-medium uppercase tracking-widest text-emerald-300 block truncate [text-shadow:0_1px_3px_rgb(0_0_0/0.9)]">
                 {meta.sector}
               </span>
-              <h3 className="text-xl sm:text-2xl font-normal text-white leading-tight tracking-tight drop-shadow-sm transition-colors duration-300 group-hover:text-emerald-300 truncate">
+              <h3 className="text-xl sm:text-2xl font-normal text-white leading-tight tracking-tight [text-shadow:0_1px_4px_rgb(0_0_0/0.9)] transition-colors duration-300 group-hover:text-emerald-300 truncate">
                 {group.name}
               </h3>
             </div>

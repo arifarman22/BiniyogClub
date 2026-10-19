@@ -107,89 +107,17 @@ export function SecuritySection() {
             </AnimatedSection>
           </div>
 
-          {/* Right Security Protocol Showcase */}
+          {/* Right: Transparency infographic */}
           <div className="lg:col-span-6">
             <AnimatedSection animation="fade-left" delay={150}>
-              <div className="relative rounded-none border border-emerald-500/25 bg-gradient-to-br from-slate-900 via-slate-950 to-[#06150f] p-6 sm:p-8 text-white shadow-2xl overflow-hidden">
-                <div className="flex items-center justify-between border-b border-white/10 pb-5 mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-none bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                      <ShieldCheck className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-white">Trust & Security Framework</h4>
-                      <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
-                        <span className="h-1.5 w-1.5 rounded-none bg-emerald-400 animate-pulse" />
-                        Multi-Layer Audit Active
-                      </p>
-                    </div>
-                  </div>
-                  <span className="rounded-none bg-white/10 px-3 py-1 text-[11px] font-semibold text-slate-300 border border-white/10">
-                    Active Verified
-                  </span>
-                </div>
-
-                {/* Real Legal Deed Image Preview */}
-                <div className="relative h-48 w-full rounded-none overflow-hidden mb-5 border border-white/10">
-                  <Image
-                    src="/images/contract-security.jpg"
-                    alt="Biniyog Club Legally Binding Investment Contract"
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 40vw"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent" />
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-white bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-none border border-white/15">
-                      Stamped Legal Agreement
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-300 bg-emerald-950/80 backdrop-blur-md px-2.5 py-1 rounded-none border border-emerald-500/30">
-                      Contract Act 1872
-                    </span>
-                  </div>
-                </div>
-
-                <div className="space-y-4 mb-6">
-                  <div className="rounded-none border border-white/10 bg-white/5 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-white">Ledger Immutability Guarantee</p>
-                      <p className="text-[11px] text-slate-300 mt-0.5">Every deposit and payout is audited via double-entry accounting</p>
-                    </div>
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-none">
-                      100%
-                    </span>
-                  </div>
-
-                  <div className="rounded-none border border-white/10 bg-white/5 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-white">Contract Act 1872 Alignment</p>
-                      <p className="text-[11px] text-slate-300 mt-0.5">Legally recognized deeds enforceable in Bangladeshi courts</p>
-                    </div>
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-none">
-                      Legal
-                    </span>
-                  </div>
-
-                  <div className="rounded-none border border-white/10 bg-white/5 p-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold text-white">Segregated Escrow Allocation</p>
-                      <p className="text-[11px] text-slate-300 mt-0.5">Project capital isolated from operational accounts</p>
-                    </div>
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-1 rounded-none">
-                      Isolated
-                    </span>
-                  </div>
-                </div>
-
-                <div className="rounded-none bg-emerald-950/50 border border-emerald-500/30 p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
-                    <span className="text-xs text-slate-200">
-                      Multi-stage due diligence conducted prior to every project listing
-                    </span>
-                  </div>
-                  <span className="text-xs font-bold text-emerald-400 whitespace-nowrap ml-2">Compliant</span>
-                </div>
+              <div className="relative mx-auto aspect-[1122/1402] w-full max-w-lg overflow-hidden border border-emerald-500/25 shadow-2xl">
+                <Image
+                  src="/images/Transparency in Fintech Accountability.png"
+                  alt="Transparency at Biniyog Club: double-entry ledger, legally binding agreements, escrow segregation, finance multi-check, KYC screening and data confidentiality"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 1024px) 32rem, 40vw"
+                />
               </div>
             </AnimatedSection>
           </div>
