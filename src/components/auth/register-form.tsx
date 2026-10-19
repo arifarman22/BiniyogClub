@@ -46,7 +46,7 @@ export function RegisterForm() {
       setServerError(result.error);
       return;
     }
-    router.push("/auth/login");
+    router.push("/auth/login?registered=1");
   }
 
   return (

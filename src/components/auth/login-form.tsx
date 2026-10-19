@@ -10,7 +10,9 @@ import { Spinner } from "@/components/ui/loading";
 import { AlertTriangle, Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { toast } from "@/components/ui/toast";
 
 export function LoginForm() {
   const router = useRouter();
@@ -18,6 +20,17 @@ export function LoginForm() {
   const [serverError, setServerError] = useState<{ message: string; code?: string } | null>(null);
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl");
+
+  useEffect(() => {
+    if (searchParams.get("registered") !== "1") return;
+
+    toast.add({
+      title: "Account created",
+      description: "Your account has been created. You can log in now.",
+      type: "success",
+    });
+    router.replace("/auth/login");
+  }, [router, searchParams]);
 
   const {
     register,
